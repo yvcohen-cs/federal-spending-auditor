@@ -12,6 +12,9 @@ For a small cross-source proof of concept, Phase 2 queries the official [FPDS pu
 
 ## Setup
 
+For Linux cloud setup, Python 3.11/3.12 CI, an explicit offline smoke test, and
+safe read-only network diagnostics, see [Codex Cloud instructions](docs/cloud.md).
+
 Python 3.11 is recommended. In PowerShell, create or activate the project virtual environment and install dependencies only if they are not already present:
 
 ```powershell
