@@ -121,6 +121,7 @@ def write_phase2_outputs(
     page_size: int,
     lifecycle_award_limit: int,
     reconciliation_sample_size: int,
+    sampling_mode: str = "legacy",
 ) -> dict[str, Path]:
     data_dir = root / "data" / "cleaned"
     reports_dir = root / "reports"
@@ -170,7 +171,7 @@ def write_phase2_outputs(
         f"- USAspending source: [Advanced Award Search API](https://api.usaspending.gov/api/v2/search/spending_by_award/)",
         f"- USAspending documentation: [API endpoint docs](https://api.usaspending.gov/docs/endpoints)",
         f"- Fiscal-year filter: {fiscal_year - 1}-10-01 through {fiscal_year}-09-30; contract award codes A-D.",
-        "- Sampling: bounded, sorted API prefix; not a census, random sample, or immutable source snapshot.",
+        f"- Sampling mode: {sampling_mode}; deterministic sorted prefixes. Not a census or probability sample. See the companion sampling coverage report for stratified runs.",
         "",
         "## Data coverage",
         "",

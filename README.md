@@ -1,6 +1,6 @@
 # Federal Spending Auditor
 
-Phase 2 downloads a configurable bounded FY2025 sample of federal contract award records from USAspending.gov (default 5,000), saves raw API responses with query metadata and resumable checkpoints, cleans selected fields, and produces evidence-oriented statistical and lifecycle analysis. Findings are screening cues only; they do not establish error or wrongdoing. The Phase 1 award-level CSV and report paths remain available.
+The pipeline downloads a configurable bounded FY2025 sample of federal contract award records from USAspending.gov (default 5,000), saves raw API responses with query metadata and resumable checkpoints, cleans selected fields, and produces evidence-oriented statistical and lifecycle analysis. Findings are screening cues only; they do not establish error or wrongdoing. The Phase 1 award-level CSV and report paths remain available.
 
 ## Data source
 
@@ -9,6 +9,13 @@ The client uses the official USAspending.gov Advanced Award Search endpoint, `PO
 The endpoint returns award-level records. `Award Amount` is not necessarily the amount obligated in FY2025. A separate `POST https://api.usaspending.gov/api/v2/transactions/` request returns transaction IDs, action dates, modification numbers, and federal action obligations; Phase 2 requests a bounded lifecycle subset and sums only transaction action obligations dated in FY2025. Matching Award IDs alone are never treated as duplicate payments.
 
 For a small cross-source proof of concept, Phase 2 queries the official [FPDS public ATOM feed](https://www.fpds.gov/ezsearch/FEEDS/ATOM) using exact PIID + contracting-agency-code identifiers. It records matches, nonmatches, modifications, and source links. Amount comparisons use only a uniquely latest-dated FPDS modification; ambiguous histories are left uncomparable. USAspending and FPDS can differ in reporting periods, accounting definitions, identifier mappings, coverage, and refresh timing; missing matches and amount differences are not conclusions about error or misconduct.
+
+## Sampling and coverage
+
+Phase 3B defaults to deterministic fiscal-quarter × contract-type strata, with
+equal quotas and unused-slot reallocation. Selection is not probability-based or
+statistically representative. See [sampling rules, coverage, resume and CLI compatibility](docs/sampling.md).
+Use `--sampling-mode legacy` for the original full-year sorted prefix.
 
 ## Setup
 

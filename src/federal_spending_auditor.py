@@ -335,7 +335,7 @@ def clean_awards(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "award_id": award_id,
                 "recipient_name": _value(record, "Recipient Name"),
                 "recipient_uei": _value(record, "Recipient UEI"),
-                "recipient_duns": _value(record, "Recipient DUNS"),
+                "recipient_duns": _value(record, "Recipient DUNS") or _value(record, "Recipient DUNS Number"),
                 "start_date": _value(record, "Start Date"),
                 "end_date": _value(record, "End Date"),
                 "award_amount": _value(record, "Award Amount"),
@@ -343,8 +343,8 @@ def clean_awards(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "awarding_agency_code": _value(record, "Awarding Agency Code"),
                 "awarding_sub_agency": _value(record, "Awarding Sub Agency"),
                 "awarding_sub_agency_code": _value(record, "Awarding Sub Agency Code"),
-                "naics_code": _value(record, "NAICS Code"),
-                "psc_code": _value(record, "PSC Code"),
+                "naics_code": _value(record, "NAICS Code") or _value(record, "NAICS"),
+                "psc_code": _value(record, "PSC Code") or _value(record, "PSC"),
                 "award_type": _value(record, "Award Type"),
                 "generated_internal_id": generated_id,
                 "source_record_url": source_url,
@@ -535,6 +535,10 @@ def run_pipeline(
     reconciliation_sample_size: int = 5,
     resume_run_dir: Path | None = None,
     fpds_client: Any = None,
+    sampling_mode: str = "stratified",
+    sampling_max_pages: int = 1000,
+    sampling_period: str = "quarter",
+    sampling_award_types: tuple[str, ...] = ("A", "B", "C", "D"),
 ) -> dict[str, Any]:
     from .analysis import analyze_awards
     from .lifecycle import fetch_lifecycle_transactions
@@ -546,18 +550,30 @@ def run_pipeline(
         raw_dir = Path(resume_run_dir)
         if not raw_dir.is_absolute():
             raw_dir = root / raw_dir
+        if not (raw_dir / "checkpoint.json").is_file():
+            raise ValueError("Resume run requires an existing checkpoint")
         run_id = raw_dir.name
     else:
         run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
         raw_dir = root / "data" / "raw" / f"fy{fiscal_year}" / run_id
     api_client = client or USAspendingClient(page_delay_seconds=page_delay_seconds)
-    records = api_client.fetch_contract_awards(
+    if sampling_mode not in ("legacy", "stratified"):
+        raise ValueError("sampling_mode must be legacy or stratified")
+    from .sampling import collect, write_coverage_report
+    retrieval_options = dict(
         fiscal_year=fiscal_year,
         max_records=max_records,
         page_size=page_size,
         raw_dir=raw_dir,
         page_delay_seconds=page_delay_seconds,
     )
+    if sampling_mode == "legacy":
+        records = api_client.fetch_contract_awards(**retrieval_options)
+    else:
+        records = collect(
+            api_client, period=sampling_period, award_types=sampling_award_types,
+            max_pages_per_stratum=sampling_max_pages, **retrieval_options,
+        )
     cleaned = clean_awards(records)
     analysis = analyze_awards(
         cleaned,
@@ -591,11 +607,19 @@ def run_pipeline(
         page_size=page_size,
         lifecycle_award_limit=lifecycle_award_limit,
         reconciliation_sample_size=reconciliation_sample_size,
+        sampling_mode=sampling_mode,
     )
+    if sampling_mode == "stratified":
+        coverage_path = root / "reports" / f"fy{fiscal_year}_sampling_coverage.md"
+        write_coverage_report(api_client.last_sampling_summary, coverage_path)
+        output_paths["sampling_coverage_path"] = coverage_path
+    raw_dir.mkdir(parents=True, exist_ok=True)
     run_metadata_path = raw_dir / "run_metadata.json"
     api_client._write_json_atomic(
         run_metadata_path,
         {
+                "sampling_mode": sampling_mode,
+                "sampling_coverage": "sampling_coverage.json" if sampling_mode == "stratified" else None,
                 "run_id": run_id,
                 "fiscal_year": fiscal_year,
                 "target_records": max_records,
@@ -651,6 +675,10 @@ def main() -> None:
     parser.add_argument("--lifecycle-awards", type=int, default=10)
     parser.add_argument("--reconciliation-sample-size", type=int, default=5)
     parser.add_argument("--resume-run", type=Path)
+    parser.add_argument("--sampling-max-pages", type=int, default=1000)
+    parser.add_argument("--sampling-mode", choices=("stratified", "legacy"), default="stratified")
+    parser.add_argument("--sampling-period", choices=("quarter", "month", "year"), default="quarter")
+    parser.add_argument("--sampling-award-types", nargs="+", choices=("A", "B", "C", "D"), default=["A", "B", "C", "D"])
     args = parser.parse_args()
     result = run_pipeline(
         fiscal_year=args.fiscal_year,
@@ -662,7 +690,13 @@ def main() -> None:
         lifecycle_award_limit=args.lifecycle_awards,
         reconciliation_sample_size=args.reconciliation_sample_size,
         resume_run_dir=args.resume_run,
+        sampling_mode=args.sampling_mode,
+        sampling_max_pages=args.sampling_max_pages,
+        sampling_period=args.sampling_period,
+        sampling_award_types=tuple(args.sampling_award_types),
     )
+    if "sampling_coverage_path" in result:
+        print(f"Sampling coverage: {result['sampling_coverage_path']}")
     print(f"Records analyzed: {result['records']}")
     print(f"Records with findings: {result['flagged']}")
     print(f"Finding rows by rule: {result['rule_counts']}")
