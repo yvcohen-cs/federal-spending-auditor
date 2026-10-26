@@ -24,3 +24,5 @@ jobs:
           cache: pip
       - run: python -m pip install -r requirements.txt
       - run: python -m pytest -q
+      - name: Explicit offline pipeline smoke test
+        run: python -m pytest -q -p no:cacheprovider tests/test_federal_spending_auditor.py::test_pipeline_writes_cleaned_flagged_and_summary_outputs
