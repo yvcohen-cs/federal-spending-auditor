@@ -1,0 +1,528 @@
+{
+  "claim_id": "claim:v1:96bde335248dd19a4c123937bba350cbf985547c950a2b386dd0caed0a9465d4",
+  "contracts": [
+    {
+      "endpoint": "https://example.invalid/awards",
+      "hash_basis": "canonical_json",
+      "http_status": null,
+      "limitations": [],
+      "method": "POST",
+      "relative_path": "synthetic/award.json",
+      "representation": "parsed_json",
+      "request_json": "{\"page\":1}",
+      "retrieved_at_utc": "2025-10-01T00:00:00Z",
+      "schema_type": "EvidenceArtifact",
+      "schema_version": 1,
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "source": "usaspending",
+      "source_updated_at_utc": null
+    },
+    {
+      "artifact_id": "artifact:sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "locator": "/results/0",
+      "native_id": {
+        "namespace": "generated_internal_id",
+        "schema_type": "SourceIdentifier",
+        "schema_version": 1,
+        "source": "usaspending",
+        "value": "SYNTHETIC_00001-A/0"
+      },
+      "query_url": null,
+      "record_url_constructed": false,
+      "schema_type": "EvidenceRecordRef",
+      "schema_version": 1,
+      "source": "usaspending",
+      "source_record_url": null
+    },
+    {
+      "award_category": null,
+      "evidence": [
+        {
+          "artifact_id": "artifact:sha256:1111111111111111111111111111111111111111111111111111111111111111",
+          "locator": "/results/0",
+          "native_id": {
+            "namespace": "generated_internal_id",
+            "schema_type": "SourceIdentifier",
+            "schema_version": 1,
+            "source": "usaspending",
+            "value": "SYNTHETIC_00001-A/0"
+          },
+          "query_url": null,
+          "record_url_constructed": false,
+          "schema_type": "EvidenceRecordRef",
+          "schema_version": 1,
+          "source": "usaspending",
+          "source_record_url": null
+        }
+      ],
+      "identifiers": [
+        {
+          "namespace": "generated_internal_id",
+          "schema_type": "SourceIdentifier",
+          "schema_version": 1,
+          "source": "usaspending",
+          "value": "SYNTHETIC_00001-A/0"
+        }
+      ],
+      "parent_identifiers": [],
+      "schema_type": "AwardIdentity",
+      "schema_version": 1
+    },
+    {
+      "award": {
+        "award_category": null,
+        "evidence": [
+          {
+            "artifact_id": "artifact:sha256:1111111111111111111111111111111111111111111111111111111111111111",
+            "locator": "/results/0",
+            "native_id": {
+              "namespace": "generated_internal_id",
+              "schema_type": "SourceIdentifier",
+              "schema_version": 1,
+              "source": "usaspending",
+              "value": "SYNTHETIC_00001-A/0"
+            },
+            "query_url": null,
+            "record_url_constructed": false,
+            "schema_type": "EvidenceRecordRef",
+            "schema_version": 1,
+            "source": "usaspending",
+            "source_record_url": null
+          }
+        ],
+        "identifiers": [
+          {
+            "namespace": "generated_internal_id",
+            "schema_type": "SourceIdentifier",
+            "schema_version": 1,
+            "source": "usaspending",
+            "value": "SYNTHETIC_00001-A/0"
+          }
+        ],
+        "parent_identifiers": [],
+        "schema_type": "AwardIdentity",
+        "schema_version": 1
+      },
+      "evidence": [
+        {
+          "artifact_id": "artifact:sha256:1111111111111111111111111111111111111111111111111111111111111111",
+          "locator": "/results/0",
+          "native_id": {
+            "namespace": "generated_internal_id",
+            "schema_type": "SourceIdentifier",
+            "schema_version": 1,
+            "source": "usaspending",
+            "value": "SYNTHETIC_00001-A/0"
+          },
+          "query_url": null,
+          "record_url_constructed": false,
+          "schema_type": "EvidenceRecordRef",
+          "schema_version": 1,
+          "source": "usaspending",
+          "source_record_url": null
+        }
+      ],
+      "identifiers": [
+        {
+          "namespace": "transaction_id",
+          "schema_type": "SourceIdentifier",
+          "schema_version": 1,
+          "source": "usaspending",
+          "value": "0002-A"
+        }
+      ],
+      "modification": {
+        "namespace": "modification_number",
+        "schema_type": "SourceIdentifier",
+        "schema_version": 1,
+        "source": "usaspending",
+        "value": "P00001"
+      },
+      "revision": null,
+      "schema_type": "ActionIdentity",
+      "schema_version": 1,
+      "transaction": null
+    },
+    {
+      "currency": "USD",
+      "date_basis": null,
+      "definition": "Synthetic award-level value; no cross-source equivalence asserted.",
+      "evidence": {
+        "artifact_id": "artifact:sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "locator": "/results/0",
+        "native_id": {
+          "namespace": "generated_internal_id",
+          "schema_type": "SourceIdentifier",
+          "schema_version": 1,
+          "source": "usaspending",
+          "value": "SYNTHETIC_00001-A/0"
+        },
+        "query_url": null,
+        "record_url_constructed": false,
+        "schema_type": "EvidenceRecordRef",
+        "schema_version": 1,
+        "source": "usaspending",
+        "source_record_url": null
+      },
+      "field_path": "/Award Amount",
+      "kind": "decimal",
+      "original_json": "\"100.00\"",
+      "parse_status": "valid",
+      "parsed": "100.00",
+      "period": null,
+      "schema_type": "TypedValue",
+      "schema_version": 1
+    },
+    {
+      "evidence": [
+        {
+          "artifact_id": "artifact:sha256:1111111111111111111111111111111111111111111111111111111111111111",
+          "locator": "/results/0",
+          "native_id": {
+            "namespace": "generated_internal_id",
+            "schema_type": "SourceIdentifier",
+            "schema_version": 1,
+            "source": "usaspending",
+            "value": "SYNTHETIC_00001-A/0"
+          },
+          "query_url": null,
+          "record_url_constructed": false,
+          "schema_type": "EvidenceRecordRef",
+          "schema_version": 1,
+          "source": "usaspending",
+          "source_record_url": null
+        },
+        {
+          "artifact_id": "artifact:sha256:2222222222222222222222222222222222222222222222222222222222222222",
+          "locator": "/feed/entry[1]",
+          "native_id": {
+            "namespace": "entry_id",
+            "schema_type": "SourceIdentifier",
+            "schema_version": 1,
+            "source": "fpds",
+            "value": "00001.A/0"
+          },
+          "query_url": null,
+          "record_url_constructed": false,
+          "schema_type": "EvidenceRecordRef",
+          "schema_version": 1,
+          "source": "fpds",
+          "source_record_url": null
+        }
+      ],
+      "limited": false,
+      "pagination": "unknown",
+      "rationale": [],
+      "retrieval_failed": false,
+      "schema_type": "CoverageAssessment",
+      "schema_version": 1,
+      "scope": "synthetic-award-observation",
+      "source_wide": "unknown",
+      "transaction_history": "unknown"
+    },
+    {
+      "candidates": [],
+      "claim_type": "source_award_identity_agreement",
+      "comparability_support": "supported",
+      "coverage": {
+        "evidence": [
+          {
+            "artifact_id": "artifact:sha256:1111111111111111111111111111111111111111111111111111111111111111",
+            "locator": "/results/0",
+            "native_id": {
+              "namespace": "generated_internal_id",
+              "schema_type": "SourceIdentifier",
+              "schema_version": 1,
+              "source": "usaspending",
+              "value": "SYNTHETIC_00001-A/0"
+            },
+            "query_url": null,
+            "record_url_constructed": false,
+            "schema_type": "EvidenceRecordRef",
+            "schema_version": 1,
+            "source": "usaspending",
+            "source_record_url": null
+          },
+          {
+            "artifact_id": "artifact:sha256:2222222222222222222222222222222222222222222222222222222222222222",
+            "locator": "/feed/entry[1]",
+            "native_id": {
+              "namespace": "entry_id",
+              "schema_type": "SourceIdentifier",
+              "schema_version": 1,
+              "source": "fpds",
+              "value": "00001.A/0"
+            },
+            "query_url": null,
+            "record_url_constructed": false,
+            "schema_type": "EvidenceRecordRef",
+            "schema_version": 1,
+            "source": "fpds",
+            "source_record_url": null
+          }
+        ],
+        "limited": false,
+        "pagination": "unknown",
+        "rationale": [],
+        "retrieval_failed": false,
+        "schema_type": "CoverageAssessment",
+        "schema_version": 1,
+        "scope": "synthetic-award-observation",
+        "source_wide": "unknown",
+        "transaction_history": "unknown"
+      },
+      "dimension": "identity",
+      "evidence": [
+        {
+          "artifact_id": "artifact:sha256:1111111111111111111111111111111111111111111111111111111111111111",
+          "locator": "/results/0",
+          "native_id": {
+            "namespace": "generated_internal_id",
+            "schema_type": "SourceIdentifier",
+            "schema_version": 1,
+            "source": "usaspending",
+            "value": "SYNTHETIC_00001-A/0"
+          },
+          "query_url": null,
+          "record_url_constructed": false,
+          "schema_type": "EvidenceRecordRef",
+          "schema_version": 1,
+          "source": "usaspending",
+          "source_record_url": null
+        },
+        {
+          "artifact_id": "artifact:sha256:2222222222222222222222222222222222222222222222222222222222222222",
+          "locator": "/feed/entry[1]",
+          "native_id": {
+            "namespace": "entry_id",
+            "schema_type": "SourceIdentifier",
+            "schema_version": 1,
+            "source": "fpds",
+            "value": "00001.A/0"
+          },
+          "query_url": null,
+          "record_url_constructed": false,
+          "schema_type": "EvidenceRecordRef",
+          "schema_version": 1,
+          "source": "fpds",
+          "source_record_url": null
+        }
+      ],
+      "explanation_evidence": [],
+      "identity_support": "supported",
+      "limitations": [],
+      "rationale": "Synthetic assertion; no matching algorithm executed.",
+      "requires_complete_history": false,
+      "schema_type": "ComparisonResult",
+      "schema_version": 1,
+      "scope": "synthetic-award-observation",
+      "status": "verified_match",
+      "subject": {
+        "namespace": "generated_internal_id",
+        "schema_type": "SourceIdentifier",
+        "schema_version": 1,
+        "source": "usaspending",
+        "value": "SYNTHETIC_00001-A/0"
+      },
+      "sufficiency_support": "supported"
+    },
+    {
+      "claim_id": "claim:v1:96bde335248dd19a4c123937bba350cbf985547c950a2b386dd0caed0a9465d4",
+      "evidence": [
+        {
+          "artifact_id": "artifact:sha256:1111111111111111111111111111111111111111111111111111111111111111",
+          "locator": "/results/0",
+          "native_id": {
+            "namespace": "generated_internal_id",
+            "schema_type": "SourceIdentifier",
+            "schema_version": 1,
+            "source": "usaspending",
+            "value": "SYNTHETIC_00001-A/0"
+          },
+          "query_url": null,
+          "record_url_constructed": false,
+          "schema_type": "EvidenceRecordRef",
+          "schema_version": 1,
+          "source": "usaspending",
+          "source_record_url": null
+        },
+        {
+          "artifact_id": "artifact:sha256:2222222222222222222222222222222222222222222222222222222222222222",
+          "locator": "/feed/entry[1]",
+          "native_id": {
+            "namespace": "entry_id",
+            "schema_type": "SourceIdentifier",
+            "schema_version": 1,
+            "source": "fpds",
+            "value": "00001.A/0"
+          },
+          "query_url": null,
+          "record_url_constructed": false,
+          "schema_type": "EvidenceRecordRef",
+          "schema_version": 1,
+          "source": "fpds",
+          "source_record_url": null
+        }
+      ],
+      "rationale": "Contract fixture only.",
+      "reviewed_at_utc": "2025-10-02T00:00:00Z",
+      "reviewer": "synthetic-reviewer",
+      "schema_type": "ReviewEvent",
+      "schema_version": 1,
+      "state": "review_complete",
+      "supersedes_event_id": null
+    },
+    {
+      "artifacts": [
+        {
+          "endpoint": "https://example.invalid/awards",
+          "hash_basis": "canonical_json",
+          "http_status": null,
+          "limitations": [],
+          "method": "POST",
+          "relative_path": "synthetic/award.json",
+          "representation": "parsed_json",
+          "request_json": "{\"page\":1}",
+          "retrieved_at_utc": "2025-10-01T00:00:00Z",
+          "schema_type": "EvidenceArtifact",
+          "schema_version": 1,
+          "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+          "source": "usaspending",
+          "source_updated_at_utc": null
+        },
+        {
+          "endpoint": "https://example.invalid/feed",
+          "hash_basis": "utf8_text",
+          "http_status": null,
+          "limitations": [],
+          "method": "GET",
+          "relative_path": "synthetic/feed.xml",
+          "representation": "decoded_xml",
+          "request_json": null,
+          "retrieved_at_utc": "2025-10-01T00:01:00Z",
+          "schema_type": "EvidenceArtifact",
+          "schema_version": 1,
+          "sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+          "source": "fpds",
+          "source_updated_at_utc": null
+        }
+      ],
+      "code_revision": "synthetic-revision",
+      "config_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "executed_at_utc": "2025-10-02T00:01:00Z",
+      "parser_version": "synthetic-v1",
+      "results": [
+        {
+          "candidates": [],
+          "claim_type": "source_award_identity_agreement",
+          "comparability_support": "supported",
+          "coverage": {
+            "evidence": [
+              {
+                "artifact_id": "artifact:sha256:1111111111111111111111111111111111111111111111111111111111111111",
+                "locator": "/results/0",
+                "native_id": {
+                  "namespace": "generated_internal_id",
+                  "schema_type": "SourceIdentifier",
+                  "schema_version": 1,
+                  "source": "usaspending",
+                  "value": "SYNTHETIC_00001-A/0"
+                },
+                "query_url": null,
+                "record_url_constructed": false,
+                "schema_type": "EvidenceRecordRef",
+                "schema_version": 1,
+                "source": "usaspending",
+                "source_record_url": null
+              },
+              {
+                "artifact_id": "artifact:sha256:2222222222222222222222222222222222222222222222222222222222222222",
+                "locator": "/feed/entry[1]",
+                "native_id": {
+                  "namespace": "entry_id",
+                  "schema_type": "SourceIdentifier",
+                  "schema_version": 1,
+                  "source": "fpds",
+                  "value": "00001.A/0"
+                },
+                "query_url": null,
+                "record_url_constructed": false,
+                "schema_type": "EvidenceRecordRef",
+                "schema_version": 1,
+                "source": "fpds",
+                "source_record_url": null
+              }
+            ],
+            "limited": false,
+            "pagination": "unknown",
+            "rationale": [],
+            "retrieval_failed": false,
+            "schema_type": "CoverageAssessment",
+            "schema_version": 1,
+            "scope": "synthetic-award-observation",
+            "source_wide": "unknown",
+            "transaction_history": "unknown"
+          },
+          "dimension": "identity",
+          "evidence": [
+            {
+              "artifact_id": "artifact:sha256:1111111111111111111111111111111111111111111111111111111111111111",
+              "locator": "/results/0",
+              "native_id": {
+                "namespace": "generated_internal_id",
+                "schema_type": "SourceIdentifier",
+                "schema_version": 1,
+                "source": "usaspending",
+                "value": "SYNTHETIC_00001-A/0"
+              },
+              "query_url": null,
+              "record_url_constructed": false,
+              "schema_type": "EvidenceRecordRef",
+              "schema_version": 1,
+              "source": "usaspending",
+              "source_record_url": null
+            },
+            {
+              "artifact_id": "artifact:sha256:2222222222222222222222222222222222222222222222222222222222222222",
+              "locator": "/feed/entry[1]",
+              "native_id": {
+                "namespace": "entry_id",
+                "schema_type": "SourceIdentifier",
+                "schema_version": 1,
+                "source": "fpds",
+                "value": "00001.A/0"
+              },
+              "query_url": null,
+              "record_url_constructed": false,
+              "schema_type": "EvidenceRecordRef",
+              "schema_version": 1,
+              "source": "fpds",
+              "source_record_url": null
+            }
+          ],
+          "explanation_evidence": [],
+          "identity_support": "supported",
+          "limitations": [],
+          "rationale": "Synthetic assertion; no matching algorithm executed.",
+          "requires_complete_history": false,
+          "schema_type": "ComparisonResult",
+          "schema_version": 1,
+          "scope": "synthetic-award-observation",
+          "status": "verified_match",
+          "subject": {
+            "namespace": "generated_internal_id",
+            "schema_type": "SourceIdentifier",
+            "schema_version": 1,
+            "source": "usaspending",
+            "value": "SYNTHETIC_00001-A/0"
+          },
+          "sufficiency_support": "supported"
+        }
+      ],
+      "rule_version": "synthetic-v1",
+      "schema_type": "VerificationRun",
+      "schema_version": 1
+    }
+  ],
+  "synthetic": true
+}
