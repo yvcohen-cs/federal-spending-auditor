@@ -95,7 +95,7 @@ class USAspendingClient:
                         f"USAspending API request failed after {attempt + 1} attempts"
                     ) from exc
             except requests.HTTPError as exc:
-                status_code = exc.response.status_code if exc.response else None
+                status_code = exc.response.status_code if exc.response is not None else None
                 if status_code not in (429,) and not (
                     status_code is not None and status_code >= 500
                 ):
@@ -159,6 +159,10 @@ class USAspendingClient:
         query_path = raw_dir / "query_metadata.json" if raw_dir else None
         if raw_dir is not None:
             raw_dir.mkdir(parents=True, exist_ok=True)
+            if query_path.exists():
+                existing_metadata = json.loads(query_path.read_text(encoding="utf-8"))
+                if isinstance(existing_metadata, dict) and existing_metadata.get("mode") == "stratified":
+                    raise ValueError("Checkpoint query differs: stratified evidence cannot be resumed in legacy mode")
             metadata = {
                 "source": "USAspending.gov Advanced Award Search API",
                 "endpoint": API_URL,
@@ -175,7 +179,6 @@ class USAspendingClient:
                 "query_fingerprint": fingerprint,
                 "generated_at_utc": datetime.now(timezone.utc).isoformat(),
             }
-            self._write_json_atomic(query_path, metadata)
             if checkpoint_path.exists():
                 checkpoint = json.loads(checkpoint_path.read_text(encoding="utf-8"))
                 if checkpoint.get("query_fingerprint") != fingerprint:
@@ -194,6 +197,7 @@ class USAspendingClient:
                     results.extend(item for item in saved_results if isinstance(item, dict))
                 if checkpoint.get("complete"):
                     return results[:max_records]
+            self._write_json_atomic(query_path, metadata)
         page = max(completed_pages, default=0) + 1
         delay = self.page_delay_seconds if page_delay_seconds is None else page_delay_seconds
         saw_terminal_page = False
@@ -319,6 +323,14 @@ def _value(record: dict[str, Any], key: str) -> Any:
 
 
 def clean_awards(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    def classification_code(record: dict[str, Any], old_key: str, api_key: str) -> Any:
+        value = _value(record, old_key)
+        if value is None:
+            value = _value(record, api_key)
+        if isinstance(value, dict):
+            return _value(value, "code")
+        return value
+
     cleaned = []
     for record in records:
         generated_id = _value(record, "generated_internal_id")
@@ -343,9 +355,9 @@ def clean_awards(records: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "awarding_agency_code": _value(record, "Awarding Agency Code"),
                 "awarding_sub_agency": _value(record, "Awarding Sub Agency"),
                 "awarding_sub_agency_code": _value(record, "Awarding Sub Agency Code"),
-                "naics_code": _value(record, "NAICS Code") or _value(record, "NAICS"),
-                "psc_code": _value(record, "PSC Code") or _value(record, "PSC"),
-                "award_type": _value(record, "Award Type"),
+                "naics_code": classification_code(record, "NAICS Code", "NAICS"),
+                "psc_code": classification_code(record, "PSC Code", "PSC"),
+                "award_type": _value(record, "Contract Award Type") or _value(record, "Award Type"),
                 "generated_internal_id": generated_id,
                 "source_record_url": source_url,
             }
@@ -550,7 +562,9 @@ def run_pipeline(
         raw_dir = Path(resume_run_dir)
         if not raw_dir.is_absolute():
             raw_dir = root / raw_dir
-        if not (raw_dir / "checkpoint.json").is_file():
+        if not (raw_dir / "checkpoint.json").is_file() and not (
+            sampling_mode == "stratified" and (raw_dir / "query_metadata.json").is_file()
+        ):
             raise ValueError("Resume run requires an existing checkpoint")
         run_id = raw_dir.name
     else:

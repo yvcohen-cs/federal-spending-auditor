@@ -10,7 +10,7 @@ from collections import Counter, deque
 from datetime import datetime, timezone
 from pathlib import Path
 
-VERSION = 1
+VERSION = 2
 LIMITATIONS = (
     "Deterministic Award-ID prefixes within period/type strata are not random or "
     "statistically representative. Inclusion probabilities and population totals are unknown. "
@@ -73,20 +73,31 @@ def collect(client, fiscal_year=2025, max_records=5000, page_size=100,
     strata = make_strata(fiscal_year, period, award_types)
     quotas = allocate(max_records, len(strata))
     # Use only documented field spellings. Legacy mode retains its old request.
-    fields = [f for f in AWARD_FIELDS if f not in ("Recipient DUNS", "NAICS Code", "PSC Code")]
-    fields += ["Recipient DUNS Number", "NAICS", "PSC", "generated_internal_id", "Last Modified Date"]
+    fields = [f for f in AWARD_FIELDS if f not in ("Recipient DUNS", "NAICS Code", "PSC Code", "Award Type")]
+    fields += ["Recipient DUNS Number", "NAICS", "PSC", "Contract Award Type",
+               "generated_internal_id", "Last Modified Date"]
     config = {"version": VERSION, "mode": "stratified", "endpoint": API_URL,
               "fiscal_year": fiscal_year, "date_boundaries": [f"{fiscal_year-1}-10-01", f"{fiscal_year}-09-30"],
               "strata": strata, "quotas": quotas, "target": max_records, "fields": fields,
               "max_pages_per_stratum": max_pages_per_stratum, "page_size": page_size, "sort": "Award ID", "order": "asc",
               "page_delay_seconds": delay, "allocation": "equal_then_canonical_round_robin",
               "identity": "generated_internal_id; missing excluded; first occurrence wins",
-              "selection": "deterministic_prefix", "population_total": None}
+              "selection": "deterministic_prefix", "population_total": None,
+              "period_basis": "API default: latest action >= start; base transaction date <= end"}
     fingerprint = digest(config)
     root = Path(raw_dir) if raw_dir is not None else None
     checkpoint = {"version": VERSION, "query_fingerprint": fingerprint, "events": [], "complete": False}
     if root:
         path = root / "checkpoint.json"
+        query_path = root / "query_metadata.json"
+
+        def validate_query_metadata():
+            metadata = json.loads(query_path.read_text())
+            if (not isinstance(metadata, dict)
+                    or any(metadata.get(key) != value for key, value in config.items())
+                    or metadata.get("query_fingerprint") != fingerprint):
+                raise ValueError("Checkpoint query metadata is corrupt or incompatible")
+
         if path.exists():
             try:
                 checkpoint = json.loads(path.read_text())
@@ -94,9 +105,7 @@ def collect(client, fiscal_year=2025, max_records=5000, page_size=100,
                         or not isinstance(checkpoint["events"], list)
                         or type(checkpoint["complete"]) is not bool):
                     raise ValueError("Checkpoint query differs or checkpoint is corrupt")
-                metadata = json.loads((root / "query_metadata.json").read_text())
-                if any(metadata.get(key) != value for key, value in config.items()) or metadata.get("query_fingerprint") != fingerprint:
-                    raise ValueError("Checkpoint query metadata is corrupt")
+                validate_query_metadata()
                 for event in checkpoint["events"]:
                     if type(event["step"]) is not int or event["step"] < 0:
                         raise ValueError("Corrupt checkpoint event")
@@ -105,14 +114,29 @@ def collect(client, fiscal_year=2025, max_records=5000, page_size=100,
                         raise ValueError("Checkpoint raw evidence hash differs")
                 if [e["step"] for e in checkpoint["events"]] != list(range(len(checkpoint["events"]))):
                     raise ValueError("Checkpoint events are not contiguous")
+                expected = {f"response_{i:06d}.json" for i in range(len(checkpoint["events"]))}
+                actual = {p.name for p in root.glob("response_*.json")}
+                # At most one page can be written ahead of an incomplete journal.
+                orphan = f"response_{len(checkpoint['events']):06d}.json"
+                allowed = expected if checkpoint["complete"] else expected | {orphan}
+                if not actual <= allowed:
+                    raise ValueError("Unexpected raw evidence outside checkpoint journal")
             except (KeyError, TypeError, OSError, json.JSONDecodeError) as exc:
                 raise ValueError("Corrupt or missing checkpoint evidence") from exc
         elif root.exists() and any(root.iterdir()):
-            raise ValueError("Nonempty raw directory has no checkpoint; refusing to overwrite evidence")
+            # Initialization writes the immutable query plan first. A crash before
+            # the first checkpoint is recoverable only with that matching plan.
+            if {p.name for p in root.iterdir()} != {"query_metadata.json"}:
+                raise ValueError("Nonempty raw directory has no checkpoint; refusing to overwrite evidence")
+            try:
+                validate_query_metadata()
+            except (TypeError, OSError, json.JSONDecodeError) as exc:
+                raise ValueError("Corrupt initialization query metadata") from exc
         root.mkdir(parents=True, exist_ok=True)
         if not path.exists():
+            if not query_path.exists():
+                client._write_json_atomic(query_path, {**config, "query_fingerprint": fingerprint, "created_at_utc": now()})
             client._write_json_atomic(path, checkpoint)
-            client._write_json_atomic(root / "query_metadata.json", {**config, "query_fingerprint": fingerprint, "created_at_utc": now()})
 
     selected, identities = [], set()
     states = [{"definition": s, "initial_quota": q, "collected": 0, "pages": [],
@@ -180,6 +204,11 @@ def collect(client, fiscal_year=2025, max_records=5000, page_size=100,
                 envelope = {"request": payload, "retrieved_at_utc": now(), "response": body}
                 if root:
                     client._write_json_atomic(saved_path, envelope)
+            if (not isinstance(envelope, dict)
+                    or not isinstance(envelope.get("response"), dict)
+                    or not isinstance(envelope.get("retrieved_at_utc"), str)
+                    or not envelope["retrieved_at_utc"].strip()):
+                raise ValueError("Corrupt response envelope; raw evidence retained")
             if envelope.get("request") != payload:
                 raise ValueError("Checkpoint request differs from deterministic replay")
             body = envelope["response"]
@@ -230,7 +259,7 @@ def collect(client, fiscal_year=2025, max_records=5000, page_size=100,
             client._write_json_atomic(root / "checkpoint.json", checkpoint)
         persist_summary(True)
         return selected
-    except Exception as exc:
+    except (Exception, KeyboardInterrupt) as exc:
         persist_summary(False, type(exc).__name__)
         raise
 

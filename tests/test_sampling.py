@@ -219,3 +219,189 @@ def test_pipeline_stratified_report_and_legacy_outputs(tmp_path):
     metadata = json.loads(result["run_metadata_path"].read_text())
     assert metadata["sampling_mode"] == "stratified"
     assert (result["raw_dir"] / metadata["sampling_coverage"]).is_file()
+
+
+def test_contract_fields_and_structured_codes_reach_analysis():
+    from src.analysis import missingness_summary, _procurement_category
+    c = client(body([award('contract', **{
+        'Contract Award Type': 'DEFINITIVE CONTRACT',
+        'NAICS': {'code': '541330', 'description': 'Engineering Services'},
+        'PSC': {'code': 'R425', 'description': 'Engineering'},
+        'Last Modified Date': '2026-10-01',
+    })]))
+    rows = fetch(c, max_records=1)
+    fields = c._post.call_args.args[0]['fields']
+    assert 'Contract Award Type' in fields and 'Award Type' not in fields
+    assert {'generated_internal_id', 'Last Modified Date'} <= set(fields)
+    cleaned = clean_awards(rows)[0]
+    assert cleaned['award_type'] == 'DEFINITIVE CONTRACT'
+    assert cleaned['naics_code'] == '541330'
+    assert cleaned['psc_code'] == 'R425'
+    assert _procurement_category(cleaned) == 'NAICS 54xx'
+    null_codes = clean_awards([{'NAICS': {'code': None, 'description': 'Unknown'}, 'PSC': {'code': None}}])
+    missing = {r['field']: r['missing_count'] for r in missingness_summary(null_codes)}
+    assert missing['naics_code'] == missing['psc_code'] == 1
+
+
+def test_complete_checkpoint_cannot_adopt_orphan_or_ignore_extra_evidence(tmp_path):
+    fetch(client(body([award('a')])), tmp_path, max_records=1)
+    # A completed run cannot legitimately have an uncommitted next page.
+    (tmp_path / 'response_000001.json').write_text((tmp_path / 'response_000000.json').read_text())
+    before = {p.name: p.read_bytes() for p in tmp_path.iterdir()}
+    with pytest.raises(ValueError, match='Unexpected raw evidence'):
+        fetch(client(), tmp_path, max_records=1)
+    assert before == {p.name: p.read_bytes() for p in tmp_path.iterdir()}
+
+
+def test_truncated_complete_journal_cannot_re_adopt_saved_page(tmp_path):
+    fetch(client(body([award('a')])), tmp_path, max_records=1)
+    path = tmp_path / 'checkpoint.json'
+    cp = json.loads(path.read_text()); cp['events'] = []
+    path.write_text(json.dumps(cp))
+    with pytest.raises(ValueError, match='Unexpected raw evidence'):
+        fetch(client(), tmp_path, max_records=1)
+
+
+def test_interrupted_initialization_resumes_matching_query_plan(tmp_path):
+    c = client(body([award('a')]))
+    original = c._write_json_atomic
+    def stop_before_checkpoint(path, value):
+        if path.name == 'checkpoint.json':
+            raise KeyboardInterrupt()
+        original(path, value)
+    c._write_json_atomic = stop_before_checkpoint
+    with pytest.raises(KeyboardInterrupt):
+        fetch(c, tmp_path, max_records=1)
+    assert (tmp_path / 'query_metadata.json').exists()
+    assert not (tmp_path / 'checkpoint.json').exists()
+    resumed = client(body([award('a')]))
+    assert len(fetch(resumed, tmp_path, max_records=1)) == 1
+
+
+def test_keyboard_interrupt_records_partial_coverage_and_resumes(tmp_path):
+    c = client(body([award('a')], True), KeyboardInterrupt())
+    with pytest.raises(KeyboardInterrupt):
+        fetch(c, tmp_path, max_records=2, award_types=('A',))
+    summary = json.loads((tmp_path / 'sampling_coverage.json').read_text())
+    assert summary['error'] == 'KeyboardInterrupt' and not summary['complete']
+    assert summary['collected'] == 1
+    assert summary['failed_request']['page'] == 2
+    resumed = client(body([award('b')]))
+    assert len(fetch(resumed, tmp_path, max_records=2, award_types=('A',))) == 2
+
+
+def test_overlap_across_fiscal_periods_redistributes_and_replays(tmp_path):
+    pages = [body([award('shared', **{'Award Amount': 1}), award('q1')]),
+             body([award('shared', **{'Award Amount': 2}), award('q2')]),
+             body(), body([award('q4')])]
+    c = client(*pages)
+    rows = fetch(c, tmp_path, period='quarter', award_types=('A',))
+    assert [r['generated_internal_id'] for r in rows] == ['shared', 'q2', 'q4', 'q1']
+    assert rows[0]['Award Amount'] == 1
+    states = c.last_sampling_summary['strata']
+    assert [s['collected'] for s in states] == [2, 1, 0, 1]
+    assert states[1]['duplicates'] == 1
+    assert len({call.args[0]['filters']['time_period'][0]['start_date'] for call in c._post.call_args_list}) == 4
+    resumed = client()
+    assert fetch(resumed, tmp_path, period='quarter', award_types=('A',)) == rows
+    resumed._post.assert_not_called()
+
+
+@pytest.mark.parametrize('complete', [True, False])
+def test_wrong_mode_resume_preserves_stratified_evidence(tmp_path, complete):
+    fetch(client(body([award('a')])), tmp_path, max_records=1)
+    if not complete:
+        # Metadata-only initialization is also protected from legacy overwrite.
+        for path in tmp_path.iterdir():
+            if path.name != 'query_metadata.json':
+                path.unlink()
+    before = {p.name: p.read_bytes() for p in tmp_path.iterdir()}
+    with pytest.raises(ValueError, match='query differs'):
+        USAspendingClient().fetch_contract_awards(max_records=1, raw_dir=tmp_path)
+    assert before == {p.name: p.read_bytes() for p in tmp_path.iterdir()}
+
+
+def test_changed_legacy_query_preserves_metadata(tmp_path):
+    from tests.test_collection import FakeResponse
+    c = USAspendingClient(session=Mock(), page_delay_seconds=0)
+    c.session.post.return_value = FakeResponse(body([award('a')]))
+    c.fetch_contract_awards(max_records=1, raw_dir=tmp_path)
+    before = {p.name: p.read_bytes() for p in tmp_path.iterdir()}
+    with pytest.raises(ValueError, match='query differs'):
+        c.fetch_contract_awards(max_records=2, raw_dir=tmp_path)
+    assert before == {p.name: p.read_bytes() for p in tmp_path.iterdir()}
+
+
+@pytest.mark.parametrize('envelope', [[], {'request': {}, 'response': [], 'retrieved_at_utc': '2026-10-25'},
+                                      {'request': {}, 'response': body()}])
+def test_malformed_orphan_envelopes_fail_explicitly_without_overwrite(tmp_path, envelope):
+    c = client(RuntimeError('interrupt before response'))
+    with pytest.raises(RuntimeError):
+        fetch(c, tmp_path, max_records=1)
+    path = tmp_path / 'response_000000.json'
+    path.write_text(json.dumps(envelope))
+    before = path.read_bytes()
+    resumed = client()
+    with pytest.raises(ValueError, match='Corrupt response envelope'):
+        fetch(resumed, tmp_path, max_records=1)
+    assert path.read_bytes() == before
+    resumed._post.assert_not_called()
+
+
+def test_metadata_only_wrong_plan_is_rejected(tmp_path):
+    fetch(client(body([award('a')])), tmp_path, max_records=1)
+    for path in tmp_path.iterdir():
+        if path.name != 'query_metadata.json':
+            path.unlink()
+    before = (tmp_path / 'query_metadata.json').read_bytes()
+    with pytest.raises(ValueError, match='incompatible'):
+        fetch(client(), tmp_path, max_records=2)
+    assert (tmp_path / 'query_metadata.json').read_bytes() == before
+    assert not (tmp_path / 'checkpoint.json').exists()
+
+
+def test_contract_request_fields_match_documented_contract_and_source():
+    # Official spending_by_award.md base + Contracts fields and source mapping.
+    supported = {'Award ID', 'Recipient Name', 'Recipient UEI', 'Recipient DUNS Number',
+                 'Start Date', 'End Date', 'Award Amount', 'Awarding Agency',
+                 'Awarding Agency Code', 'Awarding Sub Agency', 'Awarding Sub Agency Code',
+                 'NAICS', 'PSC', 'Contract Award Type', 'generated_internal_id', 'Last Modified Date'}
+    c = client(body([award('a', **{'Last Modified Date': '2026-10-01'})]))
+    fetch(c, max_records=1)
+    request = c._post.call_args.args[0]
+    assert set(request['fields']) == supported
+    assert request['filters'] == {'time_period': [{'start_date': '2024-10-01', 'end_date': '2025-09-30'}], 'award_type_codes': ['A']}
+    assert c.last_sampling_summary['strata'][0]['pages'][0]['source_last_modified_values'] == ['2026-10-01']
+
+
+@pytest.mark.parametrize('status', [429, 500, 503])
+def test_retry_real_requests_error_responses(status):
+    import requests
+    error_response = requests.Response()
+    error_response.status_code = status
+    error_response._content = b'{}'
+    success = requests.Response()
+    success.status_code = 200
+    success._content = b'{"results": []}'
+    session = Mock()
+    session.post.side_effect = [error_response, success]
+    c = USAspendingClient(session=session, retries=1, backoff_seconds=0)
+    assert c._post({'page': 1}) == {'results': []}
+    assert session.post.call_count == 2
+
+
+def test_pipeline_recovers_initialized_plan_without_checkpoint(tmp_path):
+    raw_dir = tmp_path / 'raw'
+    c = client(body([award('a')]))
+    original = c._write_json_atomic
+    def stop(path, value):
+        if path.name == 'checkpoint.json':
+            raise KeyboardInterrupt()
+        original(path, value)
+    c._write_json_atomic = stop
+    with pytest.raises(KeyboardInterrupt):
+        collect(c, max_records=1, raw_dir=raw_dir)
+    result = run_pipeline(root=tmp_path, resume_run_dir=raw_dir, max_records=1,
+                          client=client(body([award('a')])), fpds_client=Mock(), page_delay_seconds=0,
+                          lifecycle_award_limit=0, reconciliation_sample_size=0)
+    assert result['records'] == 1

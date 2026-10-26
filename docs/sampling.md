@@ -11,6 +11,13 @@ changes the calendar partition; `--sampling-award-types A B C D` selects a subse
 of categories. Categories are deduplicated and sorted; periods are chronological.
 No agency universe is guessed: agency coverage is observed, with no agency quota.
 
+The date filter uses the documented API default when `date_type` is omitted:
+the latest action date is compared to the range start, and the base transaction
+date to the range end. These are award-activity overlap queries, not disjoint
+transaction-period or new-award cohorts. A long-lived award can qualify in multiple
+periods, even without an action within each queried quarter. No date filter is
+interpreted as proof of FY-only obligations. This basis is recorded in query metadata.
+
 For target N and K strata, each receives floor(N/K) slots, with the first N mod K
 strata receiving one extra. Empty and small strata release unfilled slots. After
 the initial pass, unused slots are redistributed one at a time in canonical
@@ -56,8 +63,12 @@ validation. Explicit legacy checkpoints must resume with `--sampling-mode legacy
 There is no automatic checkpoint migration. Mixing modes is rejected.
 
 New stratified runs use only documented field spellings: `Recipient DUNS Number`,
-`NAICS`, `PSC`, `generated_internal_id`, and `Last Modified Date`, alongside the
-existing supported award fields. Cleaning accepts both old and new spellings;
+`NAICS`, `PSC`, `Contract Award Type`, `generated_internal_id`, and
+`Last Modified Date`, alongside the existing supported award fields. The official
+contract/source use `Contract Award Type` for procurement; `Award Type` is not
+mapped for contract requests. `NAICS`/`PSC` response objects contain `code` and
+`description`; cleaning extracts the code and treats a null code as missing.
+Cleaning accepts both old and new spellings;
 CSV column names remain unchanged. Analysis, lifecycle and FPDS integrations
 receive the selected unique award rows. Those later stages are otherwise unchanged.
 
@@ -96,13 +107,23 @@ fields, endpoint, delay and page safety cap are fingerprinted. Incompatible
 checkpoints are rejected before metadata is overwritten. Saved response hashes,
 contiguous event sequence, query metadata and replayed requests are checked;
 missing or corrupt evidence fails explicitly. A nonempty directory without a
-checkpoint is refused. `--resume-run` requires an existing checkpoint.
+checkpoint is refused, except for a matching query-plan-only initialization.
+`--resume-run` accepts an existing checkpoint or that initialized stratified query
+plan. Initialization saves the query plan before the checkpoint so an interruption
+between those writes can recover without overwriting evidence.
 
 Resume replays the deterministic allocation and buffers from saved pages, making
 no HTTP requests for already saved responses, including a complete run. If a
 process stopped between the atomic response write and checkpoint update, the
-orphan response at the next expected step is validated and adopted rather than
-refetched or overwritten. A malformed saved response remains preserved and blocks
+single orphan response at the next expected step is validated and adopted rather
+than refetched or overwritten. Completed checkpoints cannot adopt orphan pages;
+extra, noncontiguous or multiple uncommitted response files are rejected.
+Ctrl-C records incomplete coverage before propagating the interrupt. Wrong-mode
+legacy resumes reject stratified evidence before writing metadata.
+
+The review fixes use checkpoint schema version 2 and a corrected field plan.
+Version 1 runs are deliberately incompatible: retain their evidence and start a
+new run directory; there is no silent checkpoint migration. A malformed saved response remains preserved and blocks
 resume; investigate it rather than deleting evidence to hide an error. Atomic
 writes protect against half-written JSON, not storage loss or concurrent writers;
 use one collector per run directory. Hashes detect changes, not malicious tampering.
@@ -125,10 +146,28 @@ spellings above. These are documentation-verified capabilities, not new successf
 live API probes. No random sort, arbitrary agency code filter, population-count
 endpoint, snapshot token or undocumented multi-key sort is assumed.
 
-Live validation was attempted in this cloud session but the inherited HTTP proxy
-was unreachable (`proxy:8080`); no successful new live collection or endpoint
-capability check was possible. No proxy/TLS restrictions were bypassed. Offline
-fixtures verify behavior, not the current upstream dataset or service semantics.
+The initial implementation session could not reach the inherited proxy. During
+the PR review, the default shell sandbox blocked the proxy connection with
+`PermissionError` (errno 1), wrapped in `NewConnectionError` / `ProxyError`; no
+HTTP status or response arrived. Granting network access through the supported
+per-command tool permission allowed the same inherited proxy/TLS path to succeed.
+No proxy variables, TLS verification, or environment settings were changed.
+
+On 2026-10-25 UTC, one successful bounded POST returned exactly 20 awards:
+FY2025 (2024-10-01 through 2025-09-30), type A, `Award ID` ascending, page 1,
+limit 20. All 20 had nonnull string `generated_internal_id`, `Last Modified Date`
+and `Contract Award Type`; all had object-valued NAICS/PSC. Generated IDs were
+unique. Saved evidence replayed identically with HTTP explicitly blocked.
+Raw request/response, checkpoint, collection timestamps and aggregate validation
+remain local under ignored `data/raw/fy2025/review-pr3-fixed-live-20261025T235942058478Z/`;
+no raw awards or generated reports are committed. No further live requests were made
+after those 20 rows.
+
+This validates acceptance of that request and those response field shapes only.
+The response advertised `hasNext`, but no second page was requested. Other award
+types, fiscal-period overlap, multi-page collection and interrupted live resume
+remain covered by offline tests rather than a live production-scale exercise.
+The sample is not statistically representative.
 
 All tests prohibit real Requests HTTP calls. Run:
 
@@ -144,3 +183,19 @@ caps, interrupted/complete/orphan-page resume, incompatible/corrupt checkpoints,
 legacy compatibility, and pipeline outputs. Source reconciliation expansion and
 evidence packets remain deferred to Workstreams C/D. Findings remain screening
 cues, without allegations or fraud probability scores.
+
+## PR review validation
+
+The complete suite passes 91 tests (73 before review, 18 added). The explicit
+offline pipeline smoke test is also run separately. New regressions cover
+contract request fields and nested codes, complete-journal truncation/extra
+evidence, initialization and Ctrl-C recovery, malformed orphan envelopes,
+wrong-mode evidence preservation, actual overlapping quarterly results and
+redistributed quotas. A retry regression uses real Requests error responses:
+429/5xx responses are false-valued, so response presence must be checked with
+`is not None` to preserve retry behavior.
+
+In addition to the contract linked above, the review checked the official
+[date filter contract](https://github.com/fedspendingtransparency/usaspending-api/blob/master/usaspending_api/api_contracts/search_filters.md#award-search-time-period-object),
+[field mappings](https://github.com/fedspendingtransparency/usaspending-api/blob/master/usaspending_api/awards/v2/lookups/elasticsearch_lookups.py),
+and [response construction](https://github.com/fedspendingtransparency/usaspending-api/blob/master/usaspending_api/search/v2/views/spending_by_award.py).
