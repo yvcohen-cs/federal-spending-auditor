@@ -61,7 +61,9 @@ class CollectionLimits(Schema):
             raise ValueError("timeout must be positive")
 
 
-def make_plan(awards, limits, sources, profile):
+def make_plan(awards, limits, sources, profile, *, collector_version=2):
+    if type(collector_version) is not int or collector_version not in (1, 2):
+        raise EvidenceError("unsupported_collector_version")
     if not awards or len(awards) > limits.max_awards or len(set(awards)) != len(awards):
         raise EvidenceError("invalid_or_duplicate_award_selection")
     if not sources or len(set(sources)) != len(sources) or any(s not in ("usaspending", "fpds") for s in sources):
@@ -69,7 +71,7 @@ def make_plan(awards, limits, sources, profile):
     generated = [a.generated_id for a in awards if a.generated_id is not None]
     if len(set(generated)) != len(generated):
         raise EvidenceError("conflicting_generated_award_selection")
-    return {"schema_type": "CollectionPlan", "schema_version": 1, "collector_version": 1,
+    return {"schema_type": "CollectionPlan", "schema_version": 1, "collector_version": collector_version,
             "evidence_schema_version": 1, "ingestion_schema_version": 1,
             "awards": [a.to_dict() for a in awards], "limits": limits.to_dict(),
             "sources": list(sources), "profile": profile,
@@ -125,6 +127,8 @@ def collect_selected(path, awards, *, limits=None, sources=("usaspending", "fpds
                             "limitations": ["explicit_selection_not_authoritative_cross_source_identity",
                                             "pagination_does_not_establish_history", "publication_delays_unknown"]}
                     tasks.append(task)
+                    if source == "fpds":
+                        task["limitations"].append("fpds_query_scope_not_universally_verified")
                     needed = ("generated_id",) if source == "usaspending" else ("piid", "agency_id")
                     if any(award[k] is None for k in needed) or (source == "fpds" and (award["parent_piid"] is None) != (award["parent_agency_id"] is None)):
                         task.update(status="unresolved_identifiers", error_code="missing_selection_context")
@@ -177,10 +181,15 @@ def collect_selected(path, awards, *, limits=None, sources=("usaspending", "fpds
                             if not error and status is not None and 200 <= status < 300 and metadata["body_complete"]:
                                 successful = (raw, base)
                                 break
-                            retryable = error in ("timeout", "connection_error") or error is None and (status == 429 or status is not None and 500 <= status <= 599)
+                            permanent_http = status is not None and not (200 <= status < 300 or status == 429 or 500 <= status <= 599)
+                            retryable = not permanent_http and (error in ("timeout", "connection_error") or error is None and (status == 429 or status is not None and 500 <= status <= 599))
                             delay = retry_delay(metadata, attempt, limits)
                             if not retryable or attempt == limits.retries or delay is None:
-                                code = error or ("retry_after_exceeds_bound" if delay is None else f"http_{status}")
+                                code = error or ("retry_after_exceeds_bound" if retryable and delay is None else f"http_{status}")
+                                if permanent_http:
+                                    code = f"http_{status}"
+                                if error is None and status is not None and 200 <= status < 300 and not metadata["body_complete"]:
+                                    code = "incomplete_response"
                                 task.update(status="source_error", error_code=code, pagination="partial", query_scope="partial")
                                 break
                             if delay and (live_request or store.cursor == len(store.state["events"])):
@@ -213,7 +222,7 @@ def collect_selected(path, awards, *, limits=None, sources=("usaspending", "fpds
                             seen_rows.add(row_hash)
                             task["action_context_counts"][context] = task["action_context_counts"].get(context, 0) + 1
                             if source == "fpds":
-                                parent_contexts.add(digest(row["parent_context"]))
+                                parent_contexts.add(digest([{k: p.get(k) for k in ("PIID", "agencyID")} for p in row["parent_context"]]))
                         task["unique_retrieval_rows"] = len(seen_rows)
                         task["source_updates_raw"] = sorted(set(task["source_updates_raw"] + parsed["source_updates"]))
                         if fingerprints and page_hash in seen_pages:
@@ -224,18 +233,21 @@ def collect_selected(path, awards, *, limits=None, sources=("usaspending", "fpds
                             progress({"award_index": award_index, "source": source, "page": page, "returned_rows": task["returned_rows"]})
                         if not parsed["has_next"]:
                             task.update(status="pagination_exhausted", pagination="complete", query_scope="complete")
+                            if source == "fpds":
+                                task.update(status="scope_unverified", query_scope="unknown")
                             if any(k != "query_bound_candidate" for k in task["action_context_counts"]):
                                 task.update(status="context_unresolved", query_scope="partial")
                             if source == "fpds" and len(parent_contexts) > 1:
                                 task.update(status="ambiguous_award_context", query_scope="partial")
                             if not parsed["rows"] and task["returned_rows"] == 0:
-                                task["status"] = "no_records_returned"
+                                task["status"] = "inconclusive_empty_feed" if source == "fpds" else "no_records_returned"
                             break
                         following = parsed["next_parameters"]
                         if page == limits.max_pages:
                             task.update(status="truncated", error_code="page_limit", pagination="partial", query_scope="partial")
-            if store.cursor != len(store.state["events"]):
+            if store.cursor != len(store.state["events"]) or store.state["pending"] is not None:
                 raise EvidenceError("unused_collection_journal_events")
+            store.assert_integrity()
         except KeyboardInterrupt:
             summary = _summary(store, tasks, returned_total, processed_requests, record_slots, interrupted=True)
             store.summary(summary)

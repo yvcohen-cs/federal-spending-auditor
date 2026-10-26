@@ -14,6 +14,7 @@ from .evidence_io import EvidenceError, canonical, digest, safe_xml, strict_json
 USA = "https://api.usaspending.gov/api/v2/transactions/"
 FPDS = "https://www.fpds.gov/ezsearch/FEEDS/ATOM"
 ATOM = "{http://www.w3.org/2005/Atom}"
+FPDS_NAMESPACES = ("https://www.fpds.gov/FPDS", "http://www.fpds.gov/FPDS")
 
 
 def utcnow():
@@ -38,11 +39,19 @@ def request_for(source, award, page, size, next_parameters=None):
 
 
 def safe_next(href, request):
-    url = urlsplit(urljoin(FPDS, href))
+    if not isinstance(href, str) or not href or len(href) > 8192 or any(ord(c) <= 32 or ord(c) == 127 for c in href) or "\\" in href:
+        raise EvidenceError("unsafe_fpds_next_url")
+    try:
+        url = urlsplit(urljoin(FPDS, href))
+    except ValueError:
+        raise EvidenceError("unsafe_fpds_next_url") from None
     base = urlsplit(FPDS)
     if (url.scheme, url.netloc, url.path) != (base.scheme, base.netloc, base.path) or url.fragment:
         raise EvidenceError("unsafe_fpds_next_url")
-    params = parse_qs(url.query, keep_blank_values=True, strict_parsing=True)
+    try:
+        params = parse_qs(url.query, keep_blank_values=True, strict_parsing=True, max_num_fields=8)
+    except ValueError:
+        raise EvidenceError("invalid_fpds_next_parameters") from None
     if any(len(v) != 1 for v in params.values()) or set(params) - {"q", "FEEDNAME", "length", "start", "index", "s"}:
         raise EvidenceError("unsupported_fpds_next_parameters")
     for name in ("q", "FEEDNAME", "length"):
@@ -61,6 +70,13 @@ def safe_next(href, request):
         result["s"] = "FPDSNG.COM"
     if len(set(result) & {"start", "index"}) != 1:
         raise EvidenceError("missing_or_ambiguous_fpds_offset")
+    key = "start" if "start" in result else "index"
+    current_keys = set(request["parameters"]) & {"start", "index"}
+    if current_keys and current_keys != {key}:
+        raise EvidenceError("fpds_offset_protocol_changed")
+    previous = request["parameters"].get(key, 0)
+    if type(previous) is not int or result[key] != previous + 10:
+        raise EvidenceError("noncontiguous_fpds_offset")
     # Reconstruct only validated offsets; retain the selected PIID/agency query.
     return result
 
@@ -105,33 +121,47 @@ def parse_page(source, raw, request, award):
     following = safe_next(links[0], request) if links else None
     rows, contexts, updates, fingerprints = [], [], [], []
     for entry in root.findall(ATOM + "entry"):
-        def nodes(name):
-            return [n for n in entry.iter() if n.tag.rsplit("}", 1)[-1] == name]
-        contracts = nodes("awardContractID")
+        contents = entry.findall(ATOM + "content")
+        awards = [n for content in contents for n in content
+                  if n.tag in tuple("{" + ns + "}award" for ns in FPDS_NAMESPACES)]
+        namespace = awards[0].tag.split("}")[0] + "}" if len(awards) == 1 else ""
+        award_ids = awards[0].findall(namespace + "awardID") if len(awards) == 1 else []
+        contracts = award_ids[0].findall(namespace + "awardContractID") if len(award_ids) == 1 else []
+
+        def identifiers(container, names):
+            result = {}
+            for node in container:
+                name = node.tag.rsplit("}", 1)[-1]
+                if name not in names:
+                    continue
+                if node.tag != namespace + name:
+                    raise EvidenceError("unsupported_fpds_identifier_namespace")
+                if name in result:
+                    raise EvidenceError("conflicting_fpds_identifiers")
+                result[name] = node.text
+            return result
+
         record = {"atom_id": entry.findtext(ATOM + "id"), "updated": entry.findtext(ATOM + "updated")}
         record_links = [n.get("href") for n in entry.findall(ATOM + "link") if n.get("rel") == "alternate"]
         record["source_record_url"] = record_links[0] if len(record_links) == 1 else None
         context = "missing_award_context"
         if len(contracts) == 1:
-            for node in contracts[0]:
-                name = node.tag.rsplit("}", 1)[-1]
-                if name in record:
-                    raise EvidenceError("conflicting_fpds_identifiers")
-                record[name] = node.text
+            record.update(identifiers(contracts[0], ("PIID", "agencyID", "modNumber", "transactionNumber")))
             if record.get("PIID") == award["piid"] and record.get("agencyID") == award["agency_id"]:
                 context = "query_bound_candidate"
                 if not record.get("modNumber") or not record.get("transactionNumber"):
                     context = "missing_action_identifier"
             elif record.get("PIID") and record.get("agencyID"):
                 context = "nonmatching_piid_or_agency"
-        elif len(contracts) > 1:
+        elif len(contracts) > 1 or len(awards) > 1 or len(award_ids) > 1:
             context = "ambiguous_award_context"
-        for name in ("effectiveDate", "signedDate", "obligatedAmount", "totalObligatedAmount"):
-            values = nodes(name)
+        for parent_name, name in (("relevantContractDates", "effectiveDate"), ("relevantContractDates", "signedDate"),
+                                  ("dollarValues", "obligatedAmount"), ("totalDollarValues", "totalObligatedAmount")):
+            values = awards[0].findall(namespace + parent_name + "/" + namespace + name) if len(awards) == 1 else []
             if len(values) == 1:
                 record[name] = values[0].text
-        parents = nodes("referencedIDVID")
-        record["parent_context"] = [{n.tag.rsplit("}", 1)[-1]: n.text for n in parent} for parent in parents]
+        parents = award_ids[0].findall(namespace + "referencedIDVID") if len(award_ids) == 1 else []
+        record["parent_context"] = [identifiers(parent, ("PIID", "agencyID", "modNumber")) for parent in parents]
         if len(parents) > 1:
             context = "ambiguous_parent_context"
         if award.get("parent_piid") is not None:

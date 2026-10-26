@@ -30,6 +30,9 @@ quoted/escaped identifiers, 10-record pages, and same-endpoint Atom next offsets
 (`start` or `index`, optionally `s=FPDSNG.COM`). These semantics are regression-
 tested with authored fixtures, not asserted universally from current docs.
 Unknown next parameters or changed scope stop collection instead of guessing.
+Next links also reject raw whitespace/control characters, backward/skipped offsets,
+offset-protocol changes and oversized URLs. Successors must advance exactly ten
+positions; this is a guarded supported protocol, not a universal FPDS capability.
 No alternate SAM endpoint, authentication route, or undocumented filter is added.
 
 All automated tests are offline. The saved formats from C1/C2 remain supported.
@@ -92,7 +95,10 @@ accepted. Progress on stderr contains only selection index, source, page and
 counts. Stdout is the machine-readable summary, never raw records.
 
 Exit 0 means selected queries exhausted pagination without unresolved context;
-it is not an audit assurance. Exit 1 means bounded truncation, missing/ambiguous
+it is not an audit assurance. FPDS tasks now retain unknown query scope even at a
+terminal page, so runs including FPDS normally exit 1. A terminal nonempty feed is
+`scope_unverified`; a terminal empty feed is `inconclusive_empty_feed`. Neither
+means source absence or verified coverage. Exit 1 also means bounded truncation, missing/ambiguous
 selection, context uncertainty or a terminal source error. Exit 2 means invalid
 configuration/checkpoint/path/storage. Exit 130 means interruption. Source errors
 remain visible in summary tasks and their preserved observations.
@@ -224,11 +230,73 @@ A preliminary FPDS reachability GET for the earlier documented PIID/agency query
 returned HTTP 200 before this exercise, but its body was not retained. It is not
 used as source evidence or claimed as action-field/pagination validation. The
 official FPDS documentation probe returned 404 and wiki redirect as noted above.
-No further live requests were made after the bounded exercise.
+No further live requests were made in that original implementation session.
+The subsequent review's separate bounded observations are documented below.
 
-Nonempty FPDS records/next links, interrupted live recovery, negative/zero actions,
-multi-page offsets and retries remain validated by synthetic tests rather than
-this live exercise. Exact FPDS search semantics and page limits need current
-official documentation/nonempty validation before scaling. Historical corrections,
+Nonempty FPDS records were not validated by that original exercise. Next links,
+interrupted live recovery, negative/zero actions, multi-page offsets and retries
+remain validated by synthetic tests rather than live collection. Exact FPDS scope
+and page limits need current documentation and broader validation before scaling. Historical corrections,
 agency crosswalks, parent-award uniqueness, snapshot consistency and reporting
 delays remain unresolved. They do not justify wrongdoing inferences.
+
+## PR #6 hardening review
+
+The review found historical, search-indexed official
+[Public Atom Feed Usage](https://www.fpds.gov/wiki/index.php?oldid=3270&title=Public_Atom_Feed_Usage)
+and [Atom Feed Usage](https://www.fpds.gov/wiki/index.php?oldid=2936&title=Atom_Feed_Usage)
+field listings. They identify PIID, contracting-agency and reference-IDV search
+fields, including quoted values. These are historical revisions with older base
+URLs; current page retrieval was unavailable. They do not prove today's endpoint
+scope, current limits, offset protocol, refresh timing or source completeness.
+
+The review performed exactly three GET requests, no retries and no pagination,
+for one publicly documented identifier pair (PIID `00001`, agency `8600`):
+
+| Probe | HTTP status | Returned entries | Exact selected PIID/agency rows |
+|---|---:|---:|---:|
+| Quoted PIID + agency query | 200 | 4 | 4 |
+| Unquoted equivalent query | 200 | 4 | 4 |
+| Same PIID, mismatched agency `0000` | 200 | 0 | 0 |
+
+All eight returned entry observations, including repeated content, remain in the
+three saved bodies. The probe used the fixed public endpoint and `length=10`,
+preserving every response and its sanitized request, status, collection time,
+representation and SHA-256 before inspection. Bodies and `FPDSReviewProbe` metadata
+are local under ignored `data/raw/c3-review/20261026T185906002368Z/`. These are
+explicit research observations, not ordinary C3 run-directory manifests. They
+are not committed. No additional government API requests followed these probes.
+
+This validates query discrimination and observed award/parent/action structure
+for that pair at that time. It does not prove universal query support or make a
+zero-result query conclusive. Default FPDS scope remains unknown. Offline
+ingestion marks empty FPDS bodies incomplete with an inconclusive limitation.
+
+Identity parsing now requires the direct Atom-content/FPDS-award/awardID path
+and a known FPDS namespace. Nested vendor IDs and foreign namespaces cannot supply
+award identity. Duplicate parent key fields fail instead of taking the last value.
+Parent modification numbers remain preserved action context; changing one does
+not invent another parent award. Explicit parent PIID and agency are both checked.
+
+Recovery now waits until deterministic replay supplies the exact expected pending
+request before adopting an orphan or consuming an uncertain reservation. Corrupt
+pending context fails before recovery writes. Checkpoint state advances in memory
+only after a durable replacement succeeds; changed/deleted checkpoints cannot be
+blindly recreated or overwritten. Saved metadata is rehashed against its journal
+at use, and an end-of-run pass rechecks all controls and committed observations
+before publishing a successful summary. Before/after-replacement interruptions
+are regression-tested; partial temporary files still block resume for investigation.
+
+A known permanent HTTP status is terminal even if reading its body times out.
+Partial prefixes remain preserved with their transport error. Incomplete 2xx
+responses have an explicit reason, and long Retry-After cannot hide a permanent
+status. Request reservation and record-slot caps continue to include retries and
+unknown outcomes. These are collection/reproducibility checks, not C4/C5/C6 work.
+
+The guarded collection semantics are fingerprinted as `collector_version: 2`.
+Wire schema versions remain 1; C1/C2 and production legacy behavior are unchanged.
+Version-1 C3 evidence remains readable offline. New collection deliberately
+rejects resume of version-1 C3 plans rather than silently applying changed scope,
+identity or pagination rules; retain those files and begin a new run. No migration
+or source rewriting is performed. Existing v1 validation reports may need a new
+report to reflect stricter, conservative interpretations of ambiguous evidence.

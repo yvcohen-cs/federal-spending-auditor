@@ -482,9 +482,10 @@ def test_official_transaction_shape_missing_id_does_not_create_identity():
 
 def test_public_static_fixtures_work_through_cli(tmp_path, capsys):
     assert main(["--selection","tests/fixtures/c3_selection.json","--fixture","tests/fixtures/c3_scenario.json",
-                 "--run-dir",str(tmp_path / "fixture"),"--retries","0"]) == 0
+                 "--run-dir",str(tmp_path / "fixture"),"--retries","0"]) == 1
     payload = json.loads(capsys.readouterr().out)
     assert payload["returned_rows"] == 3 and payload["profile"].startswith("fixture:")
+    assert payload["tasks"][1]["query_scope"] == "unknown"
 
 
 def test_newly_written_body_verified_before_journal_commit(tmp_path, monkeypatch):

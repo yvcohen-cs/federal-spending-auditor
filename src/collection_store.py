@@ -15,6 +15,7 @@ class CollectionStore:
         self.fingerprint = digest(plan)
         self.reader = None
         self.cursor = 0
+        self.persisted_state = None
 
     def __enter__(self):
         if not self.resume:
@@ -31,10 +32,11 @@ class CollectionStore:
             fcntl.flock(self.reader.fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
             if self.resume:
                 saved = self.json("c3_plan.json")
-                if saved != self.plan:
+                if digest(saved) != self.fingerprint:
                     raise EvidenceError("incompatible_collection_plan")
                 try:
                     self.state = self.json("c3_checkpoint.json")
+                    self.persisted_state = self.state
                 except EvidenceError as exc:
                     if exc.code != "missing_file" or set(self.reader.discover()) != {"c3_plan.json"}:
                         raise
@@ -48,7 +50,7 @@ class CollectionStore:
                 self.state = {"schema_version": 1, "schema_type": "CollectionCheckpoint",
                               "fingerprint": self.fingerprint, "events": [], "pending": None}
                 self._replace_json("c3_checkpoint.json", self.state)
-            self._recover()
+            self._recover(finalize=False)
             return self
         except BaseException:
             self.reader.__exit__(None, None, None)
@@ -71,7 +73,8 @@ class CollectionStore:
             os.close(probe)
 
     def _write_temp(self, name, raw):
-        parts(name)
+        if len(parts(name)) != 1:
+            raise EvidenceError("unsafe_collection_filename")
         self._root_check()
         fd = os.open(name, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
                      0o600, dir_fd=self.reader.fd)
@@ -92,13 +95,20 @@ class CollectionStore:
         self._create(name, (canonical(value) + "\n").encode())
 
     def _replace_json(self, name, value):
-        if name in self.reader.discover():
+        exists = name in self.reader.discover()
+        if name == "c3_checkpoint.json" and self.persisted_state is not None and not exists:
+            raise EvidenceError("collection_checkpoint_missing")
+        if exists:
             self.reader.read(name, recheck=True)  # Reject linked/nonregular targets.
+            if name == "c3_checkpoint.json" and digest(self.json(name)) != digest(self.persisted_state):
+                raise EvidenceError("collection_checkpoint_changed")
         temporary = name + ".next"
         self._write_temp(temporary, (canonical(value) + "\n").encode())
         self._root_check()
         os.replace(temporary, name, src_dir_fd=self.reader.fd, dst_dir_fd=self.reader.fd)
         os.fsync(self.reader.fd)
+        if name == "c3_checkpoint.json":
+            self.persisted_state = strict_json(canonical(value).encode())
 
     def _validate_state(self):
         state = self.state
@@ -116,11 +126,16 @@ class CollectionStore:
             if metadata.get("body_sha256") != event["body_sha256"]:
                 raise EvidenceError("collection_body_hash_mismatch")
             self._verify_body(index, metadata)
+            from .collection_ingestion import validate_request
+            validate_request(metadata["request"], self.plan)
         pending = state["pending"]
         if pending is not None and (not isinstance(pending, dict) or set(pending) != {"sequence", "request"}
                                     or type(pending["sequence"]) is not int or pending["sequence"] != len(state["events"])
                                     or len(state["events"]) >= self.plan["limits"]["max_requests"]):
             raise EvidenceError("invalid_pending_reservation")
+        if pending is not None:
+            from .collection_ingestion import validate_request
+            validate_request(pending["request"], self.plan)
 
     def _verify_body(self, index, metadata):
         from .collection_ingestion import validate_control
@@ -131,7 +146,7 @@ class CollectionStore:
             if hashlib.sha256(raw).hexdigest() != sha:
                 raise EvidenceError("collection_body_hash_mismatch")
 
-    def _recover(self):
+    def _recover(self, *, finalize):
         allowed = {"c3_plan.json", "c3_checkpoint.json", "c3_summary.json"}
         for index in range(len(self.state["events"])):
             allowed.add(f"c3_attempt_{index:06d}.json")
@@ -151,14 +166,17 @@ class CollectionStore:
             name = f"c3_attempt_{pending['sequence']:06d}.json"
             if name in actual:
                 metadata = self.json(name)
-                if (metadata.get("request") != pending["request"] or metadata.get("sequence") != pending["sequence"]
+                if (digest(metadata.get("request")) != digest(pending["request"]) or metadata.get("sequence") != pending["sequence"]
                         or metadata.get("fingerprint") != self.fingerprint):
                     raise EvidenceError("orphan_metadata_conflict")
+                from .collection_ingestion import validate_request
+                validate_request(metadata["request"], self.plan)
                 self._verify_body(pending["sequence"], metadata)
-                self._commit(metadata)
+                if finalize:
+                    self._commit(metadata)
             elif f"c3_attempt_{pending['sequence']:06d}.body" in actual:
                 raise EvidenceError("incomplete_preserved_observation")
-            else:
+            elif finalize:
                 # Sending may have happened. Consume its reservation, never
                 # silently replay an uncertain request after a process crash.
                 self.finish({"error_code": "interrupted_request_outcome_unknown", "status": None,
@@ -166,13 +184,18 @@ class CollectionStore:
                              "retry_after": None, "source_update_raw": None}, None)
 
     def reserve(self, request):
+        from .collection_ingestion import validate_request
+        validate_request(request, self.plan)
         if self.state["pending"] is not None:
             raise EvidenceError("unresolved_pending_request")
-        pending = {"sequence": len(self.state["events"]), "request": request}
-        self.state = {**self.state, "pending": pending}
-        self._replace_json("c3_checkpoint.json", self.state)
+        pending = {"sequence": len(self.state["events"]), "request": strict_json(canonical(request).encode())}
+        state = {**self.state, "pending": pending}
+        self._replace_json("c3_checkpoint.json", state)
+        self.state = state
 
     def finish(self, fields, body):
+        if not isinstance(fields, dict) or set(fields) != {"error_code", "status", "retrieved_at_utc", "body_complete", "retry_after", "source_update_raw"}:
+            raise EvidenceError("invalid_capture_fields")
         pending = self.state["pending"]
         if pending is None:
             raise EvidenceError("missing_request_reservation")
@@ -197,21 +220,35 @@ class CollectionStore:
             raise EvidenceError("written_metadata_conflict")
         event = {"sequence": metadata["sequence"], "metadata_sha256": digest(metadata),
                  "body_sha256": metadata["body_sha256"]}
-        self.state = {**self.state, "events": self.state["events"] + [event], "pending": None}
-        self._replace_json("c3_checkpoint.json", self.state)
+        state = {**self.state, "events": self.state["events"] + [event], "pending": None}
+        self._replace_json("c3_checkpoint.json", state)
+        self.state = state
 
     def saved(self, request):
+        if self.cursor == len(self.state["events"]) and self.state["pending"] is not None:
+            if digest(self.state["pending"]["request"]) != digest(request):
+                raise EvidenceError("pending_replay_request_conflict")
+            self._recover(finalize=True)
         if self.cursor >= len(self.state["events"]):
             return None
         index = self.cursor
         metadata = self.json(f"c3_attempt_{index:06d}.json")
-        if metadata["request"] != request:
+        event = self.state["events"][index]
+        if digest(metadata) != event["metadata_sha256"] or metadata["body_sha256"] != event["body_sha256"]:
+            raise EvidenceError("collection_metadata_hash_mismatch")
+        if digest(metadata["request"]) != digest(request):
             raise EvidenceError("collection_replay_request_conflict")
         self.cursor += 1
         raw = self.reader.read(f"c3_attempt_{index:06d}.body", recheck=True).data if metadata["body_sha256"] is not None else None
         if raw is not None and hashlib.sha256(raw).hexdigest() != metadata["body_sha256"]:
             raise EvidenceError("collection_body_hash_mismatch")
         return metadata, raw
+
+    def assert_integrity(self):
+        if digest(self.json("c3_plan.json")) != self.fingerprint or digest(self.json("c3_checkpoint.json")) != digest(self.state):
+            raise EvidenceError("collection_controls_changed")
+        self._validate_state()
+        self._recover(finalize=False)
 
     def summary(self, value):
         self._replace_json("c3_summary.json", value)

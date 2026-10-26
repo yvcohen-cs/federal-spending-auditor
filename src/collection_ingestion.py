@@ -56,10 +56,10 @@ def validate_control(name, doc):
             raise EvidenceError("invalid_c3_plan")
         selected = [SelectedAward.from_dict(a) for a in doc["awards"]]
         limits = CollectionLimits.from_dict(doc["limits"])
-        if make_plan(tuple(selected), limits, tuple(doc["sources"]), doc["profile"]) != doc:
+        if digest(make_plan(tuple(selected), limits, tuple(doc["sources"]), doc["profile"], collector_version=doc.get("collector_version"))) != digest(doc):
             raise EvidenceError("invalid_c3_plan")
     if name == "c3_checkpoint.json":
-        if not isinstance(doc.get("events"), list) or len(doc["events"]) > 1000:
+        if set(doc) != {"schema_type", "schema_version", "fingerprint", "events", "pending"} or not isinstance(doc.get("events"), list) or len(doc["events"]) > 1000:
             raise EvidenceError("invalid_c3_checkpoint")
         from .evidence import _hash
         _hash(doc.get("fingerprint", ""))
@@ -74,7 +74,9 @@ def validate_control(name, doc):
     if name == "c3_summary.json":
         if (doc.get("historical_completeness") != "unknown" or doc.get("source_freshness") != "unknown"
                 or not isinstance(doc.get("tasks"), list)
-                or any(t.get("history") != "unknown" or t.get("freshness") != "unknown" or t.get("source_wide") != "unknown" for t in doc["tasks"] if isinstance(t, dict))):
+                or any(not isinstance(t, dict) or t.get("history") != "unknown" or t.get("freshness") != "unknown" or t.get("source_wide") != "unknown"
+                       or t.get("pagination") not in ("unknown", "partial", "complete")
+                       or t.get("query_scope") not in ("unknown", "partial", "complete") for t in doc["tasks"])):
             raise EvidenceError("unsupported_c3_completeness_claim")
 
 
@@ -91,7 +93,20 @@ def check_attempt(session, path, meta):
     sequence = int(name[11:17])
     if sequence != meta["sequence"] or sequence >= len(cp["events"]) or cp["events"][sequence]["metadata_sha256"] != digest(meta):
         raise EvidenceError("c3_metadata_hash_mismatch")
-    request = meta["request"]
+    if cp["events"][sequence]["body_sha256"] != meta["body_sha256"]:
+        raise EvidenceError("c3_body_hash_declaration_conflict")
+    validate_request(meta["request"], plan)
+    return plan, cp
+
+
+def validate_request(request, plan):
+    """Pure validation, including in-flight reservations before any recovery write."""
+    if (not isinstance(request, dict) or set(request) != {"source", "endpoint", "method", "parameters", "task_index", "page_index", "attempt_index"}
+            or request.get("source") not in ("usaspending", "fpds")
+            or request["endpoint"] != (USA if request["source"] == "usaspending" else FPDS)
+            or request["method"] != ("POST" if request["source"] == "usaspending" else "GET")
+            or not isinstance(request["parameters"], dict)):
+        raise EvidenceError("invalid_c3_request")
     task, count = request["task_index"], len(plan["sources"])
     if (type(task) is not int or not 0 <= task < len(plan["awards"]) * count
             or plan["sources"][task % count] != request["source"]
@@ -100,9 +115,11 @@ def check_attempt(session, path, meta):
         raise EvidenceError("invalid_c3_task_context")
     selected = plan["awards"][task // count]
     params = request["parameters"]
+    if request["source"] == "fpds" and (selected["piid"] is None or selected["agency_id"] is None):
+        raise EvidenceError("c3_query_scope_conflict")
     if request["source"] == "usaspending":
         if (set(params) != {"award_id", "page", "limit", "sort", "order"}
-                or params["award_id"] != selected["generated_id"] or type(params["page"]) is not int
+                or selected["generated_id"] is None or params["award_id"] != selected["generated_id"] or type(params["page"]) is not int
                 or params["page"] != request["page_index"] or type(params["limit"]) is not int
                 or not 1 <= params["limit"] <= plan["limits"]["page_size"] or params["sort"] != "action_date" or params["order"] != "asc"):
             raise EvidenceError("c3_query_scope_conflict")
@@ -110,7 +127,16 @@ def check_attempt(session, path, meta):
           or type(params.get("length")) is not int or params["length"] != 10
           or set(params) - {"q", "FEEDNAME", "length", "start", "index", "s"}):
         raise EvidenceError("c3_query_scope_conflict")
-    return plan, cp
+    elif request["source"] == "fpds":
+        if selected["piid"] is None or selected["agency_id"] is None or (selected["parent_piid"] is None) != (selected["parent_agency_id"] is None):
+            raise EvidenceError("c3_query_scope_conflict")
+        offsets = set(params) & {"start", "index"}
+        if len(offsets) > 1 or any(type(params[k]) is not int or params[k] < 0 for k in offsets) or params.get("s", "FPDSNG.COM") != "FPDSNG.COM":
+            raise EvidenceError("invalid_c3_offset")
+        if plan["collector_version"] >= 2:
+            expected = (request["page_index"] - 1) * 10
+            if (expected == 0 and offsets) or (expected > 0 and (not offsets or params[next(iter(offsets))] != expected)):
+                raise EvidenceError("noncontiguous_c3_offset")
 
 
 def adapt_body(session, path):
@@ -137,6 +163,8 @@ def adapt_body(session, path):
     req = meta["request"]
     _safe_request(req["parameters"])
     limitations = ["application_response_bytes_not_http_wire_capture", "historical_completeness_unknown", "source_freshness_unknown"]
+    if req["source"] == "fpds":
+        limitations.append("fpds_query_scope_not_universally_verified")
     if plan["profile"] != "live":
         limitations.append("synthetic_fixture_only")
     if meta["retrieved_at_utc"] is None:
@@ -149,6 +177,7 @@ def adapt_body(session, path):
     records = []
     success = not meta["error_code"] and meta["body_complete"] and meta["status"] is not None and 200 <= meta["status"] < 300
     payload_hash = raw.byte_sha256
+    inconclusive = False
     if success:
         task = req["task_index"]
         source_count = len(plan["sources"])
@@ -156,6 +185,10 @@ def adapt_body(session, path):
             raise EvidenceError("invalid_c3_task_context")
         selected = plan["awards"][task // source_count]
         parsed = parse_page(req["source"], raw.data, req, selected)
+        inconclusive = req["source"] == "fpds" and not parsed["rows"]
+        if inconclusive:
+            from dataclasses import replace
+            artifact = replace(artifact, limitations=artifact.limitations + ("inconclusive_empty_feed",))
         if req["source"] == "usaspending":
             payload_hash = digest(strict_json(raw.data))
         for index, row in enumerate(parsed["rows"]):
@@ -174,7 +207,7 @@ def adapt_body(session, path):
                                        metadata_paths=tuple(sorted((meta_path, plan_path, cp_path))),
                                        context_json=canonical({"profile": plan["profile"], "source_update_raw": meta["source_update_raw"], "body_complete": meta["body_complete"]}),
                                        records=tuple(records))
-    return ArtifactValidation(relative_path=path, status=ValidationStatus.VERIFIED if success else ValidationStatus.INCOMPLETE,
+    return ArtifactValidation(relative_path=path, status=ValidationStatus.VERIFIED if success and not inconclusive else ValidationStatus.INCOMPLETE,
                               format="c3_application_response_bytes", byte_sha256=raw.byte_sha256,
                               representation=Representation.RESPONSE_BYTES, representation_sha256=raw.byte_sha256,
                               observation=observation, integrity="declared_match")
