@@ -1,0 +1,32 @@
+{
+  "responses": [
+    {
+      "json": {
+        "page_metadata": {
+          "hasNext": false,
+          "page": 1
+        },
+        "results": [
+          {
+            "action_date": "2025-01-01",
+            "federal_action_obligation": -20,
+            "id": "SYNTHETIC-ACTION-0001",
+            "modification_number": "P00000"
+          },
+          {
+            "action_date": "2025-01-01",
+            "federal_action_obligation": 0,
+            "id": "SYNTHETIC-ACTION-0002",
+            "modification_number": "P00001"
+          }
+        ]
+      },
+      "source": "usaspending"
+    },
+    {
+      "source": "fpds",
+      "text": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<feed xmlns=\"http://www.w3.org/2005/Atom\" xmlns:fpds=\"https://www.fpds.gov/FPDS\">\n  \n  <entry>\n    <title>Modified DELIVERY ORDER</title>\n    <link rel=\"alternate\" href=\"https://example.invalid/synthetic-source\" />\n    <content><fpds:award>\n      <fpds:awardID><fpds:awardContractID>\n        <fpds:agencyID name=\"HOUSING AND URBAN DEVELOPMENT\">8600</fpds:agencyID>\n        <fpds:PIID>SYNTHETIC-00001</fpds:PIID><fpds:modNumber>P00001</fpds:modNumber>\n        <fpds:transactionNumber>2</fpds:transactionNumber>\n      </fpds:awardContractID></fpds:awardID>\n      <fpds:relevantContractDates><fpds:effectiveDate>2025-01-01</fpds:effectiveDate></fpds:relevantContractDates>\n      <fpds:dollarValues><fpds:obligatedAmount>25.00</fpds:obligatedAmount></fpds:dollarValues>\n      <fpds:totalDollarValues><fpds:totalObligatedAmount>125.00</fpds:totalObligatedAmount></fpds:totalDollarValues>\n      <fpds:vendor><fpds:vendorName>Example Vendor</fpds:vendorName></fpds:vendor>\n    </fpds:award></content>\n  </entry>\n</feed>"
+    }
+  ],
+  "schema_version": 1
+}

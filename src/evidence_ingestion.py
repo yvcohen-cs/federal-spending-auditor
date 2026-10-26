@@ -305,9 +305,15 @@ def _artifact(path, source, sha, representation, endpoint, method, request, time
 
 def _adapt(session, path):
     snap = session.read(path)
+    name = PurePosixPath(path).name
+    if re.fullmatch(r"c3_attempt_\d{6}\.body", name):
+        from .collection_ingestion import adapt_body
+        return adapt_body(session, path)
     if not snap.data:
         raise EvidenceError("empty_file")
-    name = PurePosixPath(path).name
+    if re.fullmatch(r"c3_attempt_\d{6}\.json", name):
+        from .collection_ingestion import check_attempt
+        check_attempt(session, path, session.json(path))
     limitations = set()
     endpoint = method = request = timestamp = None
     context = {}
@@ -450,6 +456,11 @@ def _adapt(session, path):
 
 
 def _validate_control(name, doc):
+    if name in ("c3_plan.json", "c3_checkpoint.json", "c3_summary.json") or re.fullmatch(r"c3_attempt_\d{6}\.json", name):
+        from .collection_ingestion import validate_control
+        _safe_request(doc)
+        validate_control(name, doc)
+        return
     if name not in ("query_metadata.json", "checkpoint.json", "sampling_coverage.json", "run_metadata.json") and not re.fullmatch(r"fpds_lookup_\d{3,}_query\.json", name):
         raise EvidenceError("unsupported_json_format")
     _metadata_object(doc)
@@ -558,6 +569,16 @@ def inspect_directory(root_path, *, declared: IngestionManifest | VerificationRu
             # Checkpoint filenames are constructed from validated integer steps,
             # never taken from arbitrary path values in metadata.
             for path in paths:
+                if PurePosixPath(path).name == "c3_checkpoint.json":
+                    try:
+                        checkpoint = session.json(path)
+                        _validate_control("c3_checkpoint.json", checkpoint)
+                        for event in checkpoint["events"]:
+                            required.add(_join(path, f"c3_attempt_{event['sequence']:06d}.json"))
+                            if event["body_sha256"] is not None:
+                                required.add(_join(path, f"c3_attempt_{event['sequence']:06d}.body"))
+                    except (EvidenceError, ValueError, TypeError, KeyError):
+                        pass
                 if PurePosixPath(path).name == "checkpoint.json":
                     try:
                         checkpoint = session.json(path)
