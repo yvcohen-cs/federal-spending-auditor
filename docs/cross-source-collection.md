@@ -16,7 +16,9 @@ award IDs; deprecated numeric surrogate IDs are not used here. It documents
 page/limit pagination (maximum 5,000), action-date sorting and ascending order,
 string action IDs, modification numbers, action dates, and action obligations.
 C3 deliberately caps USAspending page size at 100. Extra response fields remain
-in preserved evidence; unsupported required structures fail explicitly.
+in preserved evidence; unsupported required structures fail explicitly. Missing
+core action fields or nonnumeric obligation types leave returned context unresolved;
+they are preserved, never coerced into a financial value or a complete query claim.
 
 The historical [FPDS getting-started URL](https://www.fpds.gov/ezsearch/FPDSNG_Atom_GettingStarted.html)
 returned HTTP 404. Its [wiki URL](https://www.fpds.gov/wiki/index.php/Atom_Feed)

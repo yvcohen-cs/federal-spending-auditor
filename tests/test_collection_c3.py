@@ -554,3 +554,21 @@ def test_malicious_declared_query_cannot_be_used_for_resume(tmp_path):
     with pytest.raises(EvidenceError, match="invalid_c3_request"):
         run(path,data,sources=("usaspending",),resume=True)
     assert inspect_directory(path).exit_code == 2
+
+
+def test_incomplete_action_fields_are_retained_with_unresolved_context(tmp_path):
+    payload = tx()
+    del payload["results"][0]["action_date"]
+    result = run(tmp_path / "run", scenario(usa(payload)), sources=("usaspending",))
+    task = result["tasks"][0]
+    assert task["pagination"] == "complete" and task["query_scope"] == "partial"
+    assert task["action_context_counts"] == {"incomplete_transaction_record":1}
+    assert strict_json((tmp_path / "run" / "c3_attempt_000000.body").read_bytes()) == payload
+
+
+def test_unsupported_obligation_type_not_silently_coerced(tmp_path):
+    payload = tx()
+    payload["results"][0]["federal_action_obligation"] = "-20.00"
+    result = run(tmp_path / "run", scenario(usa(payload)), sources=("usaspending",))
+    assert result["tasks"][0]["action_context_counts"] == {"unsupported_action_field_type":1}
+    assert result["tasks"][0]["query_scope"] == "partial"

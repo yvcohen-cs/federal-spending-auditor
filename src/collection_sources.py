@@ -81,6 +81,12 @@ def parse_page(source, raw, request, award):
             context = "query_bound_candidate"
             if not isinstance(row.get("id"), str) or not row["id"].strip():
                 context = "missing_action_identifier"
+            elif (not isinstance(row.get("action_date"), str) or not row["action_date"]
+                  or any(key not in row for key in ("modification_number", "federal_action_obligation"))):
+                context = "incomplete_transaction_record"
+            elif (row["modification_number"] is not None and not isinstance(row["modification_number"], str)
+                  or row["federal_action_obligation"] is not None and type(row["federal_action_obligation"]) not in (int, float)):
+                context = "unsupported_action_field_type"
             if row.get("award_id") is not None and row["award_id"] != award["generated_id"]:
                 context = "nonmatching_award_identifier"
             for name in ("id", "modification_number"):
