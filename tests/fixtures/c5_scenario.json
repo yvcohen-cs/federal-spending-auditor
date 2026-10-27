@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "responses": [
+    {
+      "source": "usaspending",
+      "text": "{\"page_metadata\":{\"page\":1,\"hasNext\":false},\"results\":[{\"id\":\"CONT_TX_0001_0002_SYNTH-00001_P00001_SYNTH-PARENT_0\",\"modification_number\":\"P00001\",\"action_date\":\"2025-01-01\",\"federal_action_obligation\":100.0100}]}"
+    },
+    {
+      "source": "fpds",
+      "text": "<feed xmlns=\"http://www.w3.org/2005/Atom\" xmlns:f=\"https://www.fpds.gov/FPDS\"><entry><content><f:award><f:awardID><f:awardContractID><f:agencyID>0001</f:agencyID><f:PIID>SYNTH-00001</f:PIID><f:modNumber>P00001</f:modNumber><f:transactionNumber>0</f:transactionNumber></f:awardContractID><f:referencedIDVID><f:agencyID>0002</f:agencyID><f:PIID>SYNTH-PARENT</f:PIID><f:modNumber>0</f:modNumber></f:referencedIDVID></f:awardID><f:dollarValues><f:obligatedAmount>100.01</f:obligatedAmount></f:dollarValues><f:totalDollarValues><f:obligatedAmount>10000.00</f:obligatedAmount><f:totalBaseAndAllOptionsValue>25000.00</f:totalBaseAndAllOptionsValue></f:totalDollarValues><f:relevantContractDates><f:signedDate>2025-01-01</f:signedDate><f:effectiveDate>2024-09-30</f:effectiveDate></f:relevantContractDates></f:award></content></entry></feed>"
+    }
+  ]
+}
