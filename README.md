@@ -22,6 +22,10 @@ for preserved C3 collections. Award association and action equivalence remain
 separate, evidence-linked claims; they do not verify finances or imply misconduct.
 The existing pipeline defaults are unchanged.
 
+Phase 3C5 adds [offline financial semantics and reconciliation](docs/financial-semantics.md)
+for compatible observed action obligations. It preserves exact numeric tokens,
+uses Decimal arithmetic, and retains uncertainty about revisions and refresh.
+
 ## Setup
 
 For Linux cloud setup, Python 3.11/3.12 CI, an explicit offline smoke test, and
