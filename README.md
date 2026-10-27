@@ -26,6 +26,10 @@ Phase 3C5 adds [offline financial semantics and reconciliation](docs/financial-s
 for compatible observed action obligations. It preserves exact numeric tokens,
 uses Decimal arithmetic, and retains uncertainty about revisions and refresh.
 
+Phase 3C6 adds [offline human-review packets](docs/review-packets.md): source-linked
+JSON and standalone HTML, with a separate append-only reviewer-note workflow.
+Review states do not change automated identity or financial findings.
+
 ## Setup
 
 For Linux cloud setup, Python 3.11/3.12 CI, an explicit offline smoke test, and
