@@ -17,6 +17,11 @@ equal quotas and unused-slot reallocation. Selection is not probability-based or
 statistically representative. See [sampling rules, coverage, resume and CLI compatibility](docs/sampling.md).
 Use `--sampling-mode legacy` for the original full-year sorted prefix.
 
+Phase 3C4 adds a separate [offline identity matching command](docs/identity-matching.md)
+for preserved C3 collections. Award association and action equivalence remain
+separate, evidence-linked claims; they do not verify finances or imply misconduct.
+The existing pipeline defaults are unchanged.
+
 ## Setup
 
 For Linux cloud setup, Python 3.11/3.12 CI, an explicit offline smoke test, and

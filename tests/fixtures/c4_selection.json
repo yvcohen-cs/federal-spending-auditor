@@ -1,0 +1,11 @@
+{
+  "awards": [
+    {
+      "generated_id": "CONT_AWD_SYNTH-00001_0001_SYNTH-PARENT_0002",
+      "piid": "SYNTH-00001",
+      "agency_id": "0001",
+      "parent_piid": "SYNTH-PARENT",
+      "parent_agency_id": "0002"
+    }
+  ]
+}

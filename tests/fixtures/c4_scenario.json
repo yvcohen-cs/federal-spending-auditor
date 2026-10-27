@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "responses": [
+    {
+      "source": "usaspending",
+      "json": {
+        "page_metadata": {"page": 1, "hasNext": false},
+        "results": [
+          {
+            "id": "CONT_TX_0001_0002_SYNTH-00001_P00001_SYNTH-PARENT_0",
+            "modification_number": "P00001",
+            "action_date": "2025-01-01",
+            "action_type": null,
+            "federal_action_obligation": -20
+          }
+        ]
+      }
+    },
+    {
+      "source": "fpds",
+      "text": "<feed xmlns=\"http://www.w3.org/2005/Atom\" xmlns:f=\"https://www.fpds.gov/FPDS\"><entry><content><f:award><f:awardID><f:awardContractID><f:agencyID>0001</f:agencyID><f:PIID>SYNTH-00001</f:PIID><f:modNumber>P00001</f:modNumber><f:transactionNumber>0</f:transactionNumber></f:awardContractID><f:referencedIDVID><f:agencyID>0002</f:agencyID><f:PIID>SYNTH-PARENT</f:PIID><f:modNumber>0</f:modNumber></f:referencedIDVID></f:awardID></f:award></content></entry></feed>"
+    }
+  ]
+}
