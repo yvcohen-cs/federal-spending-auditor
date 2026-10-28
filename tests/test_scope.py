@@ -204,3 +204,12 @@ def test_parent_state_is_independent_of_primary_and_action_conflicts():
     assert conclusion(request(),observed(piid='OTHER'))[4]=='present_compatible'
     assert conclusion(request(),observed(),conflicting=True)[4]=='present_compatible'
     assert conclusion(request(),observed(parent_piid='OTHER'))[4]=='present_conflicting'
+
+
+def test_unavailable_response_body_has_unknown_record_count(tmp_path):
+    path,req=collect(tmp_path,lambda f:f['responses'][-1].update(status=None,body_complete=False,error_code='request_error'))
+    scope=assess_collection(path,req)
+    assert len(scope.assessments)==1  # Only the observed USA record is enumerable.
+    assert any('response_body_unavailable_record_count_unknown' in issue for issue in scope.artifact_issues)
+    assert scope.metrics['returned_occurrence_count_complete'] is False
+    assert scope.metrics['unparsed_or_unusable_artifacts']==1

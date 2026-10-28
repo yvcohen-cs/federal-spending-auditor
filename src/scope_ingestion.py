@@ -36,6 +36,9 @@ def assess_collection(path,requested,*,max_records=1000):
         for name,native in (('piid','piid'),('agency','agency_id'),('parent_piid','parent_piid'),('parent_agency','parent_agency_id')):
             if selected_context[native] is not None and getattr(requested,name)!=selected_context[native]:
                 raise EvidenceError('scope_request_conflicts_with_collection_selection')
+        for name in sorted(inventory):
+            if re.fullmatch(r'c3_attempt_[0-9]{6}\.json',name) and name[:-5]+'.body' not in inventory:
+                issues.append(name+':response_body_unavailable_record_count_unknown')
         for name,snap in sorted(inventory.items()):
             if not name.endswith('.body'): continue
             meta_name=name[:-5]+'.json'
