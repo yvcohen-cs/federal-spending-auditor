@@ -15,6 +15,9 @@ USA = "https://api.usaspending.gov/api/v2/transactions/"
 FPDS = "https://www.fpds.gov/ezsearch/FEEDS/ATOM"
 ATOM = "{http://www.w3.org/2005/Atom}"
 FPDS_NAMESPACES = ("https://www.fpds.gov/FPDS", "http://www.fpds.gov/FPDS")
+FPDS_CONTINUATION_RULE = "fpds-continuation-v1"
+FPDS_FEED_VERSION = "1.5.3"
+FPDS_BACKENDS = ("FPDSNG.COM", "FPDS")
 
 
 def utcnow():
@@ -34,26 +37,39 @@ def request_for(source, award, page, size, next_parameters=None):
                                "sort": "action_date", "order": "asc"}}
     parameters = {"FEEDNAME": "PUBLIC", "q": fpds_query(award), "length": 10}
     if next_parameters:
+        if set(next_parameters)-{"start","index","s","VERSION"}:
+            raise EvidenceError("fpds_next_scope_conflict")
         parameters.update(next_parameters)
     return {"source": source, "endpoint": FPDS, "method": "GET", "parameters": parameters}
 
 
 def safe_next(href, request):
-    if not isinstance(href, str) or not href or len(href) > 8192 or any(ord(c) <= 32 or ord(c) == 127 for c in href) or "\\" in href:
+    if (request.get("endpoint")!=FPDS or request.get("method")!="GET"
+            or request.get("parameters",{}).get("FEEDNAME")!="PUBLIC"
+            or request["parameters"].get("length")!=10 or not isinstance(request["parameters"].get("q"),str)):
+        raise EvidenceError("invalid_fpds_request_scope")
+    if not isinstance(href, str) or not href or len(href) > 8192 or any(ord(c) <= 32 or ord(c) == 127 for c in href) or "\\" in href or "#" in href:
         raise EvidenceError("unsafe_fpds_next_url")
     try:
+        literal = urlsplit(href)
+        if any(p in (".", "..") for p in literal.path.split("/")):
+            raise EvidenceError("unsafe_fpds_next_url")
         url = urlsplit(urljoin(FPDS, href))
     except ValueError:
         raise EvidenceError("unsafe_fpds_next_url") from None
     base = urlsplit(FPDS)
     if (url.scheme, url.netloc, url.path) != (base.scheme, base.netloc, base.path) or url.fragment:
         raise EvidenceError("unsafe_fpds_next_url")
+    if re.search(r"%(?![0-9a-fA-F]{2})", url.query) or any("%" in part.split("=",1)[0] for part in url.query.split("&")):
+        raise EvidenceError("invalid_fpds_next_encoding")
     try:
-        params = parse_qs(url.query, keep_blank_values=True, strict_parsing=True, max_num_fields=8)
-    except ValueError:
+        params = parse_qs(url.query, keep_blank_values=True, strict_parsing=True, max_num_fields=8, errors="strict")
+    except (ValueError, UnicodeError):
         raise EvidenceError("invalid_fpds_next_parameters") from None
-    if any(len(v) != 1 for v in params.values()) or set(params) - {"q", "FEEDNAME", "length", "start", "index", "s"}:
+    if any(len(v) != 1 for v in params.values()) or set(params) - {"q", "FEEDNAME", "length", "start", "index", "s", "VERSION"}:
         raise EvidenceError("unsupported_fpds_next_parameters")
+    if any(any(ord(c)<32 or ord(c)==127 for c in k+v[0]) for k,v in params.items()):
+        raise EvidenceError("invalid_fpds_next_encoding")
     for name in ("q", "FEEDNAME", "length"):
         if name in params and params[name][0] != str(request["parameters"][name]):
             raise EvidenceError("fpds_next_scope_conflict")
@@ -64,10 +80,20 @@ def safe_next(href, request):
             if not re.fullmatch(r"[0-9]{1,8}", value):
                 raise EvidenceError("invalid_fpds_offset")
             result[key] = int(value)
-    if "s" in params:
-        if params["s"] != ["FPDSNG.COM"]:
-            raise EvidenceError("unsupported_fpds_next_parameters")
-        result["s"] = "FPDSNG.COM"
+    # Exact, evidence-backed tokens, never arbitrary strings or an opaque cursor.
+    # Omitted tokens inherit the established request, so omission cannot silently
+    # switch a negotiated feed/backend. Explicit changes are rejected.
+    for key, allowed in (("VERSION",(FPDS_FEED_VERSION,)),("s",FPDS_BACKENDS)):
+        current = request["parameters"].get(key)
+        value = params[key][0] if key in params else current
+        if value is not None:
+            if value not in allowed:
+                raise EvidenceError("unsupported_fpds_next_parameters")
+            if current is not None and value != current:
+                raise EvidenceError("fpds_continuation_protocol_changed")
+            result[key] = value
+    if result.get("s")=="FPDS" and result.get("VERSION")!=FPDS_FEED_VERSION:
+        raise EvidenceError("unsupported_fpds_next_parameters")
     if len(set(result) & {"start", "index"}) != 1:
         raise EvidenceError("missing_or_ambiguous_fpds_offset")
     key = "start" if "start" in result else "index"
@@ -115,6 +141,10 @@ def parse_page(source, raw, request, award):
     _, root = safe_xml(raw)
     if root.tag != ATOM + "feed":
         raise EvidenceError("unsupported_fpds_schema")
+    for link in root:
+        if link.tag.rsplit("}",1)[-1]=="link" and (link.get("rel") or "").strip().lower()=="next":
+            if link.tag!=ATOM+"link" or link.get("rel")!="next":
+                raise EvidenceError("unsupported_fpds_next_relation")
     links = [link.get("href") for link in root.findall(ATOM + "link") if link.get("rel") == "next"]
     if len(links) > 1 or links and not links[0]:
         raise EvidenceError("ambiguous_fpds_next_url")
@@ -176,7 +206,8 @@ def parse_page(source, raw, request, award):
     if len(rows) > 10 or not rows and following is not None:
         raise EvidenceError("invalid_fpds_pagination")
     return {"rows": rows, "contexts": contexts, "has_next": following is not None,
-            "next_parameters": following, "source_updates": updates, "fingerprints": fingerprints}
+            "next_parameters": following, "source_updates": updates, "fingerprints": fingerprints,
+            "next_href":links[0] if links else None,"continuation_rule":FPDS_CONTINUATION_RULE}
 
 
 class HTTPTransport:

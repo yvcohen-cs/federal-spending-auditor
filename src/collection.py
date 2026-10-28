@@ -61,9 +61,11 @@ class CollectionLimits(Schema):
             raise ValueError("timeout must be positive")
 
 
-def make_plan(awards, limits, sources, profile, *, collector_version=2):
-    if type(collector_version) is not int or collector_version not in (1, 2):
+def make_plan(awards, limits, sources, profile, *, collector_version=3, stop_on_context_mismatch=False):
+    if type(collector_version) is not int or collector_version not in (1, 2, 3):
         raise EvidenceError("unsupported_collector_version")
+    if type(stop_on_context_mismatch) is not bool or stop_on_context_mismatch and collector_version<3:
+        raise EvidenceError("unsupported_collection_context_policy")
     if not awards or len(awards) > limits.max_awards or len(set(awards)) != len(awards):
         raise EvidenceError("invalid_or_duplicate_award_selection")
     if not sources or len(set(sources)) != len(sources) or any(s not in ("usaspending", "fpds") for s in sources):
@@ -72,6 +74,7 @@ def make_plan(awards, limits, sources, profile, *, collector_version=2):
     if len(set(generated)) != len(generated):
         raise EvidenceError("conflicting_generated_award_selection")
     return {"schema_type": "CollectionPlan", "schema_version": 1, "collector_version": collector_version,
+            **({"stop_on_context_mismatch":True} if stop_on_context_mismatch else {}),
             "evidence_schema_version": 1, "ingestion_schema_version": 1,
             "awards": [a.to_dict() for a in awards], "limits": limits.to_dict(),
             "sources": list(sources), "profile": profile,
@@ -104,9 +107,9 @@ def retry_delay(meta, attempt, limits, now=None):
 
 
 def collect_selected(path, awards, *, limits=None, sources=("usaspending", "fpds"),
-                     resume=False, transport=None, profile="live", sleep=time.sleep, progress=None):
+                     resume=False, transport=None, profile="live", sleep=time.sleep, progress=None,stop_on_context_mismatch=False):
     limits = limits or CollectionLimits()
-    plan = make_plan(tuple(awards), limits, tuple(sources), profile)
+    plan = make_plan(tuple(awards), limits, tuple(sources), profile,stop_on_context_mismatch=stop_on_context_mismatch)
     if transport is None:
         if profile != "live":
             raise EvidenceError("explicit_fixture_transport_required")
@@ -126,6 +129,7 @@ def collect_selected(path, awards, *, limits=None, sources=("usaspending", "fpds
                             "status": "not_requested", "error_code": None, "source_updates_raw": [],
                             "limitations": ["explicit_selection_not_authoritative_cross_source_identity",
                                             "pagination_does_not_establish_history", "publication_delays_unknown"]}
+                    task.update(continuations=[],terminal_page_seen=False)
                     tasks.append(task)
                     if source == "fpds":
                         task["limitations"].append("fpds_query_scope_not_universally_verified")
@@ -211,6 +215,10 @@ def collect_selected(path, awards, *, limits=None, sources=("usaspending", "fpds
                                         pagination="partial", query_scope="partial")
                             break
                         fingerprints = parsed["fingerprints"]
+                        if source=="fpds" and parsed["has_next"]:
+                            task["continuations"].append({"source_page":page,"response_sequence":store.cursor-1,
+                                "decoded_atom_href":parsed["next_href"],"next_parameters":parsed["next_parameters"],
+                                "scope_sha256":digest(base["parameters"]["q"]),"rule_version":parsed["continuation_rule"]})
                         page_hash = digest(fingerprints)
                         # Retain/count the returned response, but do not add a
                         # repeated page to the unique retrieval-row count.
@@ -225,6 +233,9 @@ def collect_selected(path, awards, *, limits=None, sources=("usaspending", "fpds
                                 parent_contexts.add(digest([{k: p.get(k) for k in ("PIID", "agencyID")} for p in row["parent_context"]]))
                         task["unique_retrieval_rows"] = len(seen_rows)
                         task["source_updates_raw"] = sorted(set(task["source_updates_raw"] + parsed["source_updates"]))
+                        if stop_on_context_mismatch and any(c!="query_bound_candidate" for c in parsed["contexts"]):
+                            task.update(status="context_unresolved",error_code="selected_context_mismatch",pagination="partial",query_scope="partial")
+                            break
                         if fingerprints and page_hash in seen_pages:
                             task.update(status="source_error", error_code="repeated_page_content", pagination="partial", query_scope="partial")
                             break
@@ -232,6 +243,7 @@ def collect_selected(path, awards, *, limits=None, sources=("usaspending", "fpds
                         if progress:
                             progress({"award_index": award_index, "source": source, "page": page, "returned_rows": task["returned_rows"]})
                         if not parsed["has_next"]:
+                            task["terminal_page_seen"] = True
                             task.update(status="pagination_exhausted", pagination="complete", query_scope="complete")
                             if source == "fpds":
                                 task.update(status="scope_unverified", query_scope="unknown")

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import re
 
-from .collection_sources import FPDS, USA, fpds_query, parse_page
+from .collection_sources import FPDS, USA, FPDS_BACKENDS, FPDS_FEED_VERSION, fpds_query, parse_page, request_for
 from .evidence import EvidenceArtifact, EvidenceRecordRef, Representation, SourceIdentifier
 from .evidence_io import EvidenceError, canonical, digest, strict_json
 
@@ -56,7 +56,7 @@ def validate_control(name, doc):
             raise EvidenceError("invalid_c3_plan")
         selected = [SelectedAward.from_dict(a) for a in doc["awards"]]
         limits = CollectionLimits.from_dict(doc["limits"])
-        if digest(make_plan(tuple(selected), limits, tuple(doc["sources"]), doc["profile"], collector_version=doc.get("collector_version"))) != digest(doc):
+        if digest(make_plan(tuple(selected), limits, tuple(doc["sources"]), doc["profile"], collector_version=doc.get("collector_version"),stop_on_context_mismatch=doc.get("stop_on_context_mismatch",False))) != digest(doc):
             raise EvidenceError("invalid_c3_plan")
     if name == "c3_checkpoint.json":
         if set(doc) != {"schema_type", "schema_version", "fingerprint", "events", "pending"} or not isinstance(doc.get("events"), list) or len(doc["events"]) > 1000:
@@ -78,6 +78,33 @@ def validate_control(name, doc):
                        or t.get("pagination") not in ("unknown", "partial", "complete")
                        or t.get("query_scope") not in ("unknown", "partial", "complete") for t in doc["tasks"])):
             raise EvidenceError("unsupported_c3_completeness_claim")
+        from .collection_sources import FPDS_CONTINUATION_RULE
+        from .evidence import _hash
+        for task in doc["tasks"]:
+            if "continuations" not in task and "terminal_page_seen" not in task:
+                continue  # Historical summaries remain readable.
+            if (type(task.get("terminal_page_seen")) is not bool
+                    or task["terminal_page_seen"] and task["pagination"]!="complete"
+                    or not isinstance(task.get("continuations"),list) or len(task["continuations"])>1000):
+                raise EvidenceError("invalid_c3_pagination_summary")
+            for c in task["continuations"]:
+                if (task.get("source")!="fpds" or not isinstance(c,dict)
+                        or set(c)!={"source_page","response_sequence","decoded_atom_href","next_parameters","scope_sha256","rule_version"}
+                        or c["rule_version"]!=FPDS_CONTINUATION_RULE
+                        or type(c["source_page"]) is not int or not 1<=c["source_page"]<=100000
+                        or type(c["response_sequence"]) is not int or c["response_sequence"]<0
+                        or not isinstance(c["decoded_atom_href"],str) or not 1<=len(c["decoded_atom_href"])<=8192
+                        or not isinstance(c["next_parameters"],dict)):
+                    raise EvidenceError("invalid_c3_pagination_summary")
+                _hash(c["scope_sha256"])
+                p=c["next_parameters"]
+                offsets=set(p)&{"start","index"}
+                if (len(offsets)!=1 or set(p)-{"start","index","s","VERSION"}
+                        or any(type(p[k]) is not int or p[k]!=c["source_page"]*10 for k in offsets)
+                        or "VERSION" in p and p["VERSION"]!=FPDS_FEED_VERSION
+                        or "s" in p and p["s"] not in FPDS_BACKENDS
+                        or p.get("s")=="FPDS" and p.get("VERSION")!=FPDS_FEED_VERSION):
+                    raise EvidenceError("invalid_c3_pagination_summary")
 
 
 def check_attempt(session, path, meta):
@@ -96,7 +123,41 @@ def check_attempt(session, path, meta):
     if cp["events"][sequence]["body_sha256"] != meta["body_sha256"]:
         raise EvidenceError("c3_body_hash_declaration_conflict")
     validate_request(meta["request"], plan)
+    if plan["collector_version"]>=3 and meta["request"]["source"]=="fpds" and meta["request"]["page_index"]>1:
+        _validate_predecessor(session,path,prefix,meta,plan,cp)
     return plan, cp
+
+
+def _validate_predecessor(session,owner,prefix,meta,plan,checkpoint):
+    """V3 requests must be authorized by one preserved successful preceding page.
+
+    This is also checked on read, not only when outgoing requests are built.
+    Individual immutable request hashes alone do not prove continuation scope.
+    """
+    request=meta["request"]
+    predecessors=[]
+    for index in range(meta["sequence"]):
+        name=f"c3_attempt_{index:06d}.json"
+        previous=session.metadata(owner,prefix+name)
+        if previous is None or digest(previous)!=checkpoint["events"][index]["metadata_sha256"]:
+            raise EvidenceError("c3_predecessor_metadata_conflict")
+        validate_request(previous["request"],plan)
+        p=previous["request"]
+        if p["task_index"]==request["task_index"] and p["page_index"]==request["page_index"]-1 and previous["error_code"] is None and previous["body_complete"] and previous["status"] is not None and 200<=previous["status"]<300:
+            predecessors.append(previous)
+    if len(predecessors)!=1:
+        raise EvidenceError("c3_missing_or_ambiguous_predecessor")
+    previous=predecessors[0]
+    raw=session.read(prefix+f"c3_attempt_{previous['sequence']:06d}.body")
+    if raw.byte_sha256!=previous["body_sha256"] or raw.byte_sha256!=checkpoint["events"][previous["sequence"]]["body_sha256"]:
+        raise EvidenceError("c3_predecessor_body_conflict")
+    selected=plan["awards"][request["task_index"]//len(plan["sources"])]
+    parsed=parse_page("fpds",raw.data,previous["request"],selected)
+    if not parsed["has_next"]:
+        raise EvidenceError("c3_continuation_not_authorized")
+    expected=request_for("fpds",selected,request["page_index"],10,parsed["next_parameters"])
+    if digest(expected["parameters"])!=digest(request["parameters"]):
+        raise EvidenceError("c3_continuation_scope_conflict")
 
 
 def validate_request(request, plan):
@@ -125,14 +186,21 @@ def validate_request(request, plan):
             raise EvidenceError("c3_query_scope_conflict")
     elif (params.get("q") != fpds_query(selected) or params.get("FEEDNAME") != "PUBLIC"
           or type(params.get("length")) is not int or params["length"] != 10
-          or set(params) - {"q", "FEEDNAME", "length", "start", "index", "s"}):
+          or set(params) - ({"q", "FEEDNAME", "length", "start", "index", "s", "VERSION"} if plan["collector_version"]>=3 else {"q", "FEEDNAME", "length", "start", "index", "s"})):
         raise EvidenceError("c3_query_scope_conflict")
     elif request["source"] == "fpds":
         if selected["piid"] is None or selected["agency_id"] is None or (selected["parent_piid"] is None) != (selected["parent_agency_id"] is None):
             raise EvidenceError("c3_query_scope_conflict")
         offsets = set(params) & {"start", "index"}
-        if len(offsets) > 1 or any(type(params[k]) is not int or params[k] < 0 for k in offsets) or params.get("s", "FPDSNG.COM") != "FPDSNG.COM":
+        backends=FPDS_BACKENDS if plan["collector_version"]>=3 else ("FPDSNG.COM",)
+        if len(offsets) > 1 or any(type(params[k]) is not int or params[k] < 0 for k in offsets) or params.get("s", "FPDSNG.COM") not in backends:
             raise EvidenceError("invalid_c3_offset")
+        if "VERSION" in params and (params["VERSION"]!=FPDS_FEED_VERSION or type(params["VERSION"]) is not str):
+            raise EvidenceError("unsupported_c3_feed_version")
+        if params.get("s")=="FPDS" and params.get("VERSION")!=FPDS_FEED_VERSION:
+            raise EvidenceError("unsupported_c3_feed_version")
+        if plan["collector_version"]>=3 and request["page_index"]==1 and ("VERSION" in params or "s" in params):
+            raise EvidenceError("unsolicited_c3_continuation_token")
         if plan["collector_version"] >= 2:
             expected = (request["page_index"] - 1) * 10
             if (expected == 0 and offsets) or (expected > 0 and (not offsets or params[next(iter(offsets))] != expected)):
@@ -185,6 +253,9 @@ def adapt_body(session, path):
             raise EvidenceError("invalid_c3_task_context")
         selected = plan["awards"][task // source_count]
         parsed = parse_page(req["source"], raw.data, req, selected)
+        if req["source"]=="fpds" and parsed["next_parameters"] and parsed["next_parameters"].get("VERSION")==FPDS_FEED_VERSION:
+            from dataclasses import replace
+            artifact=replace(artifact,limitations=artifact.limitations+("fpds_version_1_5_3_continuation_validated_not_history_proof",))
         inconclusive = req["source"] == "fpds" and not parsed["rows"]
         if inconclusive:
             from dataclasses import replace
