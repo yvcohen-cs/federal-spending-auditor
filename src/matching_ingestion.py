@@ -12,12 +12,15 @@ from .identity_matching import MatchLimits, identify, match_records
 from .matching_models import ExcludedArtifact, MatchCoverage, MatchEvidenceReference
 
 
-def match_collection(path, *, limits=None):
+def match_collection(path, *, limits=None,scope_request=None):
     """One flat validated C3 journal. Partial valid responses remain explicit.
 
     A prior manifest alone is not trusted. Both C2 structural verification and
     snapshot rechecks are performed on the actual files used for matching.
     """
+    if scope_request is not None:
+        from .scope_ingestion import scoped_match_collection
+        return scoped_match_collection(path,scope_request,limits=limits)
     limits = limits or MatchLimits()
     manifest = inspect_directory(path)
     if not manifest.complete or not manifest.entries or any(e.status in (ValidationStatus.INVALID, ValidationStatus.UNSUPPORTED) for e in manifest.entries):

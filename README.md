@@ -41,6 +41,9 @@ controls, and separate financial, identity and data-quality research prompts.
 Live collection requires `--live`; no pilot result implies misconduct.
 
 Phase 4B1 adds [strict FPDS continuation compatibility and frozen-pilot recovery](docs/fpds-pagination.md).
+
+Phase 4B2 adds opt-in [record identity-scope validation and SAM.gov API readiness](docs/identity-scope.md),
+with separate scope metrics and conservative C4/C5 eligibility. Legacy defaults remain unchanged.
 The bounded probe requires explicit live opt-in; recovery reuses saved evidence
 in a new output directory without making network requests.
 
