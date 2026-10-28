@@ -104,10 +104,10 @@ def _usa_fields(row):
     return _text(row.get("action_date")), fields
 
 
-def reconcile_collection(path, *, identity_report_path=None, limits=None):
+def reconcile_collection(path, *, identity_report_path=None, limits=None,scope_request=None):
     limits = limits or FinancialLimits()
     prior = read_identity_report(identity_report_path) if identity_report_path else None
-    identity = match_collection(path, **({"limits": prior.limits} if prior else {}))
+    identity = match_collection(path, **({"limits": prior.limits} if prior else {}),**({"scope_request":scope_request} if scope_request is not None else {}))
     if prior is not None and prior.substantive_sha256 != identity.substantive_sha256:
         raise EvidenceError("stale_or_conflicting_identity_report")
     manifest = inspect_directory(path)
@@ -119,6 +119,15 @@ def reconcile_collection(path, *, identity_report_path=None, limits=None):
         if set(root.discover()) != set(expected):
             raise EvidenceError("financial_evidence_changed")
         snapshots = {name: root.read(name) for name in expected}
+        if scope_request is not None:
+            # A scoped adapter may preserve an unsupported row in an otherwise
+            # intact response. Pin those unused/partly usable body bytes through
+            # their VERIFIED C3 metadata; never waive a declared hash mismatch.
+            verified={e.relative_path for e in manifest.entries if e.status.value=='verified'}
+            for name,sha in tuple(expected.items()):
+                metadata=name[:-5]+'.json' if name.endswith('.body') else None
+                if sha is None and metadata in verified:
+                    expected[name]=strict_json(snapshots[metadata].data)['body_sha256']
         if any(snapshots[name].byte_sha256 != sha for name, sha in expected.items()):
             raise EvidenceError("financial_evidence_changed")
         parsed = {}
