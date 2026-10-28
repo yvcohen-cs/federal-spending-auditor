@@ -184,3 +184,88 @@ one page/task, zero retries, 1 MiB/HTTP response, 32 MiB/report outputs and boun
 primary-evidence readers. Existing C1–C7 and Phase 4A/4B1/4B2/4B3 CLI flags,
 outputs, checkpoints and defaults remain unchanged. Larger mode categories are
 not inputs accepted by any new collector.
+
+## Observed evaluation and limitations
+
+The frozen criteria file remains byte-identical to preregistration commit
+1130ee3. Implementation hardening added explicit holdout-ledger schema/profile/
+completeness checks and separated observed modification records from eligible
+modifications; no gate threshold, holdout selection rule or budget was changed.
+The original main baseline passed 1,015 offline tests and the explicit smoke test.
+There are 86 new deterministic offline cases. Final full-suite/CI results and
+replay digests are recorded in the draft PR, bound to the evaluated code commit.
+
+The original 24 slots were evaluated using preserved evidence only. All 24 were
+technically reanalyzed; all 48 source tasks parsed under the supported current
+reader. Only 12/24 collection slots had terminal pagination for both sources,
+which is separate from both technical completion and complete history. Of 349
+enumerable verification occurrences: 111 were verified in scope, 88 out of scope,
+150 ambiguous, zero insufficient and zero unsupported. There were 93 distinct
+eligible action keys and 93 eligible modification strings summed within slots.
+The B3 financial partition remains exactly 331 results: 238 scope-uncertain,
+75 insufficient counterpart/history and 18 revision-unknown. No revision-conditioned
+numeric comparison is authorized. Every history and freshness assessment remains
+unknown. The whole original inventory was checked unchanged.
+
+The controlled live holdout was captured by implementation commit 2a32241 on
+2026-10-28 using the unchanged preregistered protocol. The one-page frame had six
+rows, including two excluded original-cohort IDs. Three new generated IDs were
+frozen before discovery; no selected slot was replaced. Ten requests total
+(one frame, three discovery, six verification) all returned HTTP 200; no stop
+condition triggered. These are source-native selection distinctions, not a
+guarantee of globally stable real-world identity across corrections.
+
+All six holdout verification tasks parsed, and all three bounded collection slots
+reached terminal pages. Their 32 verification occurrences were **all ambiguous**
+because parent context remained unknown; none was verified in scope or eligible
+for action grouping. All 32 financial result units were withheld for scope
+uncertainty. Terminal pages and known modification fields do not change this
+conclusion. No history, freshness or cross-source revision assurance was obtained.
+Frame and discovery evidence are preserved separately; dedicated verification
+records are not double-counted with discovery rows in quality denominators.
+All-request HTTP measurements explicitly include the frame and discovery calls.
+
+| Dimension, combined inspected evidence | Result | Numerator / denominator |
+|---|---|---|
+| Operational reanalysis | PASS | 27/27 selected slots |
+| Observed source access | PASS | 58/58 frozen verification + all holdout requests |
+| Query precision | FAIL | 111/381 verified occurrences; 88 known conflicts |
+| Eligible native action context | CONDITIONAL | 12/27 selected slots |
+| Historical coverage and freshness support | UNKNOWN | 0/54 source-history assessments |
+| Revision alignment | UNKNOWN | 0/363 pair-result units positively aligned |
+| Revision-conditioned financial comparability | UNKNOWN | 0/363 authorized |
+| Source provenance | PASS | 27/27 revalidated slots |
+| Deterministic replay | PASS | 27/27 slots |
+| Human review usability | CONDITIONAL | 381/381 traceable occurrences; acceptance unmeasured |
+| Security/bounds | PASS | 10/10 controls in inspected evidence/execution |
+| Modernization | UNKNOWN | No authenticated SAM verification |
+
+The 363 pair-result units are the original 331 plus 32 holdout results; only 18
+have the specific revision-unknown withholding reason. Others remain blocked by
+scope or counterpart/history prerequisites. Do not relabel all 363 as established
+same-action comparisons, all unknown revisions, or independent corroboration.
+
+| Proposed mode | Preregistered result |
+|---|---|
+| Offline reanalysis | GO for inspected, immutable evidence and uncertainty reporting |
+| Research up to 30 | CONDITIONAL GO: manual review, fixed budgets, mandatory scope/revision withholding; no financial assurance |
+| Validation up to 100 | NO-GO |
+| Screening up to 500 | NO-GO |
+| Screening 5,000+ | NO-GO |
+
+The bounded-research result allows unresolved evidence to remain a research
+question. It does not certify the holdout's identities, approve additional
+requests, or make this system ready for unsupervised financial screening.
+No collector consumes these decisions or changes its limits. Frozen-only results
+remain separately available: offline GO, every broader mode NO-GO without the
+distinct holdout. The preregistered rules were not relaxed to obtain these results.
+
+The principal uncertainty is missing authoritative history/freshness criteria,
+then partial coverage and native parent/query context, missing counterparts and
+revision lineage. The backlog reports distinct affected slots and subject units,
+with feasibility explicitly estimated. Recommended next work is authoritative
+parent/no-parent semantics and query-scope validation, a bounded authorized SAM
+schema/pagination validation, and primary revision/correction/deletion lineage
+before any financial scale-up. Larger-cohort permissions, human acceptance,
+throughput and source-scale entitlements remain unverified. No downloaded data,
+generated reports or credentials are committed; no legacy defaults are changed.

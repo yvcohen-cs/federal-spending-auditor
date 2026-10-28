@@ -31,6 +31,7 @@ AUDIT_UNITS={**{k:'selected_slots' for k in ('operational_slots','provenance_slo
     'source_http_success':'preserved_HTTP_attempts','source_parsed_tasks':'expected_source_tasks','returned_occurrences':'enumerated_record_occurrences',
     **{k:'enumerated_record_occurrences' for k in ('scope_verified','scope_out','scope_ambiguous','scope_insufficient','scope_unsupported')},
     'eligible_action_identities':'distinct_native_keys_within_slot','modifications':'distinct_modification_strings_within_slot',
+    'observed_modification_records':'distinct_source_record_contents_with_native_modification',
     **{k:'observed_record_pair_results' for k in ('revision_aligned','revision_unknown')},
     **{k:'input_source_assessments' for k in ('history_known_complete','history_unknown')},
     'financial_authorized':'revision_conditioned_record_pair_results',

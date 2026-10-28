@@ -140,6 +140,8 @@ def audit_collection(path,slot,selected,logical,*,discovery=False):
         m(name,sum(o.scope_assessment.status is status for o in first.observations),count,'enumerated_record_occurrences',hm['enumerated_occurrence_count_complete'])
     m('eligible_action_identities',hm['distinct_eligible_action_identities'],None,'distinct_native_keys_within_slot')
     m('modifications',hm['distinct_eligible_modifications'],None,'distinct_modification_strings_within_slot')
+    m('observed_modification_records',len({(o.scope_assessment.evidence.reference.source,o.scope_assessment.content_sha256)
+        for o in first.observations if o.modification.native is not None}),None,'distinct_source_record_contents_with_native_modification',hm['enumerated_occurrence_count_complete'])
     m('slots_with_actions',hm['awards_with_eligible_observed_actions'],1,'selected_slots')
     m('revision_aligned',sum(c.alignment is not None and c.alignment.status.value=='same_verified_action_compatible_revision' for c in first.comparisons),pairs,'observed_record_pair_results')
     m('revision_unknown',hm['revision_uncertainty_withheld'],pairs,'observed_record_pair_results')

@@ -78,3 +78,19 @@ def test_missing_frame_timestamp_never_fabricates_valid_selection(tmp_path):
     result=audit_holdout(out,p,[])
     assert not result.available and result.selected_count==0
     assert result.evidence and result.auxiliary_measurements[0].denominator==1
+
+
+@pytest.mark.parametrize('change',[{'schema_version':2},{'history':'complete'},{'profile':'live'}])
+def test_result_ledger_cannot_silently_upgrade_schema_completeness_or_profile(tmp_path,change):
+    p=replace(load_protocol(),profile='synthetic-control');out=tmp_path/'capture'
+    collect_holdout(out,p,[],live=True,transport=HoldoutTransport(error=403))
+    path=out/'holdout-result.json';doc=json.loads(path.read_text());doc.update(change);path.write_text(canonical(doc));reanchor(out)
+    with pytest.raises(EvidenceError): audit_holdout(out,p,[])
+
+
+def test_observed_modifications_remain_visible_when_award_scope_is_unknown(tmp_path):
+    a,data=fixture('missing_parent');root=tmp_path/'source';collect_fixture(root,a,data)
+    result=audit_collection(root,0,a.generated_id,'synthetic/source')
+    values={m.name:m for m in result.measurements}
+    assert values['modifications'].numerator==0
+    assert values['observed_modification_records'].numerator>0

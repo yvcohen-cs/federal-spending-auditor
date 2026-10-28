@@ -133,6 +133,14 @@ def audit_holdout(path,protocol,excluded):
     expected={'schema_type':'ReadinessHoldoutCommit','schema_version':1,'files':{n:h for n,h in before.items() if n!='holdout-commit.json'}}
     if commit!=expected: raise EvidenceError('holdout_hash_or_inventory_conflict')
     plan=strict_json(docs['pilot-plan.json']);chosen=strict_json(docs['holdout-selection.json']);result=strict_json(docs['holdout-result.json'])
+    if (set(result)!={'schema_type','schema_version','profile','selection_sha256','http_requests_reserved','stopped','stop_reason','slots','history','freshness'}
+            or result['schema_type']!='ReadinessHoldoutResult' or type(result['schema_version']) is not int or result['schema_version']!=1
+            or result['profile']!=plan['profile'] or type(result['stopped']) is not bool or result['history']!='unknown' or result['freshness']!='unknown'
+            or not isinstance(result['slots'],list)):
+        raise EvidenceError('unsupported_holdout_result_schema_or_claims')
+    reasons=('unsupported_frame_schema','frame_access_unavailable','discovery_source_error','unsupported_or_inconsistent_source_evidence','source_error_schema_scope_or_unsafe_continuation')
+    if (result['stopped'] and result['stop_reason'] not in reasons or not result['stopped'] and result['stop_reason'] is not None):
+        raise EvidenceError('unsupported_holdout_stop_state')
     allowed={'pilot-plan.json','frame-reserved.json','frame-response.json','frame.body','holdout-selection.json','holdout-result.json','holdout-commit.json'}
     if any(n not in allowed and re.fullmatch(r'award-[0-9]{3}/(?:discovery|usaspending|fpds)/(?:c3_plan\.json|c3_checkpoint\.json|c3_summary\.json|c3_attempt_[0-9]{6}\.(?:json|body))',n) is None for n in before):
         raise EvidenceError('unsupported_holdout_inventory')
@@ -174,6 +182,9 @@ def audit_holdout(path,protocol,excluded):
     if any(n.startswith('award-') and '/'.join(n.split('/')[:2]) not in registered for n in before):
         raise EvidenceError('unselected_or_unregistered_holdout_capture')
     frame_meta=strict_json(docs['frame-response.json'])
+    if (set(frame_meta)!={'status','retrieved_at_utc','body_complete','error_code','retry_after','source_update_raw','body_sha256','representation'}
+            or type(frame_meta['body_complete']) is not bool or frame_meta['status'] is not None and (type(frame_meta['status']) is not int or not 100<=frame_meta['status']<=599)):
+        raise EvidenceError('unsupported_holdout_frame_metadata')
     if frame_meta['body_sha256']!=before.get('frame.body'): raise EvidenceError('holdout_frame_body_hash_conflict')
     if frame_meta['representation']!='application_response_bytes_not_wire_capture': raise EvidenceError('holdout_representation_conflict')
     for name,raw in docs.items():
