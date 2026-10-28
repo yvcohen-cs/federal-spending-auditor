@@ -79,6 +79,8 @@ def report_text(report):
          "Diversity sample; no population inference or misconduct classification.",
          "Source facts are in preserved C3 evidence; counts below are derived measurements.",
          "Interpretations/alternative explanations are research prompts, never source facts.", ""]
+    if report.get("execution_mode")=="offline_saved_evidence_recovery":
+        out.append("Execution: offline_saved_evidence_recovery; preserved observations, no new collection.")
     for name,value in report["evaluation"]["rates"].items():
         percentage="undefined" if value["percent"] is None else value["percent"]+"%"
         out.append(f"{name}: {value['count']}/{value['denominator']} ({percentage})")

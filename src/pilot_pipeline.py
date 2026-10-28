@@ -12,7 +12,7 @@ from types import SimpleNamespace
 from .collection import CollectionLimits, SelectedAward, collect_selected
 from .collection_sources import HTTPTransport
 from .evidence_ingestion import ValidationStatus, inspect_directory
-from .evidence_io import EvidenceError, canonical, digest, strict_json
+from .evidence_io import EvidenceError, EvidenceRoot, canonical, digest, strict_json
 from .financial_models import FinancialRun
 from .matching_ingestion import match_collection
 from .matching_models import MatchRunSummary, IdentifierState
@@ -176,25 +176,27 @@ def analyze(store, index, row, run, evidence_path):
     summary_entry=next((e for e in scan.entries if e.relative_path=="c3_summary.json" and e.status is ValidationStatus.VERIFIED),None)
     if summary_entry is None:
         raise EvidenceError("pilot_unvalidated_collection_summary")
-    with store.reader() as root:
-        rel=Path(evidence_path).relative_to(store.path).as_posix()+"/c3_summary.json"
-        snap=root.read(rel)
+    with EvidenceRoot(evidence_path) as root:
+        snap=root.read("c3_summary.json")
         if snap.byte_sha256!=summary_entry.byte_sha256:
             raise EvidenceError("pilot_collection_summary_changed")
         summary=strict_json(snap.data)
         http_sources=set()
         for entry in scan.entries:
             if re.fullmatch(r"c3_attempt_[0-9]{6}\.json",entry.relative_path) and entry.status is ValidationStatus.VERIFIED:
-                raw=root.read(Path(evidence_path).relative_to(store.path).as_posix()+"/"+entry.relative_path)
+                raw=root.read(entry.relative_path)
                 if raw.byte_sha256!=entry.byte_sha256:
                     raise EvidenceError("pilot_source_metadata_changed")
                 meta=strict_json(raw.data)
                 if meta["status"] is not None and 200<=meta["status"]<300 and meta["body_complete"]:
                     http_sources.add(meta["request"]["source"])
     observed=[e for e in scan.entries if e.observation]
-    metrics={"successful_sources":sum(t["pages"]>0 for t in summary["tasks"]),"http_success_sources":len(http_sources),
+    parsed=[e for e in observed if e.status is ValidationStatus.VERIFIED or "inconclusive_empty_feed" in e.observation.artifact.limitations]
+    parsed_sources={e.observation.artifact.source for e in parsed}
+    nonempty_sources={e.observation.artifact.source for e in parsed if e.observation.records}
+    metrics={"successful_sources":len(parsed_sources),"http_success_sources":len(http_sources),
         "two_http_responses":int(http_sources=={"usaspending","fpds"}),
-        "two_nonempty_sources":int({t["source"] for t in summary["tasks"] if t["returned_rows"]>0}=={"usaspending","fpds"}),
+        "two_nonempty_sources":int(nonempty_sources=={"usaspending","fpds"}),
         "row_occurrences":sum(len(e.observation.records) for e in observed),
         "provenance_rows":sum(len(e.observation.records) for e in observed if e.status is ValidationStatus.VERIFIED),
         "verified_entries":sum(e.status is ValidationStatus.VERIFIED for e in scan.entries),
@@ -223,7 +225,8 @@ def analyze(store, index, row, run, evidence_path):
         "metrics":metrics,"counts":counts,"reasons":prompts,"packet_refs":refs,
         "diagnostics":[s.diagnostic.to_dict() for s in run.stages if s.diagnostic],
         "evidence_exclusions":[{"path":e.relative_path,"status":e.status.value,"error_code":e.error_code} for e in scan.entries if e.status is not ValidationStatus.VERIFIED],
-        "source_records":{t["source"]:{"rows":t["returned_rows"],"status":t["status"],"query_scope":t["query_scope"]} for t in summary["tasks"]}}
+        "source_records":{t["source"]:{"rows":sum(len(e.observation.records) for e in parsed if e.observation.artifact.source==t["source"]),
+            "collection_rows":t["returned_rows"],"status":t["status"],"query_scope":t["query_scope"]} for t in summary["tasks"]}}
 
 
 def execute_case(store,config,index,row,*,resume=False,retry_failed=False):
@@ -300,10 +303,10 @@ def run_pilot(path,config,*,resume=False,retry_failed=False,frame_transport=None
         return report,exit_code
 
 
-def compile_report(store,config,sample,cases,frame_status):
+def compile_report(store,config,sample,cases,frame_status,*,output_prefixes=("pilot-report-",)):
     # All durable non-report bytes bind the evaluation; invocation reports
     # are operational append-only outputs, excluded for resume determinism.
-    inventory={p:h for p,h in store.inventory().items() if not p.startswith("pilot-report-") and "/research-run-" not in p}
+    inventory={p:h for p,h in store.inventory().items() if not p.startswith(output_prefixes) and "/research-run-" not in p}
     bytes_used=sum(len(store.read(p)) for p in inventory)
     reserved=sum(1 for p in inventory if p.endswith(".request.json") and p.startswith("frame-"))
     reserved+=sum(len(store.json(p)["events"])+int(store.json(p)["pending"] is not None) for p in inventory if p.endswith("/c3_checkpoint.json"))

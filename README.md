@@ -40,6 +40,10 @@ with deterministic diversity sampling, explicit metric denominators, synthetic
 controls, and separate financial, identity and data-quality research prompts.
 Live collection requires `--live`; no pilot result implies misconduct.
 
+Phase 4B1 adds [strict FPDS continuation compatibility and frozen-pilot recovery](docs/fpds-pagination.md).
+The bounded probe requires explicit live opt-in; recovery reuses saved evidence
+in a new output directory without making network requests.
+
 ## Setup
 
 For Linux cloud setup, Python 3.11/3.12 CI, an explicit offline smoke test, and
