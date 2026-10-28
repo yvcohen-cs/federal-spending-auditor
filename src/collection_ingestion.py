@@ -153,6 +153,8 @@ def _validate_predecessor(session,owner,prefix,meta,plan,checkpoint):
         raise EvidenceError("c3_predecessor_body_conflict")
     selected=plan["awards"][request["task_index"]//len(plan["sources"])]
     parsed=parse_page("fpds",raw.data,previous["request"],selected)
+    if plan.get("stop_on_context_mismatch",False) and any(c!="query_bound_candidate" for c in parsed["contexts"]):
+        raise EvidenceError("c3_continuation_context_not_authorized")
     if not parsed["has_next"]:
         raise EvidenceError("c3_continuation_not_authorized")
     expected=request_for("fpds",selected,request["page_index"],10,parsed["next_parameters"])

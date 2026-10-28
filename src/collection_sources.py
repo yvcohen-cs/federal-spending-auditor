@@ -141,10 +141,15 @@ def parse_page(source, raw, request, award):
     _, root = safe_xml(raw)
     if root.tag != ATOM + "feed":
         raise EvidenceError("unsupported_fpds_schema")
+    xml_base="{http://www.w3.org/XML/1998/namespace}base"
+    if xml_base in root.attrib:
+        raise EvidenceError("unsupported_fpds_base_uri")
     for link in root:
         if link.tag.rsplit("}",1)[-1]=="link" and (link.get("rel") or "").strip().lower()=="next":
             if link.tag!=ATOM+"link" or link.get("rel")!="next":
                 raise EvidenceError("unsupported_fpds_next_relation")
+            if xml_base in link.attrib:
+                raise EvidenceError("unsupported_fpds_base_uri")
     links = [link.get("href") for link in root.findall(ATOM + "link") if link.get("rel") == "next"]
     if len(links) > 1 or links and not links[0]:
         raise EvidenceError("ambiguous_fpds_next_url")

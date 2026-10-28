@@ -300,3 +300,31 @@ def test_repeated_modification_rows_are_observations_not_duplicate_financial_act
     financial=reconcile_collection(p)
     assert len(financial.results)==3 and all(r.status.value=='verified_match' for r in financial.results)
     assert {r.left_normalized for r in financial.results}=={'100','-20','0'}
+
+
+@pytest.mark.parametrize('where',['feed','link'])
+def test_xml_base_cannot_reinterpret_relative_continuation_target(where):
+    text=page('?start=10')
+    if where=='feed':
+        text=text.replace('<feed ','<feed xml:base="https://evil.invalid/" ',1)
+    else:
+        text=text.replace('<link ','<link xml:base="https://evil.invalid/" ',1)
+    with pytest.raises(EvidenceError,match='unsupported_fpds_base_uri'):
+        parse_page('fpds',text.encode(),request(),AWARD.to_dict())
+
+
+def test_read_guard_cannot_authorize_page_after_strict_context_failure(tmp_path):
+    p=tmp_path/'run'
+    wrong=page(href()).replace('<f:PIID>PARENT</f:PIID>','<f:PIID>OTHER-PARENT</f:PIID>')
+    collect(p,scenario(wrong,page(mod='P00001')))
+    plan=strict_json((p/'c3_plan.json').read_bytes());plan['stop_on_context_mismatch']=True
+    (p/'c3_plan.json').write_text(canonical(plan))
+    fingerprint=digest(plan)
+    cp=strict_json((p/'c3_checkpoint.json').read_bytes());cp['fingerprint']=fingerprint
+    for n in range(2):
+        f=p/f'c3_attempt_{n:06d}.json'
+        meta=strict_json(f.read_bytes());meta['fingerprint']=fingerprint
+        f.write_text(canonical(meta));cp['events'][n]['metadata_sha256']=digest(meta)
+    (p/'c3_checkpoint.json').write_text(canonical(cp))
+    scan=inspect_directory(p)
+    assert any(e.error_code=='c3_continuation_context_not_authorized' for e in scan.entries)

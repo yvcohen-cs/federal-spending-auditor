@@ -72,6 +72,8 @@ def test_original_v2_bytes_recover_into_new_c7_without_collection(legacy,tmp_pat
     assert after["evaluation"]["rates"]["unknown_or_incomplete_history"]["count"]==1
     assert after["evaluation"]["resources"]["live_request_slots_reserved"]==0
     assert after["execution_mode"]=="offline_saved_evidence_recovery"
+    from src.pilot_evaluation import report_text
+    assert 'Execution: offline_saved_evidence_recovery' in report_text(after)
 
 
 def test_recovery_resume_validates_and_preserves_original_and_prior_outputs(legacy,tmp_path):

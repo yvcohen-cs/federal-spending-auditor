@@ -93,6 +93,8 @@ names, invalid UTF-8, duplicate keys (even identical values), unknown keys and
 scope changes fail closed. Relative references are accepted only when they resolve
 to that same endpoint; this is parser support, not an observed promise that all
 servers issue relative links. XML is parsed with existing DTD/entity protections.
+XML base-URI overrides on the feed or next link are unsupported rather than
+silently ignored when interpreting relative targets.
 Ambiguous, missing or foreign-namespace next relations cannot become terminal
 success. A missing next relation on an otherwise supported feed is terminal only
 for that executed response/query; an empty feed remains inconclusive.
