@@ -18,6 +18,8 @@ def metrics(run):
     statuses={s.value:sum(c.status is s for c in run.comparisons) for s in HistoricalStatus}
     known_states={(o.scope_assessment.evidence.reference.source,native_key(o) or ('unresolved_observation',o.history_observation_id),t.path,t.original_json) for o in obs for t in o.revision.update_markers if t.parsed is not None}
     return {'version':'history-metrics-v1','returned_record_occurrences':len(obs),'by_source_occurrences':source_counts,
+        'enumerated_occurrence_count_complete':all(not s.artifact_issues for s in run.inputs),
+        'unusable_source_artifacts':sum(len(s.artifact_issues) for s in run.inputs),
         'verified_in_scope_occurrences':sum(o.eligible for o in obs),'scope_uncertain_occurrences':sum(not o.eligible for o in obs),
         'awards_with_eligible_observed_actions':int(any(o.action_key is not None for o in obs)),
         'distinct_eligible_action_identities':len({o.action_key for o in obs if o.action_key is not None}),

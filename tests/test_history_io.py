@@ -101,6 +101,9 @@ def test_unavailable_response_is_not_zero_complete_history(tmp_path):
     assert len(run.observations)==1 and run.inputs[0].artifact_issues
     assert all(c.difference_left_minus_right is None for c in run.comparisons)
     assert any(c.pagination.value=='unknown' for c in run.coverage)
+    from src.history_reporting import metrics
+    assert metrics(run)['enumerated_occurrence_count_complete'] is False
+    assert metrics(run)['unusable_source_artifacts']==1
 
 
 def test_interrupted_capture_is_not_reissued_by_offline_reconstruction(tmp_path):

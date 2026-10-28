@@ -154,7 +154,7 @@ unchanged; there is no competing note system or automatic reviewer assertion.
 
 Reports include original and parsed values, requested identity, source timeline,
 coverage/freshness, alignment and withheld reasons, contradictions, citations,
-unresolved questions and next research actions. --execution-time adds actual run
+unresolved questions and next research actions. --execution-time on offline --root evaluation adds actual run
 time outside substantive output. Deterministic digests retain real source retrieval
 provenance while excluding execution metadata. Older C5 equality claims keep their
 original meaning; the new revision-conditioned claim is deliberately stricter.
@@ -184,6 +184,13 @@ pairs, not inferred duplicate real-world actions. Declared update states count
 distinct source/native-action/field/raw-marker tuples; incomplete native keys stay
 separate by observation. These tokens are not certified source revisions.
 
+Returned occurrence counts mean enumerable rows in the preserved responses only.
+enumerated_occurrence_count_complete is false when source artifacts are unusable,
+with their count reported separately; zero enumerable rows cannot silently become
+a known zero-response total. This flag never establishes complete pagination or
+complete history. Pilot aggregation also remains incomplete if any slot could not
+be evaluated.
+
 Financial units are bounded observed record pairs, including repeated retrieval
 and same-source pairs. Multiple transactions remain separate action keys; repeated
 observations can produce multiple pair statements. This is not a count of globally
@@ -212,7 +219,7 @@ forbids real HTTP through its existing autouse fixture. Final full-suite and Pyt
 3.11/3.12 CI results are recorded in the draft PR.
 
 Two final 18-case synthetic runs produced equal demonstration digest:
-`d76f2aa0af0b54725ce56782a8b706256f24cb150958bef34c00d7ce235bff37`.
+`db1bc2b143d5b510258e58bb7efa1e09b30a74aa0d35b18818a6196a8265aaf7`.
 These are fictional known-answer controls, not live revision verification.
 
 The original preserved 24-slot Phase 4A sample was evaluated offline without
@@ -226,7 +233,7 @@ and 75 lacked sufficient eligible counterpart/history evidence. None authorized
 arithmetic. All 349 content-freshness assessments and 48 input/source history
 assessments remained unknown. These are descriptive convenience-sample results,
 not population estimates. Final pilot evaluation digest:
-`8c0b83d33db5a4283bc068f4e5a43a612e77a87a1389aaddf290a9b2d7faccce`.
+`dcc02388374e548413ab7797d0dd12b18d5edc7dd9adf484657feb54d5f1f3d1`.
 
 Saved Phase 4B2 queries were also reevaluated without collection: the known-parent
 query retained four eligible action pairs but withheld all four for revision
@@ -246,7 +253,7 @@ All four new revision-conditioned comparisons were withheld. Pagination could be
 assessed for these bounded responses; all content freshness and historical
 completeness remained unknown. No source/schema change required stopping this run.
 Final saved-response analysis digest:
-`53469b08053dbec8c122d18a4ceca3ea8aa40026fc4a33db44268480fbd75f61`.
+`c9394a797b1d3ebe3caf50637af740d113b6528a993a98f79123127c80210583`.
 All later checks reused saved responses; no further requests were made.
 
 The existing C5 four saved-value equalities remain unchanged as narrower legacy

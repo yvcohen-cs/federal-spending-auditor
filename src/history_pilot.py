@@ -73,9 +73,10 @@ def evaluate_pilot(source,destination):
         counters=('awards_with_eligible_observed_actions','distinct_eligible_action_identities','distinct_eligible_modifications',
             'returned_record_occurrences','duplicate_record_occurrences','declared_update_states','authorized_numeric_comparisons',
             'revision_uncertainty_withheld','scope_uncertainty_withheld','content_freshness_known','content_freshness_unknown',
-            'historical_completeness_known','historical_completeness_unknown')
+            'historical_completeness_known','historical_completeness_unknown','unusable_source_artifacts')
         aggregate={k:sum(m[k] for m in available) for k in counters}
         aggregate.update({'slot_denominator':len(slots),'evaluated_slots':len(available),'unevaluated_slots':len(slots)-len(available),
+            'enumerated_occurrence_count_complete':len(available)==len(slots) and all(m['enumerated_occurrence_count_complete'] for m in available),
             'action_count_unit':'sum_of_distinct_eligible_native_keys_per_frozen_slot_not_global_unique_actions',
             'financial_result_pair_denominator':sum(m['financial_comparison_denominator'] for m in available),
             'financial_results':{k:sum(m['financial_results'][k] for m in available) for k in available[0]['financial_results']} if available else {}})
