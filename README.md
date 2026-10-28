@@ -30,6 +30,11 @@ Phase 3C6 adds [offline human-review packets](docs/review-packets.md): source-li
 JSON and standalone HTML, with a separate append-only reviewer-note workflow.
 Review states do not change automated identity or financial findings.
 
+Phase 3C7 provides the opt-in [end-to-end research workflow](docs/research-workflow.md):
+`python -m src.research_pipeline --demo --run-dir reports/NEW_research_demo`.
+The complete synthetic demo is offline; exit 1 indicates its intentional evidence
+uncertainties, separately from successful technical completion.
+
 ## Setup
 
 For Linux cloud setup, Python 3.11/3.12 CI, an explicit offline smoke test, and
