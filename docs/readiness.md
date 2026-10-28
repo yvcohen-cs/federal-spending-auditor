@@ -100,3 +100,87 @@ and parent/action checks; (4) temporal/revision/deletion and financial definitio
 (5) freshness/history criteria and scale entitlement; (6) human-reviewed parallel
 validation before any separately approved replacement. No API key is requested,
 printed or obtained automatically.
+
+## Interfaces, measurement contracts and reproducibility
+
+ReadinessProtocol, ReadinessAssessment, CohortAudit, SlotAudit, Measurement,
+GateResult, ExpansionDecision, CauseOccurrence and ReadinessEvidenceRef are strict
+schema-v1 dataclasses/enums. Unsupported fields/versions, mixed measurement units,
+omitted status partitions, forged decisions and contradictory replay counts fail
+validation. Live cohort hashes and criteria are locked to the preregistration;
+synthetic-control profiles cannot certify a live cohort. Expected protocol hashes
+remain separate from unavailable measured hashes, which stay null.
+
+| Dimension | Primary measured unit and prerequisites |
+|---|---|
+| Operational integrity | Reconstructed selected slots / all selected slots; not legacy C7 technical completion |
+| Access/API stability | Frozen verification HTTP successes plus all holdout HTTP successes, including frame/discovery; repeated bounded observation is not a general uptime guarantee |
+| Query precision | Verified in-scope / enumerable occurrences; known context conflicts FAIL, unparsed totals remain incomplete |
+| Record identity | Slots with at least one complete verified native action / selected slots; no claim of independent corroboration |
+| Historical coverage | Positive historical completeness / source assessments, also requiring content-freshness support; terminal pages do not qualify |
+| Revision alignment | Positively aligned observed pair results / all pair results; equal money/retrieval dates do not qualify |
+| Financial comparability | Authorized revision-conditioned cross-source comparisons / all pair results; retains B3 withholding |
+| Provenance | Revalidated source/control slots / all selected slots; hashes do not authenticate source truth |
+| Reproducibility | Two equal substantive replays / selected slots, with unchanged source inventories |
+| Human review usability | C6 citation/locator traceability / occurrences; at most CONDITIONAL without human acceptance testing |
+| Security/bounds | Passed non-negotiable controls / all ten; one observed violation overrides averages |
+| Modernization | UNKNOWN without authorized SAM validation; documentation is not authenticated API evidence |
+
+Additional versioned measurements retain source parse tasks, completed collection
+slots, returned row counts and their completeness, all five scope statuses,
+eligible native action keys, modifications, financial withholding by reason,
+source-history unknowns and freshness unknowns. Verification-only HTTP counts and
+all-holdout HTTP counts are separately labeled; frame errors are never hidden by
+successful record requests. Unrequested slots remain in the selected denominator.
+
+Taxonomy units are distinct record contents, source tasks, artifacts or slots.
+Multiple supported contributors share one subject occurrence; duplicate retrievals
+do not create extra record-content causes. No cause count is summed into a count
+of suspicious awards. Query imprecision means selection-relative native conflict,
+not a proven server defect. Missing counterpart means absent from inspected
+evidence, not absent in the world. Unverified freshness/history are unknown
+criteria, not proven stale/incomplete sources.
+
+Backlog ordering is fixed before holdout: a failed frame blocking new-cohort
+discovery first, then distinct affected selected slots, estimated feasibility,
+evidence-quality category and stable code ties. Feasibility is an explicit
+engineering assumption; observational support is not certified upstream causality.
+No weighted readiness/risk score is calculated.
+
+Exact replay preserves body/manifest digests, reference multiplicity and source
+times. Moving an identical frozen snapshot must preserve results: historical
+absolute discovery descriptors are resolved only to the matching slot-local
+discovery directory, never followed outside the current snapshot. Reordered raw
+responses legitimately have different evidence hashes; a separate semantic digest
+checks sorted native/raw-value/temporal observations and result counts without
+discarding occurrence multiplicity. These are same-implementation replay checks,
+not independent implementation or human validation.
+
+Reports reuse full C6 EvidenceCitation objects and RecommendedVerificationAction.
+JSON, Markdown and escaped offline HTML contain the evidence table, mode matrix,
+separate frozen-only matrix, baseline references, backlog, assumptions, unknowns,
+SAM migration prerequisites and human verification requirements. No notes or
+reviewer assertions are created. Readiness outputs are projections, not trust
+anchors that can replace revalidation of primary evidence.
+
+```sh
+python -m src.readiness --root reports/ORIGINAL_PILOT --run-dir reports/NEW_readiness
+python -m src.readiness --live --root reports/ORIGINAL_PILOT --run-dir reports/NEW_holdout
+python -m src.readiness --root reports/ORIGINAL_PILOT --holdout-root reports/NEW_holdout --run-dir reports/NEW_combined_readiness
+```
+
+Only the second command collects. It records the exact capture commit/source
+fingerprint, frozen protocol and exclusions before requests. All destinations must
+be new and outside evidence, with an existing parent. Source inventories and
+implementation fingerprints are checked unchanged. Exclusive atomic files and
+final commit markers reuse C6/PilotStore primitives. Interrupted captures retain
+reservations and have no trusted final commit; there is no automatic resume,
+retry or source/checkpoint upgrade. Outputs containing partial files are refused.
+Exit 1 means a completed uncertainty-aware assessment/capture, 2 invalid input or
+output, and 130 interruption. --execution-time affects execution metadata only.
+
+Resource caps: 30 frozen/control slots, three holdout awards, ten holdout requests,
+one page/task, zero retries, 1 MiB/HTTP response, 32 MiB/report outputs and bounded
+primary-evidence readers. Existing C1–C7 and Phase 4A/4B1/4B2/4B3 CLI flags,
+outputs, checkpoints and defaults remain unchanged. Larger mode categories are
+not inputs accepted by any new collector.

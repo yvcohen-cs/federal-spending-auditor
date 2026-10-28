@@ -47,6 +47,9 @@ with separate scope metrics and conservative C4/C5 eligibility. Legacy defaults 
 
 Phase 4B3 adds [observed action histories and revision-aware financial research](docs/contract-histories.md),
 with separate freshness/coverage evidence, offline pilot evaluation, and bounded live opt-in.
+
+Phase 4B4 adds [preregistered readiness gates and controlled-scale evaluation](docs/readiness.md).
+Mode decisions assess evidence quality; they never authorize or enable larger collection.
 The bounded probe requires explicit live opt-in; recovery reuses saved evidence
 in a new output directory without making network requests.
 
