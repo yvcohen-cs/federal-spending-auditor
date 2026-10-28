@@ -35,6 +35,11 @@ Phase 3C7 provides the opt-in [end-to-end research workflow](docs/research-workf
 The complete synthetic demo is offline; exit 1 indicates its intentional evidence
 uncertainties, separately from successful technical completion.
 
+Phase 4A adds an opt-in [bounded validation pilot](docs/pilot-validation.md),
+with deterministic diversity sampling, explicit metric denominators, synthetic
+controls, and separate financial, identity and data-quality research prompts.
+Live collection requires `--live`; no pilot result implies misconduct.
+
 ## Setup
 
 For Linux cloud setup, Python 3.11/3.12 CI, an explicit offline smoke test, and
