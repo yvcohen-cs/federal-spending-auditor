@@ -467,3 +467,12 @@ def test_replay_does_not_read_credentials(monkeypatch,tmp_path):
     p,_,_=capture(tmp_path,[(fields(),response())])
     monkeypatch.setattr(sam_validation_capture,'credential',Mock(side_effect=AssertionError('no credential access on replay')))
     assert report(p)['profile']=='synthetic'
+
+
+def test_row_cap_checked_before_constructing_any_records(monkeypatch):
+    from src import sam_validation_models
+    constructor=Mock(side_effect=AssertionError('oversized page must not construct records'))
+    monkeypatch.setattr(sam_validation_models,'record',constructor)
+    with pytest.raises(ValueError,match='envelope'):
+        parse(response([synthetic_row(),synthetic_row(),synthetic_row()],total=3))
+    constructor.assert_not_called()

@@ -247,7 +247,7 @@ def parse_page(raw,requested,artifact,metadata_path,*,offset=0,limit=10,paginati
         raise ValueError('SAM_page_artifact_request_or_body_conflict')
     body=strict_json(raw)
     if (not isinstance(body,dict) or set(body)!={'awardSummary','totalRecords','limit','offset'}
-            or not isinstance(body['awardSummary'],list) or counter(body['offset'])!=offset or counter(body['limit'])!=limit):
+            or not isinstance(body['awardSummary'],list) or len(body['awardSummary'])>limit or counter(body['offset'])!=offset or counter(body['limit'])!=limit):
         raise ValueError('unsupported_sam_response_envelope')
     observation='observation:v1:'+digest({'version':1,'source':artifact.source,'endpoint':artifact.endpoint,'method':artifact.method,
         'request_json':artifact.request_json,'retrieved_at_utc':artifact.retrieved_at_utc,'representation':artifact.representation.value})

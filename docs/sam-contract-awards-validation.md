@@ -296,10 +296,10 @@ responses, downloaded schema, secrets or generated reports are committed.
 ## Final local validation record
 
 - Baseline main: **1,170 tests passed**, plus explicit offline smoke.
-- Feature suite: **1,281 tests passed** in256.57seconds, including **111 new cases**.
-  Explicit offline smoke separately passed in1.95seconds.
+- Feature suite: **1,282 tests passed** in258.22seconds, including **112 new cases**.
+  Explicit offline smoke separately passed in2.28seconds.
 - Final source implementation fingerprint:
-  `b939434cc154fe394f3fa3c51021087fd83c196c2eb71540a091e459c36fd64a`.
+  `a60ad2aff07ff0cfe58c220eca0a905eefdc6192d48ba3bf71f8182782f532ce`.
 - Two synthetic demonstrations and their primary-evidence report reads matched:
   `451cd94736b468122981b9571f45748b2d9e3f4fb67bb3d8d682ae8d957b972f`.
   Each is **one fictional subject, two in-process fixture calls, two parsed pages,
@@ -320,6 +320,8 @@ responses, downloaded schema, secrets or generated reports are committed.
   changes, placeholder parents, IDV confusion, wrong agencies, credential echoes
   in JSON/percent/HTML/base64 encodings, HTTP/HTTPS debug modes, output escaping,
   source immutability and rejection of report-level authorization forgeries.
+  The row-count cap is checked before any record object construction, preventing
+  oversized result lists from consuming processing beyond the requested limit.
 
 Existing Python3.11/3.12 CI configuration is unchanged; final check URLs/results
 and the exact reviewed head are recorded in the PR. Security/evidence self-review
