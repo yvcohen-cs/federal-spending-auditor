@@ -26,6 +26,8 @@ LIMIT=32*1024*1024
 def private_location(path):
     target=check_new_location(path,study=True)
     for ancestor in (target,)+tuple(target.parents):
+        if (ancestor/'environment.json').exists() or (ancestor/'study-report-commit.json').exists():
+            raise EvidenceError('new_private_store_inside_existing_study_or_report')
         marker=ancestor/'.git'
         # Managed runtimes may expose empty .git sentinel directories outside
         # repositories. A gitdir file or a directory with HEAD is a worktree.

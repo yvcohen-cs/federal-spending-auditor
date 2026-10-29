@@ -508,3 +508,10 @@ def test_measured_clock_without_consent_opt_in_is_rejected(store):
 def test_reference_answer_cannot_be_assigned_to_ambiguous_control(task_set):
     uncertain=task_set.entries[1]
     with pytest.raises(ValueError):replace(task_set.entries[0],task=uncertain.task,selected_claim_ids=uncertain.selected_claim_ids)
+
+
+@pytest.mark.parametrize('marker',['environment.json','study-report-commit.json'])
+def test_new_private_store_or_report_cannot_be_nested_in_existing_C5_artifact(tmp_path,marker):
+    p=tmp_path/'protected';p.mkdir(mode=0o700);(p/marker).write_text('{}');before=inventory(p)
+    with pytest.raises(EvidenceError):private_location(p/'nested')
+    assert inventory(p)==before and not (p/'nested').exists()
