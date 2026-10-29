@@ -1,0 +1,33 @@
+{
+  "schema_type": "PilotUsabilityRequirements",
+  "schema_version": 1,
+  "version": "pilot-usability-requirements-v1",
+  "essential": [
+    "one_task_at_a_time_precise_claim_and_rule_versions",
+    "packet_citations_separate_from_returned_counterevidence",
+    "source_fields_separate_from_C4_interpretation",
+    "parent_pagination_history_revision_unknowns_visible",
+    "all_missing_obligations_acknowledged",
+    "five_existing_evidence_decisions_only",
+    "structured_closed_rationale_and_explicit_uncertainty",
+    "save_resume_with_exact_protocol_task_order_evidence_binding",
+    "no_source_writes_financial_authority_accounts_network_or_telemetry",
+    "opaque_pseudonyms_no_arbitrary_personal_text",
+    "voluntary_consent_and_withdrawal_exclusion",
+    "optional_timing_no_fabricated_durations"
+  ],
+  "optional": [
+    "graphical_navigation",
+    "richer_visual_layout",
+    "coordinator_approved_accessibility_refinements",
+    "separately_reviewed_selective_private_data_deletion"
+  ],
+  "audit_findings": [
+    "C4 technical JSON dumps are not a one-task reviewer experience",
+    "C4 free-text attribution/rationale permits unnecessary identifying information",
+    "C4 event timestamps are not valid task-duration measurements",
+    "C4 append-only logs have no session consent or withdrawal aggregation contract",
+    "C4 source and financial limitations must remain visible without confidence scores"
+  ],
+  "actual_usability": "UNKNOWN_not_measured"
+}
