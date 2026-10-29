@@ -1,0 +1,34 @@
+{
+  "schema_type": "SAMSemanticsProtocol",
+  "schema_version": 1,
+  "version": "sam-semantics-protocol-v1",
+  "baseline_commit": "ef0ed076dd706e96b663f4d464508b4640fd7ced",
+  "frozen_protocols": {
+    "readiness-protocol-v1.json": "063bd4d435624b02fe9ff4cd3da648e5388ed234485e427937c319eccedb6d88",
+    "parent-identity-protocol-v1.json": "c2dc79a231f8243395635e90298f5099633b0d5859ec32d3619071b5816f754d",
+    "sam-validation-protocol-v1.json": "309520d7c4e9746db48ced369d73934f4150cfb48e47cfca546d691a4360a985"
+  },
+  "frozen_inventories": {
+    "p4a-live-24": "02b45a4c059b48a798689b842bef949a44b48996cba20da9fd3a7ee047fd0a1f",
+    "b4-live-holdout": "ff0f4393b07cd69f282e2ea14e4f2571a3a53760d25827e711d0ddeb6d7b34a8"
+  },
+  "maximum_subjects": 3,
+  "maximum_HTTP_requests": 12,
+  "structural_maximum_requests": 6,
+  "maximum_pages_per_subject": 2,
+  "maximum_response_bytes": 1048576,
+  "maximum_output_bytes": 33554432,
+  "timeout_seconds": 10,
+  "retries": 0,
+  "redirects": false,
+  "live_continuation": false,
+  "collection": "unchanged_opt_in_C2_client_only_explicit_live_and_frozen_native_selection",
+  "pagination": "independent_hypothesis_assessment_no_authorization_from_synthetic_or_single_page",
+  "history": "content_retrievals_native_actions_variants_and_indicators_separate_no_certified_revision_or_deletion",
+  "identity": "exact_native_strings_and_primary_citations_no_no_parent_absence_rule",
+  "financial_arithmetic": "withheld_until_all_proof_obligations_have_independent_authoritative_support",
+  "readiness_upgrade": false,
+  "credentials": "presence_only_check_no_acquisition_or_value_inspection",
+  "output": "deterministic_revalidated_primary_projections_synthetic_and_authenticated_separate",
+  "success": "explicit_evidence_limits_not_minimum_positive_matches"
+}
