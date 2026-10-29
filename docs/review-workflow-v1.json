@@ -1,0 +1,56 @@
+{
+  "schema_type": "ReviewWorkflowSpecification",
+  "schema_version": 1,
+  "version": "review-workflow-v1",
+  "task_rule": "review-task-v1",
+  "evidence_statuses": [
+    "VERIFIED",
+    "CONFLICTING",
+    "INSUFFICIENT",
+    "UNSUPPORTED",
+    "NOT_EVALUATED"
+  ],
+  "dimensions": [
+    "claim",
+    "identity",
+    "parent",
+    "instrument",
+    "pagination",
+    "history",
+    "revision",
+    "monetary_observations",
+    "financial_authorization",
+    "traceability"
+  ],
+  "decisions": [
+    "ACCEPT_EVIDENCE",
+    "REJECT_EVIDENCE",
+    "NEEDS_MORE_EVIDENCE",
+    "NOT_APPLICABLE",
+    "ESCALATE_FOR_REVIEW"
+  ],
+  "task_identity": "constructed_packet_and_primary_snapshot_bound_not_source_native_or_person_identity",
+  "citation_roles": [
+    "packet_claim_evidence",
+    "additional_returned_context_support_or_counterevidence"
+  ],
+  "unreviewed_metadata": "reviewer_rationale_timestamp_attribution_remain_null_until_explicit_event",
+  "rationale_required": [
+    "interpretation",
+    "scope_explanation",
+    "uncertainty",
+    "known_citation_ids",
+    "all_missing_proof_obligations_acknowledged"
+  ],
+  "follow_up": "required_for_needs_more_evidence_and_escalation_companion_actions_can_cite_returned_context",
+  "attribution": "SIMULATED_prefix_required_for_simulations_human_labels_self_reported_not_authenticated",
+  "legacy_envelope": "C6_chain_context_time_transition_checks_reused_first_event_registers_pending_then_reviewed_or_needs_more_never_closed",
+  "decision_status": "computed_from_all_assertions_independently_of_legacy_envelope_and_automated_findings",
+  "disagreement": "accept_plus_reject_conflict_never_select_winner_any_other_differing_decisions_remain_unresolved_or_escalated",
+  "authority": "evidence_quality_only_acceptance_does_not_authorize_arithmetic_or_screening",
+  "integrity": "independent_primary_rebuild_on_append_read_report_hashes_not_remote_authentication_or_tamperproof_signatures",
+  "human_study": "NOT_CONDUCTED_no_participants_or_performance_results",
+  "production_screening_authorized": false,
+  "financial_eligibility_changed": false,
+  "frozen_readiness_upgrade": false
+}

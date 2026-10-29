@@ -1,0 +1,12 @@
+{
+  "schema_type": "ExistingEvidenceReviewAuditPlan",
+  "schema_version": 1,
+  "version": "existing-review-audit-v1",
+  "selection": "lexicographically_first_preserved_frozen_pilot_research_source_root_no_replacement",
+  "logical_root": "award-000/research/evidence/selected",
+  "source_inventory_sha256": "42a1abce2e6fa0eac26e751bfd2db5bea91eee42e7503db2cf114a6c142a49fd",
+  "mode": "read_only_existing_permitted_public_evidence_no_collection",
+  "expected": "revalidate_or_block_without_repair_no_human_performance_or_financial_upgrade",
+  "cohort": "separate_from_authored_simulated_study",
+  "human_review": "NOT_CONDUCTED"
+}

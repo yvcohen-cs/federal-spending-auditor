@@ -151,3 +151,15 @@ python -m src.sam_semantics --root reports/SAVED_C2_CAPTURE --run-dir reports/NE
 
 Authenticated behavior remains unverified without an approved credential binding.
 Live continuation stays disabled; synthetic pagination never establishes complete history or freshness.
+
+Phase 4C4 adds an opt-in, offline [review workflow validation layer](docs/review-validation.md)
+with typed tasks, append-only evidence-quality decisions, two explicitly simulated
+review sequences and a [future human-study protocol](docs/human-review-study-v1.md).
+
+```sh
+python -m src.review_validation --demo --study-dir reports/NEW_c4_study --run-dir reports/NEW_c4_evaluation
+python -m src.review_validation --study-root reports/NEW_c4_study --run-dir reports/NEW_c4_replay
+```
+
+No actual human usability or throughput study has been completed. Review acceptance
+cannot authorize financial arithmetic, change frozen readiness or enable production screening.
