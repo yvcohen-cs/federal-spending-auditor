@@ -139,3 +139,15 @@ live continuation or changes production, financial or readiness gates:
 python -m src.sam_validation --offline --run-dir reports/NEW_sam_access_report
 python -m src.sam_validation --demo --run-dir reports/NEW_sam_validation_demo
 ```
+
+Phase 4C3 adds a separate, opt-in [SAM pagination and historical evidence assessment](docs/sam-pagination-history-validation.md)
+over preserved C2 journals. It does not change production behavior, financial eligibility or readiness.
+
+```sh
+python -m src.sam_semantics --offline --run-dir reports/NEW_c3_blocked
+python -m src.sam_semantics --demo --run-dir reports/NEW_c3_demo
+python -m src.sam_semantics --root reports/SAVED_C2_CAPTURE --run-dir reports/NEW_c3_replay
+```
+
+Authenticated behavior remains unverified without an approved credential binding.
+Live continuation stays disabled; synthetic pagination never establishes complete history or freshness.
