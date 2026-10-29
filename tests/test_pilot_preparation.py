@@ -113,13 +113,14 @@ def test_fixed_task_set_fields_order_and_no_public_ground_truth(task_set):
 
 @pytest.mark.parametrize('attack',['reverse','duplicate','remove','invent_reference','wrong_origin'])
 def test_altered_task_selection_or_reference_fails(task_set,attack):
-    entries=task_set.entries
-    if attack=='reverse':entries=entries[::-1]
-    elif attack=='duplicate':entries=(entries[0],)*11
-    elif attack=='remove':entries=entries[:-1]
-    elif attack=='invent_reference':entries=(entries[0],replace(entries[1],reference_decision=D.ACCEPT,reference_scope='authored_narrow_property_only_not_award_truth'))+entries[2:]
-    else:entries=(replace(entries[0],origin='preserved_public_unverified',reference_decision=None),)+entries[1:]
-    with pytest.raises((ValueError,TypeError)):replace(task_set,entries=entries)
+    with pytest.raises((ValueError,TypeError)):
+        entries=task_set.entries
+        if attack=='reverse':entries=entries[::-1]
+        elif attack=='duplicate':entries=(entries[0],)*11
+        elif attack=='remove':entries=entries[:-1]
+        elif attack=='invent_reference':entries=(entries[0],replace(entries[1],reference_decision=D.ACCEPT,reference_scope='authored_narrow_property_only_not_award_truth'))+entries[2:]
+        else:entries=(replace(entries[0],origin='preserved_public_unverified',reference_decision=None),)+entries[1:]
+        replace(task_set,entries=entries)
 
 
 @pytest.mark.parametrize('label',['Alice Example','name@example.test','123456789','127.0.0.1','P-1234567890123456','P-aaaaaaaa00000001',

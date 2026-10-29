@@ -91,8 +91,8 @@ and removes prior responses from aggregate performance denominators.
 Session states are NOT_STARTED, IN_PROGRESS, COMPLETED, WITHDRAWN and INVALIDATED.
 Enrollment is NOT_STARTED / NOT_REQUESTED, never fabricated consent. An explicit
 protocol/governance-bound receipt must acknowledge purpose, voluntariness and
-withdrawal before START. Timing needs a separate acknowledgment. Decline is
-terminal without responses. WITHDRAWN/INVALIDATED/NOT_STARTED cannot contribute
+withdrawal before START. Timing needs a separate acknowledgment; declining timing can continue an
+untimed session. Declining the study is terminal without responses. WITHDRAWN/INVALIDATED/NOT_STARTED cannot contribute
 performance statistics. In-progress and completed eligible sessions remain
 separate completion-state counts; individual recorded task responses do not imply
 that an entire session completed.
