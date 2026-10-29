@@ -128,3 +128,14 @@ python -m src.parent_evidence --demo --run-dir reports/NEW_parent_demo
 python -m src.parent_evidence --root reports/p4a-live-24 \
   --holdout-root reports/b4-live-holdout --run-dir reports/NEW_parent_reanalysis
 ```
+
+Phase 4C2 adds a separate [SAM Contract Awards validation harness](docs/sam-contract-awards-validation.md)
+and [preregistered protocol](docs/sam-validation-protocol-v1.json). Without an
+already configured credential, live observations remain unavailable and the
+recommendation is **Offline prototype only**. Synthetic paging never authorizes
+live continuation or changes production, financial or readiness gates:
+
+```sh
+python -m src.sam_validation --offline --run-dir reports/NEW_sam_access_report
+python -m src.sam_validation --demo --run-dir reports/NEW_sam_validation_demo
+```
