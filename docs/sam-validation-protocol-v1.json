@@ -1,0 +1,36 @@
+{
+  "schema_type": "SAMValidationProtocol",
+  "schema_version": 1,
+  "version": "sam-validation-protocol-v1",
+  "baseline_commit": "cc4ed245adccc9809317380f00afe3690bbda589",
+  "baseline_implementation_sha256": "d444cc1da3c8729d1f8713e77413424de8bc8744a58ce1bbc860d5f3af02ed23",
+  "frozen_protocols": {
+    "parent-identity-protocol-v1.json": "c2dc79a231f8243395635e90298f5099633b0d5859ec32d3619071b5816f754d",
+    "readiness-protocol-v1.json": "063bd4d435624b02fe9ff4cd3da648e5388ed234485e427937c319eccedb6d88"
+  },
+  "frozen_inventories": {
+    "frozen_pilot": "02b45a4c059b48a798689b842bef949a44b48996cba20da9fd3a7ee047fd0a1f",
+    "holdout": "ff0f4393b07cd69f282e2ea14e4f2571a3a53760d25827e711d0ddeb6d7b34a8"
+  },
+  "maximum_subjects": 3,
+  "maximum_HTTP_requests": 12,
+  "maximum_pages_per_subject": 2,
+  "maximum_response_bytes": 1048576,
+  "maximum_output_bytes": 33554432,
+  "timeout_seconds": 10,
+  "automatic_retries": 0,
+  "redirects": "none",
+  "endpoint": "https://api.sam.gov/contract-awards/v1/search",
+  "method": "GET",
+  "authentication": "already_configured_SAM_GOV_API_KEY_only_never_discover_or_acquire",
+  "subjects": "explicit_native_contexts_frozen_in_new_run_plan_before_requests_no_replacements_no_name_or_agency_crosswalk",
+  "pagination": "live_first_page_only_until_offset_contract_authoritatively_resolved_nonterminal_stops_unknown_synthetic_modes_never_authorize_live",
+  "stop": "authentication_schema_unsafe_pagination_contradiction_integrity_or_source_error",
+  "capture": "append_only_reservation_before_request_no_automatic_resume_uncertain_interruption_never_complete_no_secret_persistence",
+  "evidence": "original_application_response_bytes_when_safe_never_wire_capture_redacted_or_rejected_body_not_byte_exact",
+  "identity": "exact_native_PIID_identity_subtier_parent_and_requested_action_only_missing_never_no_parent",
+  "revision": "native_versions_timestamps_corrections_and_deletions_observed_separately_no_common_revision_certificate",
+  "migration": "offline_prototype_without_authenticated_validation_no_production_or_financial_or_readiness_integration",
+  "metrics": "separate_synthetic_and_authenticated_cohorts_live_unavailable_without_access_no_population_estimates",
+  "success": "preserved_evidence_explicit_unknowns_and_reproducibility_not_minimum_match_or_migration_target"
+}
