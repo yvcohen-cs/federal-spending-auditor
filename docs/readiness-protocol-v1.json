@@ -1,0 +1,22 @@
+{
+  "schema_type": "ReadinessProtocol",
+  "schema_version": 1,
+  "version": "readiness-protocol-v1",
+  "profile": "frozen-live-pilot",
+  "baseline_main_commit": "f0bc3e4fd22e403d5c92eb5e6215565075d00a03",
+  "preregistration_implementation_sha256": "5105866093d4e9c039e3020af1a2f61ceb849404c29699a65fb0dea12791e312",
+  "original_implementation_sha256": "c29ecb013ff8a62e097fafb91e52d1dddc1cbc060ecadb1ba4eb085cde7287c9",
+  "frozen_sample_sha256": "a37d71044603966ce9124b93790ac99a0c0484f481175cab096defaffcbc6557",
+  "frozen_inventory_sha256": "02b45a4c059b48a798689b842bef949a44b48996cba20da9fd3a7ee047fd0a1f",
+  "frozen_pilot_plan_sha256": "e1e39590e9f8caa35522cd7ef6a80a584e669322601ba2ca34e68092fbff1af0",
+  "holdout_award_limit": 3,
+  "holdout_frame_limit": 6,
+  "holdout_http_limit": 10,
+  "holdout_fiscal_year": 2023,
+  "holdout_award_type": "D",
+  "holdout_selection": "sorted_native_generated_id_excluding_frozen_cohort_no_replacements",
+  "holdout_stop": "first_scope_conflict_unsupported_schema_unsafe_continuation_integrity_failure_or_source_error",
+  "dimension_rule": "all_observed_requirements_or_explicit_conditional_unknown_no_weighting",
+  "mode_rule": "offline_scoped_research_only_progressively_stricter_all_required_dimensions",
+  "hard_gate_rule": "any_observed_violation_blocks_every_mode_unknown_never_passes_as_proof"
+}
