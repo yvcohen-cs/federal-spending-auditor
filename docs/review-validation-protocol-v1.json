@@ -1,0 +1,130 @@
+{
+  "schema_type": "ReviewValidationProtocol",
+  "schema_version": 1,
+  "version": "review-validation-protocol-v1",
+  "baseline_commit": "150a24f415394a88262c8c0c976ba5212cfbe825",
+  "frozen_protocols": {
+    "readiness-protocol-v1.json": "063bd4d435624b02fe9ff4cd3da648e5388ed234485e427937c319eccedb6d88",
+    "parent-identity-protocol-v1.json": "c2dc79a231f8243395635e90298f5099633b0d5859ec32d3619071b5816f754d",
+    "sam-validation-protocol-v1.json": "309520d7c4e9746db48ced369d73934f4150cfb48e47cfca546d691a4360a985",
+    "sam-semantics-protocol-v1.json": "8352b874f26fb3de80190da50066eeba4457b6a529849a07c481b2fe6b0fd0d6",
+    "sam-documentation-matrix-v1.json": "b3bc299e07ad47c551db637faffa7ad6418b263b2c608483751c244c24983171"
+  },
+  "frozen_inventories": {
+    "p4a-live-24": "02b45a4c059b48a798689b842bef949a44b48996cba20da9fd3a7ee047fd0a1f",
+    "b4-live-holdout": "ff0f4393b07cd69f282e2ea14e4f2571a3a53760d25827e711d0ddeb6d7b34a8"
+  },
+  "mode": "entirely_offline_no_credentials_no_live_collection",
+  "maximum_tasks": 100,
+  "maximum_events": 1000,
+  "maximum_output_bytes": 33554432,
+  "case_selection": "purposive_authored_synthetic_controls_not_population_sample",
+  "cases": [
+    {
+      "case_id": "verified_identity",
+      "expected_focus_status": "VERIFIED",
+      "sequence_A": "ACCEPT_EVIDENCE",
+      "sequence_B": "ACCEPT_EVIDENCE",
+      "expect_integrity_block": false
+    },
+    {
+      "case_id": "ambiguous_identity",
+      "expected_focus_status": "INSUFFICIENT",
+      "sequence_A": "NEEDS_MORE_EVIDENCE",
+      "sequence_B": "ESCALATE_FOR_REVIEW",
+      "expect_integrity_block": false
+    },
+    {
+      "case_id": "missing_parent",
+      "expected_focus_status": "INSUFFICIENT",
+      "sequence_A": "NEEDS_MORE_EVIDENCE",
+      "sequence_B": "NEEDS_MORE_EVIDENCE",
+      "expect_integrity_block": false
+    },
+    {
+      "case_id": "contradictory_parent",
+      "expected_focus_status": "CONFLICTING",
+      "sequence_A": "ESCALATE_FOR_REVIEW",
+      "sequence_B": "NEEDS_MORE_EVIDENCE",
+      "expect_integrity_block": false
+    },
+    {
+      "case_id": "unsupported_instrument",
+      "expected_focus_status": "UNSUPPORTED",
+      "sequence_A": "NEEDS_MORE_EVIDENCE",
+      "sequence_B": "ESCALATE_FOR_REVIEW",
+      "expect_integrity_block": false
+    },
+    {
+      "case_id": "incomplete_pagination",
+      "expected_focus_status": "INSUFFICIENT",
+      "sequence_A": "NEEDS_MORE_EVIDENCE",
+      "sequence_B": "NEEDS_MORE_EVIDENCE",
+      "expect_integrity_block": false
+    },
+    {
+      "case_id": "duplicate_records",
+      "expected_focus_status": "VERIFIED",
+      "sequence_A": "ACCEPT_EVIDENCE",
+      "sequence_B": "REJECT_EVIDENCE",
+      "expect_integrity_block": false
+    },
+    {
+      "case_id": "missing_counterpart",
+      "expected_focus_status": "INSUFFICIENT",
+      "sequence_A": "NEEDS_MORE_EVIDENCE",
+      "sequence_B": "NEEDS_MORE_EVIDENCE",
+      "expect_integrity_block": false
+    },
+    {
+      "case_id": "unknown_revision",
+      "expected_focus_status": "INSUFFICIENT",
+      "sequence_A": "NEEDS_MORE_EVIDENCE",
+      "sequence_B": "ESCALATE_FOR_REVIEW",
+      "expect_integrity_block": false
+    },
+    {
+      "case_id": "conflicting_money",
+      "expected_focus_status": "CONFLICTING",
+      "sequence_A": "NEEDS_MORE_EVIDENCE",
+      "sequence_B": "ESCALATE_FOR_REVIEW",
+      "expect_integrity_block": false
+    },
+    {
+      "case_id": "tampered_reference",
+      "expected_focus_status": "INSUFFICIENT",
+      "sequence_A": null,
+      "sequence_B": null,
+      "expect_integrity_block": true
+    },
+    {
+      "case_id": "unavailable_capture",
+      "expected_focus_status": "INSUFFICIENT",
+      "sequence_A": "NEEDS_MORE_EVIDENCE",
+      "sequence_B": "NEEDS_MORE_EVIDENCE",
+      "expect_integrity_block": false
+    }
+  ],
+  "duplicate_records_disagreement": "deliberately_planted_accept_reject_conflict_to_test_preservation_not_ground_truth_or_reviewer_accuracy",
+  "simulations": "two_separately_preregistered_scripted_sequences_no_actual_human_performance_claim",
+  "metrics": [
+    "task_completeness",
+    "traceability",
+    "citation_validity",
+    "decision_replay",
+    "unresolved_obligations",
+    "contradiction_preservation",
+    "review_state_consistency",
+    "report_integrity"
+  ],
+  "positive_claims": "require_revalidated_primary_source_citations_never_reviewer_assertion_only",
+  "rationale": "structured_interpretation_scope_uncertainty_citations_and_all_missing_obligations_acknowledged",
+  "attribution": "explicit_simulation_or_self_reported_human_label_never_authenticated_identity",
+  "conflicts": "all_decisions_retained_no_last_write_winner_escalate",
+  "financial_authorization": false,
+  "production_screening_authorized": false,
+  "frozen_readiness_upgrade": false,
+  "human_usability": "UNKNOWN_until_actual_study",
+  "human_throughput": "UNKNOWN_until_actual_study",
+  "acceptance": "all_offline_integrity_controls_pass_all_tasks_bound_and_replayable_no_unknown_to_verified_promotion"
+}
