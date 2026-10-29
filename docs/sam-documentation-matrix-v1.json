@@ -1,0 +1,231 @@
+{
+  "schema_type": "SAMDocumentationMatrix",
+  "schema_version": 1,
+  "version": "sam-documentation-matrix-v1",
+  "reviewed_on": "2026-10-29",
+  "states": [
+    "DOCUMENTED",
+    "DOCUMENTATION_CONFLICT",
+    "AUTHENTICATED_OBSERVED",
+    "SYNTHETIC_ONLY",
+    "UNKNOWN",
+    "UNSUPPORTED"
+  ],
+  "sources": [
+    {
+      "id": "guide",
+      "url": "https://open.gsa.gov/api/contract-awards/",
+      "retrieved_on": "2026-10-29",
+      "version": "published v1 guide; no immutable revision advertised",
+      "bytes": 276169,
+      "sha256": "46cb995d2d026bef0d5a1e85ff2ec2220c3775b9d3701fded4895f5244ac7fb2"
+    },
+    {
+      "id": "openapi",
+      "url": "https://open.gsa.gov/api/contract-awards/v1/openapi.yaml",
+      "retrieved_on": "2026-10-29",
+      "version": "OpenAPI 3.0.1; info.version 1.0",
+      "bytes": 53141,
+      "sha256": "87ab11d503a19a622dfbb1a1ea8fa840f19440a83b0b2d89cf6132ddb3cfb8fc"
+    },
+    {
+      "id": "variance",
+      "url": "https://open.gsa.gov/api/contract-awards/v1/FPDSvsSAM-ContractDataAPI.pdf",
+      "retrieved_on": "2026-10-29",
+      "version": "Last updated September 08, 2025",
+      "bytes": 261750,
+      "sha256": "699018903f1f79ebb5d2f53fc71db9fad2a94cbe0ffaad63df436bf88e93496e"
+    }
+  ],
+  "findings": [
+    {
+      "id": "offset",
+      "knowledge_state": "DOCUMENTATION_CONFLICT",
+      "finding": "Guide request offset describes page index/default 0; OpenAPI GET offset default 1, examples echo offset 1 without explicit submission and offset 25/limit 5. No unique zero/one-origin or row/page contract established.",
+      "locator": "guide request offset / examples 1,3,5; openapi paths.search.get.parameters.offset",
+      "source_ids": [
+        "guide",
+        "openapi"
+      ],
+      "authenticated_observed": false,
+      "next_action": "Obtain authoritative clarification with exact first and next request examples, then preregister bounded observations."
+    },
+    {
+      "id": "counters",
+      "knowledge_state": "DOCUMENTED",
+      "finding": "Guide lists offset, limit and totalRecords as Number; published examples encode strings. Coherent counters do not establish stable ordering, snapshot consistency, query recall or complete history.",
+      "locator": "guide response parameters; openapi ContractData response counters",
+      "source_ids": [
+        "guide",
+        "openapi"
+      ],
+      "authenticated_observed": false,
+      "next_action": "Compare exact submitted parameters and original response counter types; verify sorting/snapshot guarantees."
+    },
+    {
+      "id": "status",
+      "knowledge_state": "DOCUMENTATION_CONFLICT",
+      "finding": "Guide transactionData.status is an object with code/name; OpenAPI TransactionData.status is string. Preserve both shapes without inventing active/deleted semantics.",
+      "locator": "guide awardDetails.transactionData.status; openapi components.schemas.TransactionData",
+      "source_ids": [
+        "guide",
+        "openapi"
+      ],
+      "authenticated_observed": false,
+      "next_action": "Request schema-specific status vocabulary and deletion applicability."
+    },
+    {
+      "id": "instrument",
+      "knowledge_state": "DOCUMENTED",
+      "finding": "Award versus IDV context changes type code meaning. Schema/core version and instrument context are separate.",
+      "locator": "guide coreData; openapi CoreData",
+      "source_ids": [
+        "guide",
+        "openapi"
+      ],
+      "authenticated_observed": false,
+      "next_action": "Verify actual native instrument context and schema subset before identity assessment."
+    },
+    {
+      "id": "piid_subtier",
+      "knowledge_state": "DOCUMENTED",
+      "finding": "Native contractId.piid and contractId.subtier.code retained exactly; piidSubtierCode is identity query agency, not contracting or funding agency.",
+      "locator": "guide Contract ID / query piidSubtierCode; variance request/response mappings",
+      "source_ids": [
+        "guide",
+        "openapi",
+        "variance"
+      ],
+      "authenticated_observed": false,
+      "next_action": "Inspect requested and returned native components; do not infer crosswalks."
+    },
+    {
+      "id": "organization",
+      "knowledge_state": "DOCUMENTED",
+      "finding": "Contracting and funding subtier paths are separate from identity subtier; the variance guide maps these fields separately.",
+      "locator": "guide coreData.federalOrganization; variance pages 4,6",
+      "source_ids": [
+        "guide",
+        "openapi",
+        "variance"
+      ],
+      "authenticated_observed": false,
+      "next_action": "Retain all three source-native agency fields and resolve conflicting context manually."
+    },
+    {
+      "id": "parent",
+      "knowledge_state": "DOCUMENTED",
+      "finding": "referencedIDVPiid and referencedIDVSubtier.code represent a pair. Missing/null/empty/sentinel/unsupported fields do not prove no parent; no SAM definitive-contract positive absence rule established.",
+      "locator": "guide contractId; openapi ContractId",
+      "source_ids": [
+        "guide",
+        "openapi"
+      ],
+      "authenticated_observed": false,
+      "next_action": "Verify native parent pair and instrument applicability; obtain authoritative absence semantics separately."
+    },
+    {
+      "id": "action",
+      "knowledge_state": "DOCUMENTED",
+      "finding": "Modification and transaction numbers are native strings and distinct from document schema/version. Neither certifies synchronized cross-source revisions.",
+      "locator": "guide contractId.modificationNumber / transactionNumber; openapi ContractId",
+      "source_ids": [
+        "guide",
+        "openapi"
+      ],
+      "authenticated_observed": false,
+      "next_action": "Retain exact action identifiers and separately establish stable revision lineage."
+    },
+    {
+      "id": "prior_identifier",
+      "knowledge_state": "UNKNOWN",
+      "finding": "oldContractId is documented but direction, uniqueness and authoritative correction/replacement linkage are not established by this audit. Never substitute old PIID or silently merge records.",
+      "locator": "openapi AwardSummary.oldContractId / OldContractId",
+      "source_ids": [
+        "openapi",
+        "guide"
+      ],
+      "authenticated_observed": false,
+      "next_action": "Obtain source-native correction certificate and preserve both original records."
+    },
+    {
+      "id": "money",
+      "knowledge_state": "DOCUMENTED",
+      "finding": "Action obligations and aggregate totals have distinct paths; the variance mapping alone does not certify currency, scale, basis, revision or history compatibility. No arithmetic authorized.",
+      "locator": "guide awardDetails dollars/totalContractDollars; variance response mappings",
+      "source_ids": [
+        "guide",
+        "openapi",
+        "variance"
+      ],
+      "authenticated_observed": false,
+      "next_action": "Establish all revision-conditioned comparison proof obligations before C5 mapping."
+    },
+    {
+      "id": "times",
+      "knowledge_state": "DOCUMENTED",
+      "finding": "Creation, approval, signing, performance start, last modification and retrieval are distinct. publicDeltaDate selects last-modified or reveal date; no per-record reveal timestamp path validated.",
+      "locator": "guide date queries / transactionData / publicDeltaDate",
+      "source_ids": [
+        "guide",
+        "openapi"
+      ],
+      "authenticated_observed": false,
+      "next_action": "Verify timestamp semantics, timezone, visibility lag and as-of coverage independently."
+    },
+    {
+      "id": "deletion_window",
+      "knowledge_state": "DOCUMENTED",
+      "finding": "Deleted-only query documents records deleted within last 6 months, subject to visibility. This is not complete deletion history or correction lineage. No deletion query is run here.",
+      "locator": "guide Deleted Contracts / deletedStatus",
+      "source_ids": [
+        "guide",
+        "openapi"
+      ],
+      "authenticated_observed": false,
+      "next_action": "Obtain complete lifecycle evidence and entitlement-specific deletion semantics."
+    },
+    {
+      "id": "job_deleted",
+      "knowledge_state": "UNSUPPORTED",
+      "finding": "OpenAPI ExportLoggingInfo.deleted describes an extract/job object; mapping this boolean onto an award-record deletion is unsupported.",
+      "locator": "openapi ExportLoggingInfo.deleted",
+      "source_ids": [
+        "openapi"
+      ],
+      "authenticated_observed": false,
+      "next_action": "Require an authoritative award-level deletion indicator, never job state."
+    },
+    {
+      "id": "history_freshness",
+      "knowledge_state": "UNKNOWN",
+      "finding": "No complete transaction/revision history, synchronized revision, stable pagination snapshot or source freshness guarantee established. Shared procurement lineage is not independent corroboration.",
+      "locator": "guide visibility / delta / deletion limits; variance introduction",
+      "source_ids": [
+        "guide",
+        "openapi",
+        "variance"
+      ],
+      "authenticated_observed": false,
+      "next_action": "Seek authoritative lifecycle snapshots with explicit coverage and source lineage limitations."
+    },
+    {
+      "id": "offline_harness",
+      "knowledge_state": "SYNTHETIC_ONLY",
+      "finding": "Authored fixtures exercise both zero-origin hypotheses, content variants and security boundaries only. They do not validate SAM behavior.",
+      "locator": "tests/test_sam_semantics.py",
+      "source_ids": [],
+      "authenticated_observed": false,
+      "next_action": "Collect separately authorized bounded observations only after an approved binding and frozen selection exist."
+    },
+    {
+      "id": "authenticated_validation",
+      "knowledge_state": "UNKNOWN",
+      "finding": "No approved key binding is available for this execution; authenticated behavior remains unavailable.",
+      "locator": "environment readiness and presence-only check",
+      "source_ids": [],
+      "authenticated_observed": false,
+      "next_action": "Use the authorized environment configuration workflow if the owner later elects live research."
+    }
+  ]
+}
