@@ -1,0 +1,19 @@
+{
+  "schema_type": "ReviewerDecisionInput",
+  "schema_version": 1,
+  "task_id": "REPLACE_WITH_EXACT_TASK_ID_FROM_REPORT",
+  "decision": "NEEDS_MORE_EVIDENCE",
+  "rationale": {
+    "schema_type": "DecisionRationale",
+    "schema_version": 1,
+    "interpretation": null,
+    "scope_explanation": null,
+    "uncertainty": null,
+    "citation_ids": [],
+    "acknowledged_obligations": []
+  },
+  "kind": "ACTUAL_HUMAN_REVIEW",
+  "attribution_label": null,
+  "timestamp_utc": null,
+  "follow_up": []
+}
