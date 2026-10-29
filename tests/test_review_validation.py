@@ -403,3 +403,9 @@ def test_decision_log_cannot_be_nested_in_other_managed_run(tmp_path,baseline,ma
     source,m=baseline;protected=tmp_path/'protected';protected.mkdir();(protected/marker).write_text('{}')
     with pytest.raises(EvidenceError):append(protected/'new-log',source,m)
     assert not (protected/'new-log').exists() and (protected/marker).read_text()=='{}'
+
+
+def test_task_rule_inventory_includes_financial_native_parent_and_parser_versions(baseline):
+    source,_=baseline;m=build_tasks(source)
+    expected={m.packets.financial_run.rule_version}|{p.rule_version for p in m.parent.assessments}|{p.baseline.parser_version for p in m.parent.assessments}
+    assert all(expected<=set(t.rule_versions) for t in m.tasks)

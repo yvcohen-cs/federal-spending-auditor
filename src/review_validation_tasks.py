@@ -67,8 +67,12 @@ def project_tasks(manifest,parent,history,inventory_json):
             ('financial_authorization',S.NOT_EVALUATED if financial is None else S.INSUFFICIENT,'This review layer cannot authorize additional arithmetic; existing C5 result is unchanged.'),
             ('traceability',S.VERIFIED,'Primary bytes, locators, provenance and packet projection revalidated; hashes are not source-authenticity proof.')]
         dimensions=ordered(ReviewDimension(name=n,status=s,rationale=t,citation_ids=ids) for n,s,t in states)
+        versions={RULE,workflow_spec()['version'],packet.rule_version,decision.rule_version,parent.rule_version,history.rule_version,manifest.financial_run.rule_version}
+        versions.update(p.rule_version for p in parents)
+        versions.update(p.scope_rule_version for p in parents)
+        versions.update(p.baseline.parser_version for p in parents)
         result.append(ReviewerTask(packet_id=packet.packet_id,claim_id=packet.claim.claim_id,
-            source_snapshot_sha256=snapshot,claim=packet.comparison.scope,rule_versions=tuple(sorted({RULE,workflow_spec()['version'],packet.rule_version,decision.rule_version,parent.rule_version,history.rule_version})),
+            source_snapshot_sha256=snapshot,claim=packet.comparison.scope,rule_versions=tuple(sorted(versions)),
             citations=citations,packet_citation_ids=packet_ids,context_citation_ids=tuple(sorted(known-set(packet_ids))),observed_fields=ordered(fields),dimensions=dimensions,
             limitations=tuple(sorted({l.detail for l in packet.limitations}|set(manifest.financial_run.limitations)|{'Reviewer labels are self-reported; no authenticated identity or source-reliability guarantee.'})),
             missing_proof_obligations=tuple(sorted(d.name for d in dimensions if d.status not in (S.VERIFIED,S.NOT_EVALUATED)))))
