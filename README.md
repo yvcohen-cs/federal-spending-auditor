@@ -116,3 +116,15 @@ Tests use synthetic/mocked API and FPDS responses and require no network access:
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q
 ```
+
+Phase 4C1 adds an opt-in [parent identity and query-scope research layer](docs/parent-identity.md)
+with a [preregistered experimental protocol](docs/parent-identity-protocol-v1.json).
+It revalidates saved source evidence, preserves unknown parent context, and reports
+cited before/after associations without granting financial eligibility or changing
+legacy collection, reconciliation, review or readiness defaults:
+
+```sh
+python -m src.parent_evidence --demo --run-dir reports/NEW_parent_demo
+python -m src.parent_evidence --root reports/p4a-live-24 \
+  --holdout-root reports/b4-live-holdout --run-dir reports/NEW_parent_reanalysis
+```

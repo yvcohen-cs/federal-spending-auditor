@@ -1,0 +1,24 @@
+{
+  "schema_type": "ParentIdentityEvaluationProtocol",
+  "schema_version": 1,
+  "version": "parent-identity-experiment-v1",
+  "baseline_commit": "aa8112abf78b472db04c6308ef1bd448b88cb479",
+  "baseline_rule": "record-scope-v1",
+  "experimental_rule": "parent-scope-v1",
+  "cohorts": {
+    "frozen_pilot": {"slots": 24, "inventory_sha256": "02b45a4c059b48a798689b842bef949a44b48996cba20da9fd3a7ee047fd0a1f"},
+    "holdout": {"slots": 3, "inventory_sha256": "ff0f4393b07cd69f282e2ea14e4f2571a3a53760d25827e711d0ddeb6d7b34a8"}
+  },
+  "baseline_occurrences": {"verified_in_scope": 111, "verified_out_of_scope": 88, "ambiguous_scope": 182, "insufficient_identity": 0, "unsupported_schema": 0},
+  "evaluation": "saved_evidence_only_no_http_no_replacements_include_unavailable_slots",
+  "positive_rules": "exact_native_parent_pair_or_documented_source_instrument_applicability_with_positive_native_type_evidence",
+  "absence_policy": "missing_null_empty_placeholder_and_generated_identifier_alone_never_prove_no_parent",
+  "conflicts": "retain_all_occurrences_and_block_contradictory_native_versions",
+  "metrics": "occurrences_distinct_source_contents_slots_and_within_slot_action_keys_separate_no_population_precision_claim",
+  "transition_authorization": "every_changed_occurrence_requires_rule_version_raw_field_paths_values_and_C6_citation",
+  "downstream": "experimental_scope_only_no_new_C4_C5_history_revision_freshness_or_readiness_authorization",
+  "live_validation": "none_unless_specific_documented_question_answerable_by_existing_authorized_endpoint_then_explicit_opt_in_max_3_studied_awards_12_requests_no_credentials_or_endpoint_changes",
+  "success": "evidence_supported_classification_even_if_zero_reclassifications_no_metric_targets",
+  "outputs": "deterministic_JSON_Markdown_escaped_offline_HTML_no_review_event_fork",
+  "frozen_protocol": "docs/readiness-protocol-v1.json_unchanged"
+}
