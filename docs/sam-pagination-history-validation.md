@@ -233,3 +233,9 @@ and collect strictly bounded first-page observations. Evaluate those separately
 before any proposal to enable continuation. Establish identity, lifecycle,
 financial/history/freshness proof obligations separately before considering a
 human-reviewed parallel migration. Production migration is not authorized.
+
+Request reservations, completed attempt metadata, received HTTP responses,
+HTTP 2xx responses, complete response bodies, parsed pages and native record
+occurrences have separate counters. A timed-out attempt can have a reservation
+without a received response; a 401/429 response is received without a successful
+HTTP status or parsed award page. Attempt counts do not prove wire delivery.

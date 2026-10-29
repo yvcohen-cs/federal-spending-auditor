@@ -423,3 +423,20 @@ def test_failed_live_attempt_is_not_authenticated_behavior():
         value=assess((obs(http_status=status),),profile='live')
         assert value['evidence_basis']=='UNKNOWN'
     assert assess((obs(),),profile='live')['evidence_basis']=='AUTHENTICATED_OBSERVED'
+
+
+@pytest.mark.parametrize('status',[200,401,403,429,500,None])
+def test_request_reservations_responses_and_successes_have_separate_counts(tmp_path,status):
+    p=tmp_path/'capture'
+    if status is None:
+        def timeout(*args):
+            return {'status':None,'retrieved_at_utc':None,'body_complete':False,'error_code':'timeout','headers':{}},None
+        collect(p,synthetic_selection(),live=True,fixture_transport=timeout)
+    else:
+        capture(p,status=status)
+    m=report((p,))['synthetic_metrics']
+    assert m['HTTP_request_reservations']==m['HTTP_attempted']==1
+    assert m['HTTP_responses_received']==int(status is not None)
+    assert m['HTTP_successful']==int(status==200)
+    assert m['complete_response_bodies']==int(status is not None)
+    assert m['pages_parsed']==int(status==200)

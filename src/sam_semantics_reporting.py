@@ -77,8 +77,12 @@ def capture_report(path):
             'source_field_observations': [f.to_dict() for f in row.fields], 'citation': row.citation.to_dict(),
             'knowledge_state': 'SYNTHETIC_ONLY' if profile=='synthetic' else 'AUTHENTICATED_OBSERVED',
             'semantic_limit': 'native_record_assertion_only_no_common_revision_or_verified_no_parent'})
+    metrics = dict(value['metrics'])
+    metrics.update(HTTP_request_reservations=value['capture_result']['attempts_reserved'],
+        HTTP_responses_received=sum(a['metadata']['status'] is not None for a in requests),
+        complete_response_bodies=sum(a['metadata']['body_complete'] for a in requests))
     return {'state': 'revalidated_bounded_capture', 'inventory_sha256': digest(hashes),
-        'c2_inventory_sha256': value['capture_inventory_sha256'], 'profile': profile, 'metrics': value['metrics'],
+        'c2_inventory_sha256': value['capture_inventory_sha256'], 'profile': profile, 'metrics': metrics,
         'pagination': [{'subject_index': index, 'assessment': assess_pagination(obs, profile=profile, interrupted='unexpected_schema_or_pagination' in value['artifact_issues'])} for index, obs in sorted(observations.items())],
         'records': identity, 'requests': requests, 'blockers': value['artifact_issues']}, tuple(records)
 
@@ -104,8 +108,9 @@ def report(captures=(), *, access='not_checked_offline_no_credential_read'):
     metrics = None
     if reports and all(r['metrics'] is not None for r in reports):
         metrics = {key: sum(r['metrics'][key] for r in reports) for key in
-            ('HTTP_attempted', 'HTTP_successful', 'pages_parsed', 'native_record_occurrences')}
-        metrics['unit'] = 'separate_requests_pages_record_occurrences_not_population_estimates'
+            ('HTTP_request_reservations', 'HTTP_attempted', 'HTTP_responses_received', 'HTTP_successful',
+             'complete_response_bodies', 'pages_parsed', 'native_record_occurrences')}
+        metrics['unit'] = 'reservations_attempt_completions_responses_pages_and_occurrences_separate_not_wire_delivery_or_population_estimates'
     return {'schema_type': 'SAMSemanticsReport', 'schema_version': 1, 'version': 'sam-semantics-report-v1',
         'protocol': pinned('sam-semantics-protocol-v1.json', PROTOCOL_SHA),
         'documentation_matrix': pinned('sam-documentation-matrix-v1.json', MATRIX_SHA),
