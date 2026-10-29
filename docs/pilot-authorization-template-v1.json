@@ -1,0 +1,11 @@
+{
+  "schema_type": "StudyAuthorization",
+  "schema_version": 1,
+  "protocol_id": null,
+  "task_set_digest": null,
+  "governance_sha256": null,
+  "reference": null,
+  "owner_authorized": false,
+  "privacy_storage_ready": false,
+  "voluntary_recruitment_ready": false
+}

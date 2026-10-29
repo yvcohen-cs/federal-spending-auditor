@@ -1,0 +1,62 @@
+{
+  "schema_type": "PilotPreparationProtocol",
+  "schema_version": 1,
+  "version": "pilot-preparation-protocol-v1",
+  "baseline_commit": "e3d6fd41f286520f158c509d9bbaf42d1ae37f81",
+  "frozen_protocols": {
+    "readiness-protocol-v1.json": "063bd4d435624b02fe9ff4cd3da648e5388ed234485e427937c319eccedb6d88",
+    "parent-identity-protocol-v1.json": "c2dc79a231f8243395635e90298f5099633b0d5859ec32d3619071b5816f754d",
+    "sam-validation-protocol-v1.json": "309520d7c4e9746db48ced369d73934f4150cfb48e47cfca546d691a4360a985",
+    "sam-semantics-protocol-v1.json": "8352b874f26fb3de80190da50066eeba4457b6a529849a07c481b2fe6b0fd0d6",
+    "sam-documentation-matrix-v1.json": "b3bc299e07ad47c551db637faffa7ad6418b263b2c608483751c244c24983171",
+    "review-validation-protocol-v1.json": "ca5614e9e8d378c48bd97ff4ffbcd160af74e2ca4a8ecc44c60b3707c092d944",
+    "review-workflow-v1.json": "8727639801e977dea4870a256cf697532e0d31b240123aae841411e674e81c3a",
+    "review-existing-evidence-plan-v1.json": "8b7ffc3995b9ad568b0814b3c68adddb388b4ad6ffac7a6890ad5098bde5dcde",
+    "human-review-study-v1.md": "7ecb871167c66f062b3a3f2f59f21b44dd1a842e39a28d6ff3f788eaf2337c91"
+  },
+  "frozen_inventories": {
+    "p4a-live-24": "02b45a4c059b48a798689b842bef949a44b48996cba20da9fd3a7ee047fd0a1f",
+    "b4-live-holdout": "ff0f4393b07cd69f282e2ea14e4f2571a3a53760d25827e711d0ddeb6d7b34a8"
+  },
+  "interface": "offline_terminal_one_task_at_a_time_no_server_accounts_telemetry_or_free_text_participant_fields",
+  "session_states": [
+    "NOT_STARTED",
+    "IN_PROGRESS",
+    "COMPLETED",
+    "WITHDRAWN",
+    "INVALIDATED"
+  ],
+  "measurement_kinds": [
+    "OBSERVED_HUMAN",
+    "SIMULATED",
+    "NOT_MEASURED",
+    "INVALID"
+  ],
+  "selection": "eleven_valid_4C4_controls_in_frozen_case_order_tampered_citation_is_blocked_software_control_not_valid_task_optional_exact_preregistered_public_task",
+  "human_pilot": "prospective_2_to_4_voluntary_consenting_reviewers_separate_owner_authorization_and_governance_required_not_conducted",
+  "consent": "explicit_current_protocol_bound_receipt_kind_must_match_session_no_fabricated_consent",
+  "privacy": "strict_opaque_pseudonyms_closed_rationale_codes_no_legal_names_emails_student_ids_IPs_or_raw_invalid_input_persisted",
+  "storage": "owner_only_POSIX_private_store_outside_any_git_worktree_source_roots_unchanged_local_capabilities_not_authenticated_identity",
+  "timing": "opt_in_monotonic_same_epoch_reading_and_response_entry_durations_cross_epoch_missing_invalid_not_fabricated",
+  "withdrawal": "append_only_withdrawn_state_all_prior_responses_excluded_from_performance_aggregates_no_resume",
+  "aggregate": "no_participant_labels_session_ids_ranking_or_per_person_profiles_human_cells_below_two_eligible_sessions_suppressed",
+  "simulated_demo": {
+    "sessions": 4,
+    "completed": 1,
+    "in_progress": 1,
+    "withdrawn": 1,
+    "invalidated": 1,
+    "eligible_response_count": 12,
+    "excluded_response_count": 1,
+    "expected_source_API_calls": 0
+  },
+  "maximum_sessions": 4,
+  "maximum_tasks": 12,
+  "maximum_events_per_session": 256,
+  "maximum_store_bytes": 33554432,
+  "actual_human_results": "UNKNOWN_UNTIL_SEPARATELY_AUTHORIZED_COMPLETED_STUDY",
+  "financial_eligibility_changed": false,
+  "frozen_readiness_upgrade": false,
+  "production_screening_authorized": false,
+  "success": "offline_integrity_privacy_and_reproducibility_controls_not_human_usability_or_throughput"
+}

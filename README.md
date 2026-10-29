@@ -163,3 +163,18 @@ python -m src.review_validation --study-root reports/NEW_c4_study --run-dir repo
 
 No actual human usability or throughput study has been completed. Review acceptance
 cannot authorize financial arithmetic, change frozen readiness or enable production screening.
+
+Phase 4C5 provides a minimal, offline [private terminal pilot workflow](docs/pilot-preparation.md)
+with consent/session controls, optional timing and aggregate-only reports. Raw
+stores and outputs must be outside git worktrees; no actual human study is authorized
+or claimed by this preparation phase.
+
+```sh
+python -m src.pilot_review --demo --study-root reports/SAVED_C4_STUDY --store /tmp/NEW_c5_simulation --output /tmp/NEW_c5_report
+```
+
+See the [prospective governance](docs/pilot-governance-v1.md),
+[unfilled consent template](docs/pilot-consent-template-v1.md), and
+[participant instructions](docs/pilot-participant-instructions-v1.md).
+Simulated results are separate from human measurements; accepting evidence cannot
+change financial eligibility, frozen readiness or screening authorization.

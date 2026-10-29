@@ -1,0 +1,36 @@
+{
+  "schema_type": "ProspectivePilotPlan",
+  "schema_version": 1,
+  "version": "prospective-pilot-v1",
+  "status": "NOT_CONDUCTED",
+  "reviewers": "approximately_2_to_4_eligible_voluntary_consented_adults",
+  "controls_order": [
+    "verified_identity",
+    "ambiguous_identity",
+    "missing_parent",
+    "contradictory_parent",
+    "unsupported_instrument",
+    "incomplete_pagination",
+    "duplicate_records",
+    "missing_counterpart",
+    "unknown_revision",
+    "conflicting_money",
+    "unavailable_capture"
+  ],
+  "tampered_citation": "C4 software_integrity_control_must_fail_before_valid_task_presentation",
+  "public_task": "exact_frozen_C4_existing_audit_root_inventory_first_sorted_claim_id_no_replacement",
+  "human_selection": "pilot-mixed-v1_requires_all_eleven_controls_plus_one_exact_public_task",
+  "freeze": "task_set_digest_and_evidence_inventory_before_authorization_consent_or_responses",
+  "reference": "ACCEPT_EVIDENCE_only_for_authored_verified_identity_narrow_property_not_award_truth_all_other_references_NOT_MEASURED",
+  "criteria": [
+    "all_source_and_session_integrity_controls_hold",
+    "all_withdrawn_invalid_sessions_excluded",
+    "no_identifying_fields_or_free_text_persisted",
+    "at_least_95_percent_required_worksheet_fields_when_actual_data_exist",
+    "retain_all_missing_uncertainty_no_financial_authority",
+    "report_observed_timing_with_valid_denominators_no_assumed_throughput"
+  ],
+  "changes": "new_preregistration_and_new_batch_before_new_data_no_posthoc_difficulty_or_threshold_changes",
+  "actual_results": null,
+  "production_authorization": false
+}
