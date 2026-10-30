@@ -1,0 +1,356 @@
+{
+  "schema_type": "TechnicalFindingsRegister",
+  "schema_version": 1,
+  "version": "technical-findings-v1",
+  "review_type": "TECHNICAL_CODE_REVIEW_NOT_EXTERNAL_CERTIFICATION",
+  "findings": [
+    {
+      "finding_id": "TA-001",
+      "category": "CONFIRMED_DEFECT",
+      "severity": "MEDIUM",
+      "affected": "coordinator_lifecycle.py:_load",
+      "claim": "DELETED accepted a dangling link under an allowed retired namespace because exists() follows links.",
+      "code_evidence": "state==DELETED and any(Path(...).exists())",
+      "practical_impact": "A tombstone/report could falsely assert that the managed namespace is absent.",
+      "assumptions": "Namespace write access after deletion; no MAC forgery required.",
+      "reproduction": "Create a dangling retired-batch link in a deleted synthetic workspace; baseline exists() is false.",
+      "remediation": "Use lexists() for every terminal namespace.",
+      "verification_status": "REMEDIATED",
+      "residual_limitations": "Does not discover copies, backups or privileged coherent rewrites.",
+      "tests": [
+        "test_deleted_namespace_dangling_link_rejected"
+      ]
+    },
+    {
+      "finding_id": "TA-002",
+      "category": "CONFIRMED_DEFECT",
+      "severity": "HIGH",
+      "affected": "coordinator_lifecycle.py:_tree,_verify_trees,_remove",
+      "claim": "Byte-identical file or directory replacement was not distinguished from the originally captured deletion target.",
+      "code_evidence": "Original manifest stores byte SHA and DIRECTORY_0700; only outer workspace inode is bound.",
+      "practical_impact": "Retirement/deletion could accept a replacement object and a different lock inode.",
+      "assumptions": "Write access between cooperative operations; this does not establish an external attacker or real-data exploit.",
+      "reproduction": "Move original object aside, copy exact bytes/modes into the same name and submit the original tip.",
+      "remediation": "Context v2 binds file/directory device+inode; recheck parents/files/rmdir targets, reject v1 destructive operations.",
+      "verification_status": "REMEDIATED_WITH_LIMITATIONS",
+      "residual_limitations": "Inode reuse and hostile same-user races still require trusted namespace/OS guarantees; not real-data authorization.",
+      "tests": [
+        "test_same_byte_target_replacement_rejected",
+        "test_legacy_capture_is_read_only",
+        "test_directory_replacement_at_rmdir_boundary"
+      ]
+    },
+    {
+      "finding_id": "TA-003",
+      "category": "DESIGN_LIMITATION",
+      "severity": "MEDIUM",
+      "affected": "coordinator_governance.py:CoordinatorChecklist; technical_assessment.py:ApprovalDossier",
+      "claim": "One-snapshot C6 contract cannot represent multiple conflicting declarations.",
+      "code_evidence": "CoordinatorChecklist requires exactly one record for each scope.",
+      "practical_impact": "A caller could present a favorable snapshot while omitting conflicting external records.",
+      "assumptions": "Access to multiple declarations; local references do not authenticate authorities.",
+      "reproduction": "Supply approved and rejected snapshots for the same bound scope.",
+      "remediation": "Add a separate immutable dossier preserving declarations; conflicts and cross-scope reference reuse block completeness.",
+      "verification_status": "IMPLEMENTED_NEW_LAYER",
+      "residual_limitations": "Cannot prove omitted declarations do not exist; a trusted external registry/resolution protocol remains absent.",
+      "tests": [
+        "test_conflicting_declarations_preserved",
+        "test_cross_scope_reference_reuse_blocks",
+        "test_dossier_replay_and_scope_expansion"
+      ]
+    },
+    {
+      "finding_id": "TA-004",
+      "category": "DESIGN_LIMITATION",
+      "severity": "LOW",
+      "affected": "coordinator_accessibility.py:accessible_terminal,show_task",
+      "claim": "Timing opt-out and observation-versus-inference need explicit plain-language introductions.",
+      "code_evidence": "C6 adapter previously only introduced numbered keyboard instructions.",
+      "practical_impact": "A user might conflate timing decline with study decline or source fields with assessments.",
+      "assumptions": "Presentation review only, no tested human effect.",
+      "reproduction": "Capture adapter output using synthetic input and inspect the first prompts.",
+      "remediation": "Add explicit timing-no-penalty and observation/inference instructions; keep closed choices and control escaping.",
+      "verification_status": "IMPLEMENTED_NOT_HUMAN_VALIDATED",
+      "residual_limitations": "Long evidence, source-path hints and actual assistive-technology behavior remain untested.",
+      "tests": [
+        "test_accessibility_plain_timing_and_observation_labels",
+        "test_terminal_control_preservation"
+      ]
+    },
+    {
+      "finding_id": "TA-005",
+      "category": "DESIGN_LIMITATION",
+      "severity": "HIGH",
+      "affected": "pilot_session_store.py:_authenticate; coordinator_lifecycle.py:_load",
+      "claim": "Local capabilities and HMACs are not person authentication.",
+      "code_evidence": "Secrets are owner-readable local files; HMAC key is in the same trust domain.",
+      "practical_impact": "Same-account actors can coherently rewrite or copy local records.",
+      "assumptions": "Same UID or privileged access.",
+      "reproduction": "Review key ownership/read paths; do not attempt real identity impersonation.",
+      "remediation": "Supervised isolation, authenticated administration and independent trusted anchors before real study use.",
+      "verification_status": "DOCUMENTED_BLOCKER",
+      "residual_limitations": "No external authentication or institutional authority verified.",
+      "tests": [
+        "test_capability_and_tip_rejection"
+      ]
+    },
+    {
+      "finding_id": "TA-006",
+      "category": "UNVERIFIED_ASSUMPTION",
+      "severity": "HIGH",
+      "affected": "coordinator_lifecycle.py:lifecycle_assessment",
+      "claim": "Local unlink does not prove deletion of backups or snapshots.",
+      "code_evidence": "backup_deletion remains UNKNOWN; no backup inventory or confirmation channel.",
+      "practical_impact": "Withdrawal requests could remain incomplete outside the managed namespace.",
+      "assumptions": "External copies/backups or filesystem snapshots exist or may exist.",
+      "reproduction": "Inspect report unknowns and prospective backup responsibilities only.",
+      "remediation": "Require approved copy inventory, authenticated deletion evidence and external coordinator verification.",
+      "verification_status": "UNRESOLVED_EXTERNAL",
+      "residual_limitations": "No secure-erasure or global revocation claim.",
+      "tests": [
+        "test_readiness_never_authorizes_humans_or_finances"
+      ]
+    },
+    {
+      "finding_id": "TA-007",
+      "category": "DESIGN_LIMITATION",
+      "severity": "MEDIUM",
+      "affected": "coordinator_lifecycle.py:delete,_verify_trees",
+      "claim": "Recovery validates surviving objects but has no durable per-file intent/commit receipts.",
+      "code_evidence": "DELETING accepts a subset of the original manifest.",
+      "practical_impact": "An outside deletion can be indistinguishable from an interrupted managed unlink.",
+      "assumptions": "External actor or storage loss during DELETING.",
+      "reproduction": "Interrupt after unlink, inspect survivor behavior without repairing events.",
+      "remediation": "Keep simulated-only scope; prospective real-data design needs per-object operation receipts and external reconciliation.",
+      "verification_status": "DOCUMENTED_BLOCKER",
+      "residual_limitations": "Existing recovery proves local survivors, not attribution of every missing object.",
+      "tests": [
+        "test_fault_boundaries_recover_or_reject"
+      ]
+    },
+    {
+      "finding_id": "TA-008",
+      "category": "DESIGN_LIMITATION",
+      "severity": "HIGH",
+      "affected": "coordinator_lifecycle.py:_remove",
+      "claim": "Check-then-unlink is not an atomic defense against hostile same-user namespace mutation.",
+      "code_evidence": "POSIX flock is advisory; stat/open/unlink are separate operations.",
+      "practical_impact": "Privileged or same-user writers can evade cooperative locks.",
+      "assumptions": "An actor can mutate the namespace outside the supported cooperative workflow.",
+      "reproduction": "Safe deterministic substitution at test hooks; no race against real records.",
+      "remediation": "Trusted supervised storage and independent OS/security design review before participant data.",
+      "verification_status": "UNRESOLVED_EXTERNAL",
+      "residual_limitations": "No atomic object-generation handle or cross-copy revocation.",
+      "tests": [
+        "test_directory_replacement_at_rmdir_boundary",
+        "test_fault_boundaries_recover_or_reject"
+      ]
+    },
+    {
+      "finding_id": "TA-009",
+      "category": "UNVERIFIED_ASSUMPTION",
+      "severity": "MEDIUM",
+      "affected": "coordinator_lifecycle.py:_tree",
+      "claim": "Device+inode identifiers are local filesystem observations, not cryptographic object identity.",
+      "code_evidence": "V2 manifest stores dev, ino and kind; filesystem generations are unavailable portably.",
+      "practical_impact": "Inode recycling or unsupported filesystem semantics can limit cross-process target guarantees.",
+      "assumptions": "Filesystem reuse/restore or privileged manipulation.",
+      "reproduction": "Review stat binding, retain original objects during replacement tests to avoid artificial inode reuse.",
+      "remediation": "Independent filesystem evaluation; fail closed on mismatches and never advertise race-proof/secure erasure.",
+      "verification_status": "UNRESOLVED_EXTERNAL",
+      "residual_limitations": "V2 is a bounded improvement, not real-data deletion approval.",
+      "tests": [
+        "test_same_byte_target_replacement_rejected"
+      ]
+    },
+    {
+      "finding_id": "TA-010",
+      "category": "UNVERIFIED_ASSUMPTION",
+      "severity": "HIGH",
+      "affected": "pilot_taskset.py:pin_sources,revalidate_tasks",
+      "claim": "Local hashes do not establish authoritative remote history/revision completeness.",
+      "code_evidence": "Inventory and primary-task rebuilding check preserved bytes only.",
+      "practical_impact": "Financial comparisons still require separate authoritative proof obligations.",
+      "assumptions": "Partial/stale source histories or unavailable authorized source access.",
+      "reproduction": "Review preserved source inventory semantics without collection.",
+      "remediation": "Preserve frozen financial/readiness gates; obtain separately authorized source validation.",
+      "verification_status": "UNCHANGED_EXTERNAL_BLOCKER",
+      "residual_limitations": "No source-wide completeness or production eligibility upgrade.",
+      "tests": [
+        "test_readiness_never_authorizes_humans_or_finances"
+      ]
+    },
+    {
+      "finding_id": "TA-011",
+      "category": "VERIFIED_CONTROL",
+      "severity": "INFO",
+      "affected": "pilot_session_store.py:_load,append_event",
+      "claim": "Schema/context/MAC/sequence checks and expected tips reject bounded inconsistent histories.",
+      "code_evidence": "Receipt event sequence, previous receipt ID, context SHA and expected_tip are checked.",
+      "practical_impact": "Prevents accidental or unauthenticated partial/reordered history acceptance within local trust domain.",
+      "assumptions": "Coherent same-key rewrites outside assurance.",
+      "reproduction": "Run missing/duplicate/forged lifecycle and C5 regressions.",
+      "remediation": "Retain strict validation and forensic failure; never repair missing histories silently.",
+      "verification_status": "BOUNDED_SOFTWARE_CONTROL",
+      "residual_limitations": "Not independent source authenticity or actor authentication.",
+      "tests": [
+        "test_event_history_tampering_rejected"
+      ]
+    },
+    {
+      "finding_id": "TA-012",
+      "category": "VERIFIED_CONTROL",
+      "severity": "INFO",
+      "affected": "pilot_session_models.py:ConsentReceipt; pilot_session_rules.py:replay",
+      "claim": "START requires explicit granted protocol-bound consent; timing needs separate opt-in.",
+      "code_evidence": "replay rejects start before consent and measured clocks before timing acknowledgment.",
+      "practical_impact": "Prevents unsupported local state transitions.",
+      "assumptions": "Correct local schema does not prove a person understood or voluntarily consented.",
+      "reproduction": "Existing synthetic consent/timing regressions; inspect no actual participant data.",
+      "remediation": "Preserve software gates; independently verify informed consent and eligibility.",
+      "verification_status": "BOUNDED_SOFTWARE_CONTROL",
+      "residual_limitations": "Voluntariness and comprehension remain external.",
+      "tests": [
+        "test_approval_effectiveness_never_inferred"
+      ]
+    },
+    {
+      "finding_id": "TA-013",
+      "category": "VERIFIED_CONTROL",
+      "severity": "INFO",
+      "affected": "pilot_study_reporting.py:aggregate",
+      "claim": "Withdrawal/invalidation exclusion and human small-cell suppression are implemented.",
+      "code_evidence": "eligible_for_aggregation and minimum human cell size two.",
+      "practical_impact": "Limits routine aggregation/disclosure, without guaranteeing anonymity.",
+      "assumptions": "Other released aggregates or auxiliary information may identify small cohorts.",
+      "reproduction": "Run baseline aggregation regressions and inspect actual-human unknowns.",
+      "remediation": "Independent disclosure review before any publication.",
+      "verification_status": "BOUNDED_SOFTWARE_CONTROL",
+      "residual_limitations": "No anonymity certification or universal differencing-attack prevention.",
+      "tests": [
+        "test_readiness_never_authorizes_humans_or_finances"
+      ]
+    },
+    {
+      "finding_id": "TA-014",
+      "category": "NOT_EVALUATED",
+      "severity": "HIGH",
+      "affected": "coordinator_accessibility.py:audit",
+      "claim": "Screen-reader behavior and accessibility performance have not been measured.",
+      "code_evidence": "audit explicitly returns UNKNOWN and NOT_EVALUATED for conformance.",
+      "practical_impact": "Cannot yet establish usable access for intended reviewers.",
+      "assumptions": "No assistive technology or actual users tested.",
+      "reproduction": "Prospective AT checklist only; do not fabricate testers.",
+      "remediation": "Independent specialist testing with named terminal/AT versions under separate authorization.",
+      "verification_status": "NOT_EVALUATED",
+      "residual_limitations": "Unit tests do not establish WCAG conformance.",
+      "tests": [
+        "test_accessibility_plain_timing_and_observation_labels"
+      ]
+    },
+    {
+      "finding_id": "TA-015",
+      "category": "UNVERIFIED_ASSUMPTION",
+      "severity": "HIGH",
+      "affected": "coordinator_governance.py:assess",
+      "claim": "Complete local administrative references do not prove independent approval authenticity.",
+      "code_evidence": "actual_enrollment_authorized is always false in C6 assessment.",
+      "practical_impact": "False local declarations cannot substitute for institution/privacy/security sign-off.",
+      "assumptions": "A writable declaration can contain plausible approval flags.",
+      "reproduction": "Use clearly synthetic DTOs in unit tests only; generate no actual approval records.",
+      "remediation": "External verification of all seven scope-bound approvals and conflict resolution.",
+      "verification_status": "BLOCKED_EXTERNAL",
+      "residual_limitations": "No actual approval supplied or certified.",
+      "tests": [
+        "test_approval_effectiveness_never_inferred",
+        "test_conflicting_declarations_preserved"
+      ]
+    },
+    {
+      "finding_id": "TA-016",
+      "category": "VERIFIED_CONTROL",
+      "severity": "INFO",
+      "affected": "coordinator_reporting.py:read_report; technical_assessment_reporting.py:read_report",
+      "claim": "Static escaped reports require matching primary projection, not only outer hashes.",
+      "code_evidence": "Recompute JSON/Markdown/HTML and reject truncated, changed or rehashed summaries.",
+      "practical_impact": "Rejects bounded tampering and script injection within stated trust scope.",
+      "assumptions": "Code and primary inputs remain trusted; owner coherent rewrites are not externally certified.",
+      "reproduction": "Tamper each representation, rehash the outer manifest and require failure.",
+      "remediation": "Keep exact file inventory and primary recomputation.",
+      "verification_status": "BOUNDED_SOFTWARE_CONTROL",
+      "residual_limitations": "Local test receipts are declarations, not authenticated CI attestations.",
+      "tests": [
+        "test_assessment_report_tampering_rejected",
+        "test_assessment_digests_and_no_certification"
+      ]
+    },
+    {
+      "finding_id": "TA-017",
+      "category": "VERIFIED_CONTROL",
+      "severity": "INFO",
+      "affected": "coordinator_lifecycle.py:_require_binding,_load",
+      "claim": "Legacy context v1 remains readable but cannot authorize new destructive transitions.",
+      "code_evidence": "V2 is required before retire/delete; v1 DELETED tombstones can be read/cleaned without new unlink scope.",
+      "practical_impact": "Avoids inventing missing historical object metadata or silently migrating evidence.",
+      "assumptions": "Historical v1 simulated stores exist.",
+      "reproduction": "Read a synthetic v1 capture, require retirement/deletion block, retain original context.",
+      "remediation": "Use a fresh simulated capture; no automatic migration or real-data deletion.",
+      "verification_status": "IMPLEMENTED",
+      "residual_limitations": "Legacy direct C5 operations remain separate.",
+      "tests": [
+        "test_legacy_capture_is_read_only"
+      ]
+    },
+    {
+      "finding_id": "TA-018",
+      "category": "DESIGN_LIMITATION",
+      "severity": "MEDIUM",
+      "affected": "review_packet_io.py:atomic_create; coordinator_lifecycle.py:_load",
+      "claim": "Interrupted atomic publication can leave a partial file that blocks automatic resume.",
+      "code_evidence": "Unexpected .partial lifecycle artifact is rejected.",
+      "practical_impact": "Availability requires forensic review rather than guessing a complete history.",
+      "assumptions": "Interruption inside fsync/link publication.",
+      "reproduction": "Insert an authored partial artifact and verify state/evidence remains untouched.",
+      "remediation": "Document manual incident review; never silently remove/reconstruct histories.",
+      "verification_status": "DOCUMENTED_FAIL_CLOSED",
+      "residual_limitations": "Automatic per-file intent recovery is unimplemented.",
+      "tests": [
+        "test_event_history_tampering_rejected"
+      ]
+    },
+    {
+      "finding_id": "TA-019",
+      "category": "DESIGN_LIMITATION",
+      "severity": "MEDIUM",
+      "affected": "coordinator_reporting.py:read_report",
+      "claim": "Retiring a batch invalidates verified readback, not every copied static report.",
+      "code_evidence": "A previously saved HTML file remains viewable outside the managed reader.",
+      "practical_impact": "Historical/copied aggregates may be misinterpreted as current if provenance is ignored.",
+      "assumptions": "Unmanaged copies or publication already exists.",
+      "reproduction": "Verify stale readback rejects; document copy/release inventory.",
+      "remediation": "Publication policy, explicit validity scope and correction/retraction procedure.",
+      "verification_status": "DOCUMENTED_BLOCKER",
+      "residual_limitations": "Cannot promise withdrawal removes already released aggregates.",
+      "tests": [
+        "test_assessment_digests_and_no_certification"
+      ]
+    },
+    {
+      "finding_id": "TA-020",
+      "category": "DESIGN_LIMITATION",
+      "severity": "HIGH",
+      "affected": "pilot_review.py:main; coordinator_review.py:main",
+      "claim": "Legacy opt-in C5 commands do not globally enforce the later C6/C7 administrative workflow.",
+      "code_evidence": "C7 adds no real enrollment or real-data deletion path and does not rewrite legacy collection defaults.",
+      "practical_impact": "A policy bypass outside the approved workflow remains possible for local owners.",
+      "assumptions": "Direct invocation by a capable local account.",
+      "reproduction": "Inspect command routing; do not enroll real people.",
+      "remediation": "Supervised operating procedure and separately reviewed access enforcement before real study use.",
+      "verification_status": "BLOCKED_EXTERNAL",
+      "residual_limitations": "Software preparation is not actual study or production authorization.",
+      "tests": [
+        "test_readiness_never_authorizes_humans_or_finances"
+      ]
+    }
+  ]
+}

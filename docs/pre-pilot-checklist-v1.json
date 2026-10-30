@@ -1,0 +1,143 @@
+{
+  "schema_type": "PrePilotChecklist",
+  "schema_version": 1,
+  "version": "pre-pilot-v1",
+  "actual_pilot_authorized": false,
+  "requirements": [
+    {
+      "id": "PILOT-01",
+      "REQUIREMENT": "Voluntary informed consent",
+      "CURRENT_EVIDENCE": "Protocol-bound receipt and START gate",
+      "EVIDENCE_GAP": "Independent comprehension/voluntariness verification",
+      "RESPONSIBLE_ROLE": "Study coordinator and institutional authority",
+      "VERIFICATION_METHOD": "Review approved consent documents and supervised consent process",
+      "STATUS": "REQUIRES_EXTERNAL_VERIFICATION"
+    },
+    {
+      "id": "PILOT-02",
+      "REQUIREMENT": "Participant eligibility",
+      "CURRENT_EVIDENCE": "No actual participants; software opaque labels only",
+      "EVIDENCE_GAP": "Eligibility and power/conflict safeguards",
+      "RESPONSIBLE_ROLE": "Institutional authority and coordinator",
+      "VERIFICATION_METHOD": "Verify eligibility out of band without adding identity collection",
+      "STATUS": "BLOCKED"
+    },
+    {
+      "id": "PILOT-03",
+      "REQUIREMENT": "Withdrawal rights",
+      "CURRENT_EVIDENCE": "Terminal withdrawal excludes prior responses",
+      "EVIDENCE_GAP": "Authenticated intake, support and real-data revocation/deletion",
+      "RESPONSIBLE_ROLE": "Privacy officer and coordinator",
+      "VERIFICATION_METHOD": "Approve request-intake and deletion process before enrollment",
+      "STATUS": "BLOCKED"
+    },
+    {
+      "id": "PILOT-04",
+      "REQUIREMENT": "Data minimization",
+      "CURRENT_EVIDENCE": "Closed fields; no arbitrary participant prose; simulation-only new assessment",
+      "EVIDENCE_GAP": "Independent adequacy and disclosure review",
+      "RESPONSIBLE_ROLE": "Privacy officer",
+      "VERIFICATION_METHOD": "Inspect schema and storage/release policy",
+      "STATUS": "SATISFIED_BY_SOFTWARE"
+    },
+    {
+      "id": "PILOT-05",
+      "REQUIREMENT": "Pseudonymity versus anonymity",
+      "CURRENT_EVIDENCE": "Opaque labels; no anonymity claim",
+      "EVIDENCE_GAP": "Reidentification and auxiliary-data risk review",
+      "RESPONSIBLE_ROLE": "Privacy officer",
+      "VERIFICATION_METHOD": "Assess actual cohort and publication context",
+      "STATUS": "REQUIRES_EXTERNAL_VERIFICATION"
+    },
+    {
+      "id": "PILOT-06",
+      "REQUIREMENT": "Timing consent",
+      "CURRENT_EVIDENCE": "Independent opt-out; no timing values when disabled",
+      "EVIDENCE_GAP": "Human understanding and presentation validation",
+      "RESPONSIBLE_ROLE": "Accessibility specialist and coordinator",
+      "VERIFICATION_METHOD": "Evaluate timing prompts using actual approved AT setup",
+      "STATUS": "REQUIRES_EXTERNAL_VERIFICATION"
+    },
+    {
+      "id": "PILOT-07",
+      "REQUIREMENT": "Session-data access",
+      "CURRENT_EVIDENCE": "Owner-only files and local capabilities",
+      "EVIDENCE_GAP": "Authenticated administration, same-account isolation and supervised access",
+      "RESPONSIBLE_ROLE": "Security specialist",
+      "VERIFICATION_METHOD": "Inspect host account/storage/access configuration",
+      "STATUS": "BLOCKED"
+    },
+    {
+      "id": "PILOT-08",
+      "REQUIREMENT": "Encryption at rest",
+      "CURRENT_EVIDENCE": "POSIX modes only; encryption not verified",
+      "EVIDENCE_GAP": "Approved encrypted volume and key custody",
+      "RESPONSIBLE_ROLE": "Security/storage administrator",
+      "VERIFICATION_METHOD": "Independent host configuration evidence",
+      "STATUS": "BLOCKED"
+    },
+    {
+      "id": "PILOT-09",
+      "REQUIREMENT": "Backup handling",
+      "CURRENT_EVIDENCE": "Backup status explicitly UNKNOWN",
+      "EVIDENCE_GAP": "Managed-copy inventory, retention and deletion confirmations",
+      "RESPONSIBLE_ROLE": "Storage administrator and privacy officer",
+      "VERIFICATION_METHOD": "Approve backup scope and authenticated deletion receipts",
+      "STATUS": "BLOCKED"
+    },
+    {
+      "id": "PILOT-10",
+      "REQUIREMENT": "Retention enforcement",
+      "CURRENT_EVIDENCE": "Explicit dates/deadlines; no automatic real-data lifecycle",
+      "EVIDENCE_GAP": "Trusted scheduling, incident escalation and independent assurance",
+      "RESPONSIBLE_ROLE": "Coordinator and privacy officer",
+      "VERIFICATION_METHOD": "Approve responsibilities and verify deadline exercises",
+      "STATUS": "BLOCKED"
+    },
+    {
+      "id": "PILOT-11",
+      "REQUIREMENT": "Deletion requests",
+      "CURRENT_EVIDENCE": "V2 synthetic target binding and interruption checks",
+      "EVIDENCE_GAP": "Real request authentication, copy mapping and safe real-data design",
+      "RESPONSIBLE_ROLE": "Privacy officer and security specialist",
+      "VERIFICATION_METHOD": "Independently assess prospective design; do not execute on real data",
+      "STATUS": "BLOCKED"
+    },
+    {
+      "id": "PILOT-12",
+      "REQUIREMENT": "Small-cell suppression",
+      "CURRENT_EVIDENCE": "Human cells below two suppressed; no personal rankings",
+      "EVIDENCE_GAP": "Actual cohort disclosure/differencing risk",
+      "RESPONSIBLE_ROLE": "Privacy officer",
+      "VERIFICATION_METHOD": "Review all releases and auxiliary information",
+      "STATUS": "SATISFIED_BY_SOFTWARE"
+    },
+    {
+      "id": "PILOT-13",
+      "REQUIREMENT": "Publication restrictions",
+      "CURRENT_EVIDENCE": "Aggregate-only private reports; no automatic publication",
+      "EVIDENCE_GAP": "Specific consent, release review and handling already published aggregates",
+      "RESPONSIBLE_ROLE": "Privacy officer and study owner",
+      "VERIFICATION_METHOD": "Approve release inventory and correction/retraction plan",
+      "STATUS": "BLOCKED"
+    },
+    {
+      "id": "PILOT-14",
+      "REQUIREMENT": "Institutional authorization",
+      "CURRENT_EVIDENCE": "Seven scoped administrative categories; authenticity UNKNOWN",
+      "EVIDENCE_GAP": "Actual independently verified institutional and owner approval",
+      "RESPONSIBLE_ROLE": "Institutional authority",
+      "VERIFICATION_METHOD": "Verify external scope-bound records and conflicts",
+      "STATUS": "BLOCKED"
+    },
+    {
+      "id": "PILOT-15",
+      "REQUIREMENT": "Participant support and accessibility",
+      "CURRENT_EVIDENCE": "Keyboard instructions and safe linear output",
+      "EVIDENCE_GAP": "Specialist AT evaluation, accommodations and support workflow",
+      "RESPONSIBLE_ROLE": "Accessibility specialist and participant-support coordinator",
+      "VERIFICATION_METHOD": "Prospective terminal/AT checks, then separately authorized evaluation",
+      "STATUS": "NOT_EVALUATED"
+    }
+  ]
+}
