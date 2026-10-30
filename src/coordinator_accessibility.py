@@ -1,5 +1,6 @@
 """Opt-in linear terminal presentation; no accessibility conformance claim."""
 import unicodedata
+import re
 from .pilot_review import terminal, display_task
 
 DECISIONS = {
@@ -22,7 +23,7 @@ def plain_output(output):
     def emit(value):
         text = safe_text(value)
         for code, label in DECISIONS.items():
-            if text.endswith('. ' + code):
+            if re.fullmatch(r'[1-5]\. ' + re.escape(code), text):
                 text = text[:-len(code)] + label
         output(text)
     return emit

@@ -356,3 +356,10 @@ def test_unretired_batch_cannot_be_deleted(workspace):
     root,key=workspace
     with pytest.raises(EvidenceError):delete(root,key,expected_tip=tip(root,key),as_of='2025-03-01')
     assert inspect(root,key)[2]=='ACTIVE'
+
+
+def test_plain_labels_never_rewrite_claims_or_evidence_text():
+    out=[];emit=plain_output(out.append)
+    claim='Claim under review: native text 1. ACCEPT_EVIDENCE'
+    emit(claim);emit('Observed source value: . NEEDS_MORE_EVIDENCE');emit('1. ACCEPT_EVIDENCE')
+    assert out==[claim,'Observed source value: . NEEDS_MORE_EVIDENCE','1. Accept evidence for this narrow claim only']
