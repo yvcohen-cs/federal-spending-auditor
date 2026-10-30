@@ -200,11 +200,12 @@ python -m src.coordinator_review --report --store /tmp/NEW_C6_PRIVATE \
   --output /tmp/NEW_C6_DELETION_REPORT
 ```
 
-`--review-simulated` additionally needs an existing simulated session ID and its
-private `--resume-key`; it refuses non-ACTIVE captures. A response changes captured
-bytes and makes the prior sealed rehearsal stale; start a new rehearsal rather
-than resealing an existing one. Optional `--checklist` reads a separately prepared
-private strict administrative checklist; it never enables enrollment.
+The optional `accessible_terminal` adapter supports simulated sessions only and
+should be exercised before sealing a capture. Captured batches are read-only
+through the C6 CLI; it offers no enrollment or review mutation command. Direct
+legacy writes change captured bytes and fail verification rather than silently
+resealing. Optional `--checklist` reads a separately prepared private strict
+administrative checklist; it never enables enrollment.
 Exit 1 means limited research/preparation output; 2 invalid/blocked; 130 interruption.
 
 ## Validation, compatibility and next phase
