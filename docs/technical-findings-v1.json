@@ -194,7 +194,9 @@
       "verification_status": "BOUNDED_SOFTWARE_CONTROL",
       "residual_limitations": "Not independent source authenticity or actor authentication.",
       "tests": [
-        "test_event_history_tampering_rejected"
+        "test_event_history_tampering_rejected",
+        "test_hmac_receipt_cannot_be_forged_by_recomputing_public_hash",
+        "test_wrong_capability_and_stale_submission_refused"
       ]
     },
     {
@@ -211,7 +213,9 @@
       "verification_status": "BOUNDED_SOFTWARE_CONTROL",
       "residual_limitations": "Voluntariness and comprehension remain external.",
       "tests": [
-        "test_approval_effectiveness_never_inferred"
+        "test_initial_consent_not_invented_and_start_requires_receipt",
+        "test_participant_can_decline_timing_without_declining_study",
+        "test_measured_clock_without_consent_opt_in_is_rejected"
       ]
     },
     {
@@ -228,7 +232,8 @@
       "verification_status": "BOUNDED_SOFTWARE_CONTROL",
       "residual_limitations": "No anonymity certification or universal differencing-attack prevention.",
       "tests": [
-        "test_readiness_never_authorizes_humans_or_finances"
+        "test_withdrawal_after_response_excludes_all_prior_performance",
+        "test_human_small_cells_suppressed_without_creating_participants"
       ]
     },
     {
@@ -332,7 +337,8 @@
       "verification_status": "DOCUMENTED_BLOCKER",
       "residual_limitations": "Cannot promise withdrawal removes already released aggregates.",
       "tests": [
-        "test_assessment_digests_and_no_certification"
+        "test_completed_session_can_withdraw_and_stale_report_is_rejected",
+        "test_retirement_invalidates_old_reports_and_resume_paths"
       ]
     },
     {
