@@ -309,3 +309,20 @@ def test_changed_source_hash_blocks_positive_inspection(workspace):
         with pytest.raises(EvidenceError):inspect(root,key)
     finally:path.write_bytes(original)
     assert inspect(root,key)[2]=='ACTIVE'
+
+
+def test_receipt_binding_detects_shared_helper_only_change(tmp_path,monkeypatch):
+    import src.technical_assessment as module
+    original=module.ROOT;expected=code_digest();replica=tmp_path/'code-replica';replica.mkdir()
+    for folder in ('src','tests'):
+        (replica/folder).mkdir()
+        for path in (original/folder).glob('*.py'):(replica/folder/path.name).write_bytes(path.read_bytes())
+    (replica/'docs').mkdir()
+    for path in (original/'docs').glob('*'):
+        if path.is_file():(replica/'docs'/path.name).write_bytes(path.read_bytes())
+    (replica/'requirements.txt').write_bytes((original/'requirements.txt').read_bytes())
+    monkeypatch.setattr(module,'ROOT',replica)
+    assert code_digest()==expected
+    with (replica/'src'/'evidence_io.py').open('ab') as stream:stream.write(b'\n# authored helper-only change\n')
+    assert code_digest()!=expected
+    with pytest.raises(EvidenceError):normalize_receipt(junit(expected))

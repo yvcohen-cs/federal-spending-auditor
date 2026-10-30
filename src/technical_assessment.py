@@ -103,7 +103,7 @@ def documents():
 
 def code_digest():
     p=protocol()
-    names=['src/'+n for n in p['reviewed_modules']]+['src/technical_assessment.py','src/technical_assessment_reporting.py',
-        'tests/test_technical_assessment.py']
+    names=[path.relative_to(ROOT).as_posix() for folder in ('src','tests') for path in (ROOT/folder).glob('*.py')]
+    names+=['requirements.txt']
     names+=['docs/technical-findings-v1.json','docs/pre-pilot-checklist-v1.json','docs/real-data-deletion-design-v1.md','docs/technical-assessment.md']
     return digest({name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in sorted(names)})

@@ -146,7 +146,8 @@ independent; no aggregate readiness score or real-study authority is produced.
 
 A report without JUnit input labels test evidence NOT_EVALUATED. Optional offline
 JUnit is normalized to sorted case outcomes, excluding timestamps, durations,
-paths, output and user text. The test suite records a code/input digest property;
+paths, output and user text. The test suite records a digest of all source/test Python files, requirements and
+assessment inputs;
 stale-source receipts, duplicate cases, malformed XML, DTD/entity declarations,
 missing binding and contradictory outcomes fail closed. Findings show local
 regression verification only when their referenced tests occur and pass. A local
