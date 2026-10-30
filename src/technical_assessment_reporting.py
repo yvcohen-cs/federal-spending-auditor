@@ -59,7 +59,7 @@ def assessment(raw=None):
     findings=[]
     for entry in docs['technical-findings-v1.json']['findings']:
         f=dict(entry)
-        matches={test:[state for name,state in outcomes.items() if name.split('::')[-1].split('[')[0]==test] for test in f['tests']}
+        matches={test:[state for name,state in outcomes.items() if name.split('[')[0]==test] for test in f['tests']}
         f['automated_verification']='RECORDED_LOCAL_REGRESSIONS_PASSED' if matches and all(v and set(v)=={'passed'} for v in matches.values()) else 'NOT_ESTABLISHED_BY_RECEIPT'
         f['evidence_category']='TECHNICAL_CODE_REVIEW'
         findings.append(f)

@@ -326,3 +326,11 @@ def test_receipt_binding_detects_shared_helper_only_change(tmp_path,monkeypatch)
     with (replica/'src'/'evidence_io.py').open('ab') as stream:stream.write(b'\n# authored helper-only change\n')
     assert code_digest()!=expected
     with pytest.raises(EvidenceError):normalize_receipt(junit(expected))
+
+
+def test_unrelated_test_module_cannot_verify_named_regression():
+    tree=ET.fromstring(junit());case=tree.find('testsuite/testcase')
+    case.set('classname','unrelated.module');case.set('name','test_same_byte_target_replacement_rejected')
+    r=assessment(ET.tostring(tree))
+    finding=next(f for f in r['technical_review']['findings'] if f['finding_id']=='TA-002')
+    assert finding['automated_verification']=='NOT_ESTABLISHED_BY_RECEIPT'

@@ -18,7 +18,7 @@
       "verification_status": "REMEDIATED",
       "residual_limitations": "Does not discover copies, backups or privileged coherent rewrites.",
       "tests": [
-        "test_deleted_namespace_dangling_link_rejected"
+        "tests.test_technical_assessment::test_deleted_namespace_dangling_link_rejected"
       ]
     },
     {
@@ -35,9 +35,9 @@
       "verification_status": "REMEDIATED_WITH_LIMITATIONS",
       "residual_limitations": "Inode reuse and hostile same-user races still require trusted namespace/OS guarantees; not real-data authorization.",
       "tests": [
-        "test_same_byte_target_replacement_rejected",
-        "test_legacy_capture_is_read_only",
-        "test_directory_replacement_at_rmdir_boundary"
+        "tests.test_technical_assessment::test_same_byte_target_replacement_rejected",
+        "tests.test_technical_assessment::test_legacy_capture_is_read_only",
+        "tests.test_technical_assessment::test_directory_replacement_at_rmdir_boundary"
       ]
     },
     {
@@ -54,9 +54,9 @@
       "verification_status": "IMPLEMENTED_NEW_LAYER",
       "residual_limitations": "Cannot prove omitted declarations do not exist; a trusted external registry/resolution protocol remains absent.",
       "tests": [
-        "test_conflicting_declarations_preserved",
-        "test_cross_scope_reference_reuse_blocks",
-        "test_dossier_replay_and_scope_expansion"
+        "tests.test_technical_assessment::test_conflicting_declarations_preserved",
+        "tests.test_technical_assessment::test_cross_scope_reference_reuse_blocks",
+        "tests.test_technical_assessment::test_dossier_replay_and_scope_expansion"
       ]
     },
     {
@@ -73,8 +73,8 @@
       "verification_status": "IMPLEMENTED_NOT_HUMAN_VALIDATED",
       "residual_limitations": "Long evidence, source-path hints and actual assistive-technology behavior remain untested.",
       "tests": [
-        "test_accessibility_plain_timing_and_observation_labels",
-        "test_terminal_control_preservation"
+        "tests.test_technical_assessment::test_accessibility_plain_timing_and_observation_labels",
+        "tests.test_technical_assessment::test_terminal_control_preservation"
       ]
     },
     {
@@ -91,7 +91,7 @@
       "verification_status": "DOCUMENTED_BLOCKER",
       "residual_limitations": "No external authentication or institutional authority verified.",
       "tests": [
-        "test_capability_and_tip_rejection"
+        "tests.test_technical_assessment::test_capability_and_tip_rejection"
       ]
     },
     {
@@ -108,7 +108,7 @@
       "verification_status": "UNRESOLVED_EXTERNAL",
       "residual_limitations": "No secure-erasure or global revocation claim.",
       "tests": [
-        "test_readiness_never_authorizes_humans_or_finances"
+        "tests.test_technical_assessment::test_readiness_never_authorizes_humans_or_finances"
       ]
     },
     {
@@ -125,7 +125,7 @@
       "verification_status": "DOCUMENTED_BLOCKER",
       "residual_limitations": "Existing recovery proves local survivors, not attribution of every missing object.",
       "tests": [
-        "test_fault_boundaries_recover_or_reject"
+        "tests.test_technical_assessment::test_fault_boundaries_recover_or_reject"
       ]
     },
     {
@@ -142,8 +142,8 @@
       "verification_status": "UNRESOLVED_EXTERNAL",
       "residual_limitations": "No atomic object-generation handle or cross-copy revocation.",
       "tests": [
-        "test_directory_replacement_at_rmdir_boundary",
-        "test_fault_boundaries_recover_or_reject"
+        "tests.test_technical_assessment::test_directory_replacement_at_rmdir_boundary",
+        "tests.test_technical_assessment::test_fault_boundaries_recover_or_reject"
       ]
     },
     {
@@ -160,7 +160,7 @@
       "verification_status": "UNRESOLVED_EXTERNAL",
       "residual_limitations": "V2 is a bounded improvement, not real-data deletion approval.",
       "tests": [
-        "test_same_byte_target_replacement_rejected"
+        "tests.test_technical_assessment::test_same_byte_target_replacement_rejected"
       ]
     },
     {
@@ -177,7 +177,7 @@
       "verification_status": "UNCHANGED_EXTERNAL_BLOCKER",
       "residual_limitations": "No source-wide completeness or production eligibility upgrade.",
       "tests": [
-        "test_readiness_never_authorizes_humans_or_finances"
+        "tests.test_technical_assessment::test_readiness_never_authorizes_humans_or_finances"
       ]
     },
     {
@@ -194,9 +194,9 @@
       "verification_status": "BOUNDED_SOFTWARE_CONTROL",
       "residual_limitations": "Not independent source authenticity or actor authentication.",
       "tests": [
-        "test_event_history_tampering_rejected",
-        "test_hmac_receipt_cannot_be_forged_by_recomputing_public_hash",
-        "test_wrong_capability_and_stale_submission_refused"
+        "tests.test_technical_assessment::test_event_history_tampering_rejected",
+        "tests.test_pilot_preparation::test_hmac_receipt_cannot_be_forged_by_recomputing_public_hash",
+        "tests.test_pilot_preparation::test_wrong_capability_and_stale_submission_refused"
       ]
     },
     {
@@ -213,9 +213,9 @@
       "verification_status": "BOUNDED_SOFTWARE_CONTROL",
       "residual_limitations": "Voluntariness and comprehension remain external.",
       "tests": [
-        "test_initial_consent_not_invented_and_start_requires_receipt",
-        "test_participant_can_decline_timing_without_declining_study",
-        "test_measured_clock_without_consent_opt_in_is_rejected"
+        "tests.test_pilot_preparation::test_initial_consent_not_invented_and_start_requires_receipt",
+        "tests.test_pilot_preparation::test_participant_can_decline_timing_without_declining_study",
+        "tests.test_pilot_preparation::test_measured_clock_without_consent_opt_in_is_rejected"
       ]
     },
     {
@@ -232,8 +232,8 @@
       "verification_status": "BOUNDED_SOFTWARE_CONTROL",
       "residual_limitations": "No anonymity certification or universal differencing-attack prevention.",
       "tests": [
-        "test_withdrawal_after_response_excludes_all_prior_performance",
-        "test_human_small_cells_suppressed_without_creating_participants"
+        "tests.test_pilot_preparation::test_withdrawal_after_response_excludes_all_prior_performance",
+        "tests.test_pilot_preparation::test_human_small_cells_suppressed_without_creating_participants"
       ]
     },
     {
@@ -250,7 +250,7 @@
       "verification_status": "NOT_EVALUATED",
       "residual_limitations": "Unit tests do not establish WCAG conformance.",
       "tests": [
-        "test_accessibility_plain_timing_and_observation_labels"
+        "tests.test_technical_assessment::test_accessibility_plain_timing_and_observation_labels"
       ]
     },
     {
@@ -267,8 +267,8 @@
       "verification_status": "BLOCKED_EXTERNAL",
       "residual_limitations": "No actual approval supplied or certified.",
       "tests": [
-        "test_approval_effectiveness_never_inferred",
-        "test_conflicting_declarations_preserved"
+        "tests.test_technical_assessment::test_approval_effectiveness_never_inferred",
+        "tests.test_technical_assessment::test_conflicting_declarations_preserved"
       ]
     },
     {
@@ -285,8 +285,8 @@
       "verification_status": "BOUNDED_SOFTWARE_CONTROL",
       "residual_limitations": "Local test receipts are declarations, not authenticated CI attestations.",
       "tests": [
-        "test_assessment_report_tampering_rejected",
-        "test_assessment_digests_and_no_certification"
+        "tests.test_technical_assessment::test_assessment_report_tampering_rejected",
+        "tests.test_technical_assessment::test_assessment_digests_and_no_certification"
       ]
     },
     {
@@ -303,7 +303,7 @@
       "verification_status": "IMPLEMENTED",
       "residual_limitations": "Legacy direct C5 operations remain separate.",
       "tests": [
-        "test_legacy_capture_is_read_only"
+        "tests.test_technical_assessment::test_legacy_capture_is_read_only"
       ]
     },
     {
@@ -320,7 +320,7 @@
       "verification_status": "DOCUMENTED_FAIL_CLOSED",
       "residual_limitations": "Automatic per-file intent recovery is unimplemented.",
       "tests": [
-        "test_event_history_tampering_rejected"
+        "tests.test_technical_assessment::test_event_history_tampering_rejected"
       ]
     },
     {
@@ -337,8 +337,8 @@
       "verification_status": "DOCUMENTED_BLOCKER",
       "residual_limitations": "Cannot promise withdrawal removes already released aggregates.",
       "tests": [
-        "test_completed_session_can_withdraw_and_stale_report_is_rejected",
-        "test_retirement_invalidates_old_reports_and_resume_paths"
+        "tests.test_pilot_preparation::test_completed_session_can_withdraw_and_stale_report_is_rejected",
+        "tests.test_coordinator_rehearsal::test_retirement_invalidates_old_reports_and_resume_paths"
       ]
     },
     {
@@ -355,7 +355,7 @@
       "verification_status": "BLOCKED_EXTERNAL",
       "residual_limitations": "Software preparation is not actual study or production authorization.",
       "tests": [
-        "test_readiness_never_authorizes_humans_or_finances"
+        "tests.test_technical_assessment::test_readiness_never_authorizes_humans_or_finances"
       ]
     }
   ]
