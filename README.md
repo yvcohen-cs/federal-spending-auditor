@@ -178,3 +178,11 @@ See the [prospective governance](docs/pilot-governance-v1.md),
 [participant instructions](docs/pilot-participant-instructions-v1.md).
 Simulated results are separate from human measurements; accepting evidence cannot
 change financial eligibility, frozen readiness or screening authorization.
+
+Phase 4C6 adds an opt-in [offline coordinator rehearsal](docs/coordinator-rehearsal.md)
+with the exact frozen 12-task plan, independently scoped prospective approval
+checks, a plain terminal adapter, simulated batch retirement/deletion, and
+reproducible aggregate reports. Use `python -m src.coordinator_review --help`.
+No actual human pilot, source collection, financial/readiness upgrade or production
+screening is authorized. Missing approvals block the prospective gate; backup
+deletion, secure erasure and actual accessibility remain unverified.
