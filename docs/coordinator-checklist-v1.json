@@ -1,0 +1,23 @@
+{
+  "schema_type": "CoordinatorChecklistSpecification",
+  "schema_version": 1,
+  "version": "coordinator-checklist-v1",
+  "status": "UNAPPROVED_TEMPLATE_NOT_AUTHORIZATION",
+  "required_scopes": [
+    {"scope": "consent_documents", "obligation": "Independent review of versioned purpose, voluntariness, timing opt-out, withdrawal and consent instructions."},
+    {"scope": "study_authorization", "obligation": "Separate owner and applicable institutional authorization bound to exact protocol and task set."},
+    {"scope": "storage", "obligation": "Approved encrypted supervised storage, restricted access and backup policy; local permissions alone are insufficient."},
+    {"scope": "retention", "obligation": "Approve frozen raw 30-day and approved aggregate 90-day maximum retention after closure; assign coordinator and dates."},
+    {"scope": "deletion_responsibility", "obligation": "Approve batch-wide withdrawal deletion within 7 days and backup deletion within 30 days; independently inspect real-data handling before recruitment."},
+    {"scope": "participant_eligibility", "obligation": "Independently confirm voluntary eligible adults and conflict/power-relationship safeguards without recording identities here."},
+    {"scope": "privacy_disclosure", "obligation": "Approve minimization, small-cell suppression, consented disclosure and publication restrictions; pseudonyms are not anonymity."}
+  ],
+  "initial_approval_state": "UNKNOWN",
+  "approval_origin": "UNKNOWN",
+  "approved_by": null,
+  "approval_dates": null,
+  "authenticity": "UNKNOWN_external_verification_required",
+  "actual_enrollment_supported": false,
+  "financial_authorization": false,
+  "production_screening_authorized": false
+}
