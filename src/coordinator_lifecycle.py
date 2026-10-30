@@ -45,17 +45,21 @@ def new_workspace(path):
     return target / 'coordinator.key'
 
 
-def _tree(path):
+def _tree(path, *, bind_identity=False):
     if not os.path.lexists(path):
         return None
     with EvidenceRoot(path, max_bytes=LIMIT, max_total_bytes=LIMIT, max_files=4096) as root:
         _private_fd(root.fd)
         result = {}
+        def identity(st):
+            return [st.st_dev, st.st_ino, 'directory' if stat.S_ISDIR(st.st_mode) else 'file']
+        if bind_identity: result['identity:.'] = identity(os.fstat(root.fd))
         for name in root.discover():
             s = os.stat(name, dir_fd=root.fd, follow_symlinks=False)
             if s.st_uid != os.getuid() or stat.S_IMODE(s.st_mode) != 0o600:
                 raise EvidenceError('private_capture_permissions')
             result[name] = root.read(name).byte_sha256
+            if bind_identity: result['identity:'+name] = identity(s)
         # Directories are also checked, including empty directories.
         def directories(fd,prefix=""):
             for name in os.listdir(fd):
@@ -64,6 +68,7 @@ def _tree(path):
                     child = os.open(name, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=fd)
                     try:
                         result["directory:"+prefix+name]="DIRECTORY_0700"
+                        if bind_identity: result["identity:"+prefix+name] = identity(os.fstat(child))
                         _private_fd(child); directories(child,prefix+name+"/")
                     finally:
                         os.close(child)
@@ -114,11 +119,11 @@ def capture(path, key, *, as_of):
             from .pilot_session_models import SessionAction as A
             if not any(any(e.action is A.RESUME for e in ev) and any(e.action is A.SUSPEND for e in ev) for ev in histories.values()):
                 raise EvidenceError('pause_and_resume_rehearsal_required')
-            manifest = {'batch': _tree(batch), 'outputs': _tree(Path(path)/'outputs')}
+            manifest = {'batch': _tree(batch, bind_identity=True), 'outputs': _tree(Path(path)/'outputs', bind_identity=True)}
             if not manifest['batch'] or not manifest['outputs']:
                 raise EvidenceError('complete_batch_capture_required')
             s = os.fstat(root.fd)
-            context = {'schema_type': 'CoordinatorLifecycleContext', 'schema_version': 1,
+            context = {'schema_type': 'CoordinatorLifecycleContext', 'schema_version': 2,
                 'root_device': s.st_dev, 'root_inode': s.st_ino,
                 'coordinator_key_sha256': hashlib.sha256(secret).hexdigest(),
                 'manifest_sha256': digest(manifest), 'closed_on': as_of,
@@ -131,6 +136,40 @@ def capture(path, key, *, as_of):
     return digest(context)
 
 
+
+def _require_binding(context):
+    if context['schema_version'] != 2:
+        raise EvidenceError('legacy_capture_read_only_new_simulated_run_required')
+
+
+def _validate_manifest(manifest, version):
+    from .evidence_io import parts
+    for entries in manifest.values():
+        if not isinstance(entries,dict) or not entries:raise EvidenceError('invalid_target_manifest')
+        files=set();directories={'.'};identities=set()
+        for name,value in entries.items():
+            if name.startswith('identity:'):
+                path=name[len('identity:'):]
+                if path!='.':parts(path)
+                if (version!=2 or not isinstance(value,list) or len(value)!=3
+                        or any(type(n) is not int or n<0 for n in value[:2]) or value[2] not in ('file','directory')):
+                    raise EvidenceError('invalid_target_identity')
+                identities.add(path)
+            elif name.startswith('directory:'):
+                path=name[len('directory:'):];parts(path)
+                if value!='DIRECTORY_0700':raise EvidenceError('invalid_directory_manifest')
+                directories.add(path)
+            else:
+                parts(name)
+                if not isinstance(value,str) or re.fullmatch('[a-f0-9]{64}',value) is None:raise EvidenceError('invalid_file_manifest')
+                files.add(name)
+        if version==2:
+            if identities!=files|directories:raise EvidenceError('incomplete_target_identity_binding')
+            for path in identities:
+                if entries['identity:'+path][2]!=('directory' if path in directories else 'file'):
+                    raise EvidenceError('contradictory_target_kind')
+
+
 def _load(root, key, expected_tip=None):
     _private_fd(root.fd); protocol()
     context = strict_json(root.read('coordinator-context.json').data)
@@ -139,7 +178,7 @@ def _load(root, key, expected_tip=None):
                 'captured_report','captured_report_sha256'}
     s = os.fstat(root.fd)
     if (set(context) != required or context['schema_type'] != 'CoordinatorLifecycleContext'
-            or type(context['schema_version']) is not int or context['schema_version'] != 1
+            or type(context['schema_version']) is not int or context['schema_version'] not in (1, 2)
             or (context['root_device'],context['root_inode']) != (s.st_dev,s.st_ino)):
         raise EvidenceError('copied_or_invalid_coordinator_context')
     secret = _authenticate(key, context['coordinator_key_sha256'])
@@ -182,10 +221,11 @@ def _load(root, key, expected_tip=None):
         manifest=strict_json(root.read('deletion-manifest.json').data)
         if digest(manifest)!=context['manifest_sha256'] or set(manifest)!={'batch','outputs'}:
             raise EvidenceError('deletion_manifest_changed')
+        _validate_manifest(manifest, context['schema_version'])
     elif state!='DELETED':
         raise EvidenceError('missing_deletion_manifest')
     # Never allow a local tombstone to silently resume or count primary data.
-    if state=='DELETED' and any((Path(root.path)/n).exists() for n in ('batch','outputs','retired-batch','retired-outputs')):
+    if state=='DELETED' and any(os.path.lexists(Path(root.path)/n) for n in ('batch','outputs','retired-batch','retired-outputs')):
         raise EvidenceError('deleted_batch_reappeared')
     for name in os.listdir(root.fd):
         if name not in ('batch','outputs','retired-batch','retired-outputs'):
@@ -209,7 +249,7 @@ def _verify_trees(path,manifest,*,partial=False):
         if len(candidates)>1 or not partial and not candidates:
             raise EvidenceError('duplicate_or_missing_batch_namespace')
         if not candidates:continue
-        actual=_tree(candidates[0])
+        actual=_tree(candidates[0], bind_identity='identity:.' in expected)
         if (not partial and actual!=expected or partial and any(expected.get(n)!=sha for n,sha in actual.items())):
             raise EvidenceError('changed_or_unexpected_private_evidence')
         locations[name]=candidates[0]
@@ -239,6 +279,7 @@ def retire(path,key,*,expected_tip,as_of,reason):
     if reason not in REASONS:raise EvidenceError('bounded_retirement_reason_required')
     with locked(path,key,expected_tip) as (root,loaded):
         context,secret,events,state,manifest=loaded
+        _require_binding(context)
         if day(as_of)<day(events[-1]['as_of']):raise EvidenceError('retirement_date_reordered')
         if state not in ('ACTIVE','RETIRING'):raise EvidenceError('batch_not_active_or_interrupted_retirement')
         if state=='RETIRING' and (reason!=events[-1]['reason'] or as_of!=events[-1]['as_of']):raise EvidenceError('exact_retirement_resume_required')
@@ -249,10 +290,11 @@ def retire(path,key,*,expected_tip,as_of,reason):
         with EvidenceRoot(locations['batch']) as batch:
             fcntl.flock(batch.fd,fcntl.LOCK_EX|fcntl.LOCK_NB)
             if state=='ACTIVE':
+                _after_boundary('before_retire_begin')
                 # Recheck after acquiring the C5 writer lock.
                 _verify_trees(path,manifest)
                 _event(root,context,secret,events,'RETIRE_BEGIN',as_of,reason)
-                events=_load(root,key)[2]
+                events=_load(root,key)[2];_after_boundary('after_retire_begin')
             for name in ('batch','outputs'):
                 if locations[name].name==name:
                     os.rename(name,'retired-'+name,src_dir_fd=root.fd,dst_dir_fd=root.fd)
@@ -267,32 +309,51 @@ def _after_boundary(stage):
 
 
 def _remove(path,expected):
-    actual=_tree(path)
+    actual=_tree(path, bind_identity='identity:.' in expected)
     if actual is None:return
     if any(expected.get(n)!=sha for n,sha in actual.items()):raise EvidenceError('delete_survivor_changed')
-    for name in sorted(n for n in actual if not n.startswith("directory:")):
+    for name in sorted(n for n in actual if not n.startswith(("directory:", "identity:"))):
         target=Path(path)/name
         parent=_directory(target.parent)
         try:
+            if 'identity:.' in expected:
+                rel=target.parent.relative_to(path).as_posix()
+                st=os.fstat(parent)
+                if [st.st_dev,st.st_ino,'directory']!=expected['identity:'+rel]:raise EvidenceError('delete_parent_replaced')
             with EvidenceRoot(target.parent,max_bytes=LIMIT) as reader:
                 if reader.read(target.name).byte_sha256!=expected[name]:raise EvidenceError('delete_target_changed')
+                if 'identity:.' in expected:
+                    st=os.stat(target.name,dir_fd=parent,follow_symlinks=False)
+                    if [st.st_dev,st.st_ino,'file']!=expected['identity:'+name]:raise EvidenceError('delete_object_replaced')
             os.unlink(target.name,dir_fd=parent);os.fsync(parent)
         finally:os.close(parent)
         _after_boundary('unlink')
     # Only now remove empty directories, descriptor-relative and without following links.
-    def empty(fd):
+    def empty(fd,prefix=""):
+        if "identity:." in expected:
+            st=os.fstat(fd)
+            if [st.st_dev,st.st_ino,"directory"]!=expected["identity:"+(prefix.rstrip("/") or ".")]:raise EvidenceError("delete_directory_replaced")
         for name in os.listdir(fd):
             s=os.stat(name,dir_fd=fd,follow_symlinks=False)
             if not stat.S_ISDIR(s.st_mode):raise EvidenceError('unexpected_deletion_survivor')
             child=os.open(name,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW,dir_fd=fd)
-            try:_private_fd(child);empty(child)
+            try:_private_fd(child);empty(child,prefix+name+"/")
             finally:os.close(child)
+            _after_boundary('before_rmdir')
+            if 'identity:.' in expected:
+                st=os.stat(name,dir_fd=fd,follow_symlinks=False)
+                if [st.st_dev,st.st_ino,'directory']!=expected['identity:'+prefix+name]:raise EvidenceError('rmdir_target_replaced')
             os.rmdir(name,dir_fd=fd);os.fsync(fd)
+            _after_boundary('after_rmdir')
     fd=_directory(path)
     try:empty(fd)
     finally:os.close(fd)
     parent=_directory(Path(path).parent)
-    try:os.rmdir(Path(path).name,dir_fd=parent);os.fsync(parent)
+    try:
+        if 'identity:.' in expected:
+            st=os.stat(Path(path).name,dir_fd=parent,follow_symlinks=False)
+            if [st.st_dev,st.st_ino,'directory']!=expected['identity:.']:raise EvidenceError('delete_root_replaced')
+        os.rmdir(Path(path).name,dir_fd=parent);os.fsync(parent)
     finally:os.close(parent)
     _after_boundary('remove_root')
 
@@ -303,6 +364,7 @@ def delete(path,key,*,expected_tip,as_of):
     if not isinstance(expected_tip,str) or re.fullmatch('[a-f0-9]{64}',expected_tip) is None:raise EvidenceError('exact_coordinator_tip_required')
     with locked(path,key,expected_tip) as (root,loaded):
         context,secret,events,state,manifest=loaded
+        if state!='DELETED':_require_binding(context)
         if state not in ('RETIRED','DELETING','DELETED'):raise EvidenceError('retirement_required_before_deletion')
         if day(as_of)<day(events[-1]['as_of']):raise EvidenceError('deletion_date_reordered')
         if state=='DELETED':
@@ -317,6 +379,7 @@ def delete(path,key,*,expected_tip,as_of):
             if batch_fd is not None:fcntl.flock(batch_fd,fcntl.LOCK_EX|fcntl.LOCK_NB)
             _verify_trees(path,manifest,partial=state=='DELETING')
             if state=='RETIRED':
+                _after_boundary('before_delete_begin')
                 _event(root,context,secret,events,'DELETE_BEGIN',as_of,events[-1]['reason'])
                 events=_load(root,key)[2];_after_boundary('delete_begin')
             for name in ('outputs','batch'):_remove(Path(path)/('retired-'+name),manifest[name])

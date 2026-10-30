@@ -31,6 +31,7 @@ def plain_output(output):
 
 def show_task(task, position, total, output=print, source_root=None):
     emit = plain_output(output)
+    emit('Evidence may be lengthy. Read source fields separately from automated interpretations; unknown proof stays unknown.')
     emit('Read-only evidence review. Use numbered choices and Enter. No color or mouse is required.')
     display_task(task, position, total, emit, source_root)
     emit('Unknown means proof is missing. Accepting evidence does not fill a missing proof obligation.')
@@ -44,6 +45,8 @@ def accessible_terminal(store, session_id, resume_key, *, input_fn=input, output
     if session.protocol.measurement_kind is not MeasurementKind.SIMULATED:
         raise EvidenceError('C6_adapter_supports_simulated_sessions_only')
     emit = plain_output(output)
+    emit('Timing is optional: choose No to timing and continue untimed. Declining timing does not decline the study.')
+    emit('Observation is a saved source field. An automated assessment is an interpretation, not additional evidence.')
     emit('Keyboard instructions: enter a numbered choice and press Enter. Enter q to save and stop, or w to withdraw.')
     emit('The same task is presented again after a pause. Invalid input can be corrected without losing saved responses.')
     return terminal(store, session_id, resume_key, input_fn=input_fn, output=emit)

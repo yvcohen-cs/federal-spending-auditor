@@ -186,3 +186,11 @@ reproducible aggregate reports. Use `python -m src.coordinator_review --help`.
 No actual human pilot, source collection, financial/readiness upgrade or production
 screening is authorized. Missing approvals block the prospective gate; backup
 deletion, secure erasure and actual accessibility remain unverified.
+
+Phase 4C7 adds an [engineering governance/accessibility/deletion assessment](docs/technical-assessment.md),
+versioned findings and pre-pilot requirements, conflict-preserving approval dossiers,
+and synthetic deletion-target hardening. New captures bind object identities;
+legacy captures remain readable but cannot start new destructive transitions.
+Generate offline technical reports with `python -m src.technical_assessment_reporting --help`.
+No independent human certification, actual pilot, real-data deletion, financial
+eligibility change or production screening authorization is established.
