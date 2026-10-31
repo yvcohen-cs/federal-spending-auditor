@@ -22,6 +22,7 @@ from .pilot_session_models import MeasurementKind as M
 from .pilot_study_reporting import read_report
 from .review_validation_tasks import inventory
 from .coordinator_governance import protocol, day
+from . import deletion_progress as progress
 
 LIMIT = 64 * 1024 * 1024
 STATES = {'CAPTURE': ('NEW', 'ACTIVE'), 'RETIRE_BEGIN': ('ACTIVE', 'RETIRING'),
@@ -76,11 +77,15 @@ def _tree(path, *, bind_identity=False):
         return result
 
 
-def _event(root, context, secret, events, action, as_of, reason):
+def _event(root, context, secret, events, action, as_of, reason, deletion_receipt=None):
     value = {'schema_type': 'CoordinatorLifecycleEvent', 'schema_version': 1,
         'sequence': len(events), 'previous': digest(events[-1]) if events else None,
         'context_sha256': digest(context), 'action': action, 'state': STATES[action][1],
         'as_of': as_of, 'reason': reason}
+    if deletion_receipt is not None:
+        progress.validate_receipt(deletion_receipt)
+        if action!='DELETE_COMMIT':raise EvidenceError('deletion_receipt_outside_commit')
+        value['schema_version']=2;value['deletion_receipt']=deletion_receipt
     value['mac'] = hmac.new(secret, canonical(value).encode(), hashlib.sha256).hexdigest()
     _write(root, f'lifecycle-{len(events):06d}.json', value)
     return digest(value)
@@ -123,7 +128,7 @@ def capture(path, key, *, as_of):
             if not manifest['batch'] or not manifest['outputs']:
                 raise EvidenceError('complete_batch_capture_required')
             s = os.fstat(root.fd)
-            context = {'schema_type': 'CoordinatorLifecycleContext', 'schema_version': 2,
+            context = {'schema_type': 'CoordinatorLifecycleContext', 'schema_version': 3,
                 'root_device': s.st_dev, 'root_inode': s.st_ino,
                 'coordinator_key_sha256': hashlib.sha256(secret).hexdigest(),
                 'manifest_sha256': digest(manifest), 'closed_on': as_of,
@@ -138,7 +143,7 @@ def capture(path, key, *, as_of):
 
 
 def _require_binding(context):
-    if context['schema_version'] != 2:
+    if context['schema_version'] != 3:
         raise EvidenceError('legacy_capture_read_only_new_simulated_run_required')
 
 
@@ -151,7 +156,7 @@ def _validate_manifest(manifest, version):
             if name.startswith('identity:'):
                 path=name[len('identity:'):]
                 if path!='.':parts(path)
-                if (version!=2 or not isinstance(value,list) or len(value)!=3
+                if (version not in (2,3) or not isinstance(value,list) or len(value)!=3
                         or any(type(n) is not int or n<0 for n in value[:2]) or value[2] not in ('file','directory')):
                     raise EvidenceError('invalid_target_identity')
                 identities.add(path)
@@ -163,7 +168,7 @@ def _validate_manifest(manifest, version):
                 parts(name)
                 if not isinstance(value,str) or re.fullmatch('[a-f0-9]{64}',value) is None:raise EvidenceError('invalid_file_manifest')
                 files.add(name)
-        if version==2:
+        if version in (2,3):
             if identities!=files|directories:raise EvidenceError('incomplete_target_identity_binding')
             for path in identities:
                 if entries['identity:'+path][2]!=('directory' if path in directories else 'file'):
@@ -178,7 +183,7 @@ def _load(root, key, expected_tip=None):
                 'captured_report','captured_report_sha256'}
     s = os.fstat(root.fd)
     if (set(context) != required or context['schema_type'] != 'CoordinatorLifecycleContext'
-            or type(context['schema_version']) is not int or context['schema_version'] not in (1, 2)
+            or type(context['schema_version']) is not int or context['schema_version'] not in (1, 2, 3)
             or (context['root_device'],context['root_inode']) != (s.st_dev,s.st_ino)):
         raise EvidenceError('copied_or_invalid_coordinator_context')
     secret = _authenticate(key, context['coordinator_key_sha256'])
@@ -196,15 +201,19 @@ def _load(root, key, expected_tip=None):
     events=[]; state='NEW'; previous=None; last_day=None
     for i,name in enumerate(names):
         e = strict_json(root.read(name).data)
-        if set(e) != {'schema_type','schema_version','sequence','previous','context_sha256','action','state','as_of','reason','mac'}:
+        base_fields={'schema_type','schema_version','sequence','previous','context_sha256','action','state','as_of','reason','mac'}
+        if not isinstance(e,dict) or set(e)!=(base_fields|({'deletion_receipt'} if e.get('schema_version')==2 else set())):
             raise EvidenceError('invalid_lifecycle_event')
         signed={k:v for k,v in e.items() if k!='mac'}
-        if (e['schema_type']!='CoordinatorLifecycleEvent' or type(e['schema_version']) is not int or e['schema_version']!=1
+        if (e['schema_type']!='CoordinatorLifecycleEvent' or type(e['schema_version']) is not int or e['schema_version'] not in (1,2)
                 or type(e['sequence']) is not int or e['sequence']!=i or e['previous']!=previous
                 or e['context_sha256']!=digest(context) or e['action'] not in STATES
                 or STATES[e['action']]!=(state,e['state']) or e['reason'] not in REASONS
                 or not isinstance(e['mac'],str) or not hmac.compare_digest(e['mac'],hmac.new(secret,canonical(signed).encode(),hashlib.sha256).hexdigest())):
             raise EvidenceError('forged_replayed_or_unauthorized_lifecycle_event')
+        if e['schema_version']==2:
+            if e['action']!='DELETE_COMMIT':raise EvidenceError('progress_receipt_outside_delete_commit')
+            progress.validate_receipt(e['deletion_receipt'])
         current=day(e['as_of'])
         if last_day is not None and current<last_day:
             raise EvidenceError('reordered_lifecycle_dates')
@@ -214,6 +223,9 @@ def _load(root, key, expected_tip=None):
     if expected_tip is not None and expected_tip!=previous:
         raise EvidenceError('stale_coordinator_tip')
     allowed={'coordinator.key','coordinator-context.json','deletion-manifest.json'}|set(names)|{'batch','outputs','retired-batch','retired-outputs'}
+    progress_names=progress.names(root)
+    if progress_names and state not in ('DELETING','DELETED'):raise EvidenceError('progress_outside_deletion')
+    allowed.update(progress_names)
     if set(os.listdir(root.fd))-allowed:
         raise EvidenceError('unexpected_coordinator_artifact')
     manifest=None
@@ -232,6 +244,16 @@ def _load(root, key, expected_tip=None):
             st=os.stat(name,dir_fd=root.fd,follow_symlinks=False)
             if not stat.S_ISREG(st.st_mode) or st.st_nlink!=1 or st.st_uid!=os.getuid() or stat.S_IMODE(st.st_mode)!=0o600:
                 raise EvidenceError('private_control_permissions_or_link')
+    if state=='DELETING':
+        if context['schema_version']<3:raise EvidenceError('legacy_partial_deletion_read_only')
+        progress.verify(root,context,manifest,secret)
+    if state=='DELETED' and progress_names:
+        receipt=events[-1].get('deletion_receipt')
+        if receipt is None:raise EvidenceError('orphan_deletion_progress')
+        progress.validate_receipt(receipt)
+        for name in progress_names:
+            i=int(name[len(progress.PREFIX):-5])
+            if i>=receipt['entries'] or root.read(name).byte_sha256!=receipt['entry_hashes'][i]:raise EvidenceError('changed_deletion_cleanup_record')
     return context,secret,events,state,manifest
 
 
@@ -368,6 +390,7 @@ def delete(path,key,*,expected_tip,as_of):
         if state not in ('RETIRED','DELETING','DELETED'):raise EvidenceError('retirement_required_before_deletion')
         if day(as_of)<day(events[-1]['as_of']):raise EvidenceError('deletion_date_reordered')
         if state=='DELETED':
+            if events[-1].get('deletion_receipt') is not None:progress.cleanup(root,events[-1]['deletion_receipt'],_after_boundary)
             if manifest is not None:os.unlink('deletion-manifest.json',dir_fd=root.fd);os.fsync(root.fd)
             return digest(events[-1])
         if state=='DELETING' and as_of!=events[-1]['as_of']:raise EvidenceError('exact_deletion_resume_required')
@@ -382,9 +405,10 @@ def delete(path,key,*,expected_tip,as_of):
                 _after_boundary('before_delete_begin')
                 _event(root,context,secret,events,'DELETE_BEGIN',as_of,events[-1]['reason'])
                 events=_load(root,key)[2];_after_boundary('delete_begin')
-            for name in ('outputs','batch'):_remove(Path(path)/('retired-'+name),manifest[name])
-            value=_event(root,context,secret,events,'DELETE_COMMIT',as_of,events[-1]['reason'])
+            receipt=progress.erase(root,context,manifest,secret,_after_boundary)
+            value=_event(root,context,secret,events,'DELETE_COMMIT',as_of,events[-1]['reason'],deletion_receipt=receipt)
             _after_boundary('delete_commit')
+            progress.cleanup(root,receipt,_after_boundary)
             os.unlink('deletion-manifest.json',dir_fd=root.fd);os.fsync(root.fd)
             return value
         finally:
@@ -397,7 +421,7 @@ def lifecycle_assessment(context,events,state,as_of):
     request=next((e for e in events if e['action']=='RETIRE_BEGIN'),None)
     request_day=day(request['as_of']) if request else None
     local_due=request_day+timedelta(days=7) if request and request['reason']=='WITHDRAWAL_REQUEST' else day(context['closed_on'])+timedelta(days=30)
-    return {'state':state,'reports_invalidated':state!='ACTIVE',
+    result={'state':state,'reports_invalidated':state!='ACTIVE',
         'local_deletion':'VERIFIED_LOCAL_NAMESPACE_UNLINK' if state=='DELETED' else 'INCOMPLETE' if state=='DELETING' else 'NOT_DELETED',
         'local_deletion_met_deadline':day(events[-1]['as_of'])<=local_due if state=='DELETED' else None,
         'local_deletion_due':local_due.isoformat(),'local_deletion_overdue':state!='DELETED' and today>local_due,
@@ -412,3 +436,9 @@ def lifecycle_assessment(context,events,state,as_of):
             'Cooperative locks do not stop same-UID or privileged writers.',
             'Direct legacy C5 commands are not changed; retired paths and C6 gates provide local scope only.',
             'This deletion rehearsal supports simulated data only; real-data deletion requires separate review.']}
+    if context['schema_version']==3:
+        receipt=events[-1].get('deletion_receipt')
+        result['per_object_progress']={'version':1,'committed_objects':receipt['objects'] if receipt else None,
+            'absence_recoveries':receipt['absence_recoveries'] if receipt else None,
+            'scope':'local_intent_and_namespace_observation_not_actor_authentication_or_secure_erasure'}
+    return result
