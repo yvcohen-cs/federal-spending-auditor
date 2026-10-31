@@ -271,3 +271,22 @@ def test_identical_body_different_requests_do_not_cross_contaminate_context(tmp_
     assert len(usa)==2
     assert sorted(r['diagnostic_context_status'] for r in usa)==['conflicting','not_independently_certified']
     assert sum('source_record_context_nonmatching_award_identifier' in r['gaps'] for r in usa)==1
+
+
+def test_primary_replay_does_not_coerce_booleans_and_numbers(tmp_path):
+    from src.award_validation import verify_report
+    path,scope=capture(tmp_path);result=validate((path,),scope)
+    assert result['records'][0]['eligible_for_existing_comparison'] is True
+    result['records'][0]['eligible_for_existing_comparison']=1
+    write_report(tmp_path/'out',result)
+    with pytest.raises(EvidenceError,match='validation_primary_replay_conflict'):
+        verify_report(tmp_path/'out',(path,),scope)
+
+
+@pytest.mark.parametrize('bad',[0,None,'false'])
+def test_boundary_flags_require_literal_false(tmp_path,bad):
+    path,scope=capture(tmp_path);result=validate((path,),scope)
+    result['restrictions']['financial_authorization_changed']=bad
+    write_report(tmp_path/'out',result)
+    with pytest.raises(EvidenceError,match='unsupported_validation_report'):
+        read_report(tmp_path/'out')

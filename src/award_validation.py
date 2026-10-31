@@ -250,8 +250,9 @@ def read_report(path):
         raise EvidenceError('validation_report_integrity')
     if values['validation.md'].data != markdown(value).encode() or values['validation.html'].data != html(value).encode():
         raise EvidenceError('validation_projection_conflict')
-    if (value.get('schema_type') != 'AwardSourceValidation' or type(value.get('schema_version')) is not int
-            or value['schema_version'] != 1 or value.get('rule_version') != VERSION or value.get('restrictions') != BOUNDARY):
+    if (type(value) is not dict or value.get('schema_type') != 'AwardSourceValidation' or type(value.get('schema_version')) is not int
+            or value['schema_version'] != 1 or value.get('rule_version') != VERSION
+            or canonical(value.get('restrictions')) != canonical(BOUNDARY)):
         raise EvidenceError('unsupported_validation_report')
     return value
 
@@ -259,7 +260,7 @@ def read_report(path):
 def verify_report(path, collections=(), requested=None, *, sam_captures=()):
     """Hashes detect corruption, not authenticity; replay primary inputs to trust claims."""
     saved = read_report(path)
-    if saved != validate(collections, requested, sam_captures=sam_captures):
+    if canonical(saved) != canonical(validate(collections, requested, sam_captures=sam_captures)):
         raise EvidenceError('validation_primary_replay_conflict')
     return saved
 
