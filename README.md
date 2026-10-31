@@ -212,3 +212,11 @@ python -m src.award_validation --collection /path/to/c3-capture --scope /path/to
 ```
 
 Optional repeatable `--sam-capture` adds separately scoped SAM evidence. Reports identify observed identity, parent, history, pagination, and provenance gaps; they do not infer misconduct or authorize comparisons. See [the architecture, replay verification, and limitations](docs/award-source-validation.md).
+
+### Contract-history qualification and resolution plans (Phase 4C10)
+
+```sh
+python -m src.history_qualification_reporting --collection /path/to/c3-capture --scope /path/to/scope.json --output /path/to/new-qualification-report
+```
+
+C10 reconstructs source-local observed histories and produces typed evidence requirements and source-specific resolution plans. Optional `--history-start`, `--history-end`, and `--as-of` declare requested scope without claiming coverage. Use `--verify-report` with the same primary inputs to replay findings. SAM captures remain in a separate namespace. See [qualification architecture and limitations](docs/contract-history-qualification.md). Financial and readiness gates remain unchanged.
