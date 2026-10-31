@@ -11,7 +11,7 @@ from .financial_models import USA_ACTION, FPDS_ACTION, AmountBasis, FinancialSco
 from .financial_values import has_cent_precision, NumericState
 from .history_ingestion import reconstruct
 from .parent_identity import assess_parent, ParentStatus, SOURCES
-from .scope_models import FIELDS
+from .scope_models import FIELDS, assessment as scope_assessment
 
 RULE = 'contract-history-qualification-v1'
 DIMENSIONS = ('native_identity', 'parent_identity', 'source_completeness', 'revision_completeness',
@@ -162,7 +162,7 @@ class EvidenceResolutionPlan(Schema):
         actions=strict_json(self.observed_action_identifiers_json.encode())
         if not isinstance(actions,list) or len(actions)>1000 or canonical(actions)!=self.observed_action_identifiers_json:
             raise ValueError('canonical_observed_action_contexts_required')
-        if self.category is not CATEGORY[self.requirement.dimension] or self.missing_observation != OBSERVATIONS[self.requirement.dimension]:
+        if self.category is not CATEGORY[self.requirement.dimension] or self.missing_observation != missing_observation(self.requirement):
             raise ValueError('resolution_claim_conflict')
         expected_sources=tuple(sorted(('usaspending','fpds'))) if self.requirement.dimension=='counterpart_coverage' and self.source!='samgov' else (self.source,)
         if self.relevant_sources!=expected_sources or self.documentation_dependencies!=documentation(expected_sources):
@@ -186,13 +186,19 @@ def documentation(sources):
     return tuple(sorted({url for key,url,_ in SOURCES if key.startswith(prefixes)} | {u for source in sources for u in extra[source]}))
 
 
+def missing_observation(req):
+    if 'outside_requested_native_context_requires_explicit_reselection_not_source_contradiction' in req.reasons:
+        return 'An explicit source-native selection of this different context before evaluating its history. Out-of-scope query candidates are not contradictory source evidence.'
+    return OBSERVATIONS[req.dimension]
+
+
 def resolution(qualification, req, interval, rows):
     sources=tuple(sorted(('usaspending','fpds'))) if req.dimension=='counterpart_coverage' and qualification.source!='samgov' else (qualification.source,)
     docs=documentation(sources)
     return EvidenceResolutionPlan(contract_id=qualification.contract_id,requirement=req,category=CATEGORY[req.dimension],
         source=qualification.source,relevant_sources=sources,native_identifiers_json=qualification.native_context_json,
         observed_action_identifiers_json=canonical([strict_json(v.encode()) for v in sorted({canonical({'native_action':r['action'],'source_native_identifiers':r['native_identifiers'],'native_action_fields':r.get('native_action')}) for r in rows})]),historical_interval=interval,
-        missing_observation=OBSERVATIONS[req.dimension],documentation_dependencies=docs,
+        missing_observation=missing_observation(req),documentation_dependencies=docs,
         verification_procedure='Independently inspect the cited native fields and official source documentation; establish the requested interval and source entitlement first. Preserve a new separately versioned permitted capture, revalidate hashes and locators, then replay qualification. No automatic collection or namespace substitution.',
         expected_artifact='Hash-bound primary source capture with original representation, native fields, request scope, capture timestamp, field locators, documentation version and an explicit account of unresolved proof obligations.',
         stop_condition='Stop without upgrading qualification when native context, interval, query support, entitlement, provenance or revision semantics cannot be established, or contradictory observations remain unresolved. Never infer absence or authorize financial arithmetic.')
@@ -211,7 +217,11 @@ def _history_records(run, diagnostic, input_indices):
     records=[]
     for o in run.observations:
         a=o.scope_assessment; d=by_id[o.history_observation_id]
-        parent=assess_parent(a) # Variant content is a revision question, not by itself parent contradiction.
+        # Scope's pooled content-variant flag must not manufacture a parent conflict.
+        # Reassess only this occurrence's parent fields, retaining the legacy result separately.
+        unpooled=scope_assessment(a.requested,a.observed,a.evidence,a.content_sha256,record=a.record,
+            supported=a.supported,conflicting=False,original_identity_json=a.original_identity_json)
+        parent=assess_parent(unpooled)
         native={f:getattr(a.observed,f).value for f in FIELDS}
         peers={p.history_observation_id:p for n in a.record.native_identifiers if n.namespace in ('id','atom_id')
                for p in index[(n.source,n.namespace,n.value)]} if a.record else {}
@@ -228,9 +238,12 @@ def _history_records(run, diagnostic, input_indices):
             'instrument':parent.instrument_type,'contract_kind':'definitive_contract' if parent.instrument_type=='D' and parent.status is ParentStatus.NONE else 'delivery_order' if parent.instrument_type=='C' and parent.status is ParentStatus.VERIFIED else 'unclassified_native_instrument',
             'parent':parent.to_dict(),'content_sha256':a.content_sha256,'citation':a.evidence.to_dict(),
             'diagnostic_gaps':d['gaps'], 'counterpart_citations':sorted(v['observation_id'] for v in diagnostic['records'] if v['source'] not in (d['source'],'samgov') and v['scope_status']=='verified_in_scope' and v.get('diagnostic_context_status')!='conflicting' and d['action_key'] is not None and v['action_key']==d['action_key']),
-            'identity_conflict':reused or any(f.result=='conflict' for f in a.comparisons if f.name in ('piid','agency','modification','transaction')) or d['diagnostic_context_status']=='conflicting',
+            'identity_conflict':any(getattr(a.observed,f).state.value=='conflicting' for f in FIELDS),
+            'outside_requested_context':a.status.value=='verified_out_of_scope' or d['diagnostic_context_status']=='conflicting',
+            'legacy_scope_assessment_id':a.assessment_id,'legacy_scope_status':a.status.value,
+            'parent_assessment_basis':'single_occurrence_parent_fields_not_a_revision_or_eligibility_upgrade',
             'reused_native_identifier':reused,'reused_identifier_peer_ids':sorted(k for k,p in peers.items() if tuple(getattr(p.scope_assessment.observed,f).value for f in FIELDS)!=tuple(native[f] for f in FIELDS)),
-            'parent_context_conflict':any(f.result=='conflict' for f in a.comparisons if f.name.startswith('parent_')),
+            'parent_context_conflict':any(getattr(a.observed,f).state.value=='conflicting' for f in ('parent_piid','parent_agency')),
             'input_index':input_indices[o.input_manifest_sha256], 'identity_observed':a.supported and all(native[f] is not None for f in ('piid','agency','modification','transaction')),
             'retrieved_at_utc':o.freshness.retrieved_at_utc,'retrieval_sequence':o.retrieval_sequence,
             'temporal_fields':[f.to_dict() for f in o.freshness.temporal_fields],
@@ -253,7 +266,7 @@ def _sam_records(diagnostic, typed_records):
             'context':context,'action':action if all(v is not None for v in action) else None,
             'native_action':r['native_action'],'request_json':native.citation.evidence.artifact.request_json,'native_identifiers':[],'contract_kind':'unclassified_native_instrument',
             'parent':{'status':r['parent_status']},'counterpart_citations':[],'citation':r['citation'],'diagnostic_gaps':r['gaps'],
-            'identity_conflict':r['scope_status']=='verified_out_of_scope','identity_observed':r['scope_status']=='verified_in_scope',
+            'identity_conflict':False,'outside_requested_context':r['scope_status']=='verified_out_of_scope','identity_observed':r['scope_status']=='verified_in_scope',
             'reused_native_identifier':False,'reused_identifier_peer_ids':[],'parent_context_conflict':r['parent_status']==ParentStatus.CONFLICT.value,
             'money':[],'temporal_fields':[],'content_sha256':native.content_sha256,
             'retrieved_at_utc':native.citation.evidence.artifact.retrieved_at_utc,'retrieval_sequence':None})
@@ -263,8 +276,16 @@ def _sam_records(diagnostic, typed_records):
 def _qualify(source, rows, context, pages, interval):
     Q=QualificationStatus; citations=tuple(sorted({r['id'] for r in rows}|{p for r in rows for p in r['reused_identifier_peer_ids']})); req=[]
     def add(d,status,*reasons): req.append(requirement(d,status,reasons,citations))
-    add('native_identity',Q.CONFLICTING if any(r['identity_conflict'] for r in rows) else Q.QUALIFIED if all(r['identity_observed'] for r in rows) else Q.INSUFFICIENT,
-        'conflicting_native_bindings' if any(r['identity_conflict'] for r in rows) else 'observed_source_native_components_only_not_cross_source_certification' if all(r['identity_observed'] for r in rows) else 'native_action_or_award_context_missing')
+    if all(r['outside_requested_context'] for r in rows):
+        for dimension in DIMENSIONS:
+            add(dimension,Q.QUALIFIED if dimension=='provenance_integrity' else Q.NOT_EVALUATED,
+                'replayed_local_capture_integrity_not_external_source_authentication' if dimension=='provenance_integrity' else 'outside_requested_native_context_requires_explicit_reselection_not_source_contradiction')
+        return ContractQualification(contract_id='qualified-contract:v1:'+digest({'source':source,'native_context':context}),source=source,
+            native_context_json=canonical(context),occurrence_ids=tuple(sorted(r['id'] for r in rows)),requirements=tuple(req),status=aggregate(req))
+    identity_conflict=any(r['identity_conflict'] for r in rows)
+    reused=any(r['reused_native_identifier'] for r in rows)
+    add('native_identity',Q.CONFLICTING if identity_conflict else Q.QUALIFIED if all(r['identity_observed'] for r in rows) and not reused else Q.INSUFFICIENT,
+        'contradictory_components_within_native_record' if identity_conflict else 'source_record_identifier_reused_across_contexts_revision_semantics_unverified' if reused else 'observed_source_native_components_only_not_cross_source_certification' if all(r['identity_observed'] for r in rows) else 'native_action_or_award_context_missing')
     parents={r['parent']['status'] for r in rows}
     parent_conflict=ParentStatus.CONFLICT.value in parents or any(r['parent_context_conflict'] for r in rows)
     add('parent_identity',Q.CONFLICTING if parent_conflict else Q.QUALIFIED if parents=={ParentStatus.NONE.value} else Q.INSUFFICIENT,
@@ -320,6 +341,7 @@ def project_contract(q, rows, interval):
         'relationship':'variant_content_revision_unknown' if len({r['content_sha256'] for r in values})>1 else 'same_observed_content_not_revision_certificate',
         'occurrence_count':len(values)} for k,values in sorted(actions.items())]
     return {'qualification':q.to_dict(),'contract_kinds':sorted({r['contract_kind'] for r in rows}),
+        'selection_status':'outside_requested_context_not_evaluated' if all(r['outside_requested_context'] for r in rows) else 'requested_or_unresolved_native_context',
         'actions':action_groups,'observed_occurrences':sorted(rows,key=lambda r:r['id']),
         'historical_order':{'basis':'retrieval_timestamp_then_local_sequence_not_action_or_revision_order',
             'occurrence_ids':[r['id'] for r in sorted(rows,key=lambda r:(r['retrieved_at_utc'] is None,datetime.fromisoformat(r['retrieved_at_utc'].replace('Z','+00:00')).astimezone(timezone.utc) if r['retrieved_at_utc'] is not None else datetime.max.replace(tzinfo=timezone.utc),r['retrieval_sequence'] or 0,r['id']))],

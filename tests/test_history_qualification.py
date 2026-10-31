@@ -115,9 +115,9 @@ def test_reused_native_record_ids_keep_distinct_contexts_and_all_citations(tmp_p
     root,scope=make(tmp_path,change=mutate,kind='C');report=qualify((root,),scope)
     fpds=[c for c in report['contracts'] if c['qualification']['source']=='fpds']
     assert len(fpds)==2
-    assert all(requirement(c,'native_identity')['status']==Q.CONFLICTING.value for c in fpds)
+    assert sorted(requirement(c,'native_identity')['status'] for c in fpds)==sorted([Q.INSUFFICIENT.value,Q.NOT_EVALUATED.value])
     assert all(len(requirement(c,'native_identity')['citation_ids'])==2 for c in fpds)
-    assert any(t['category']=='conflicting_source_records' for t in report['gap_triage'])
+    assert not any(t['category']=='conflicting_source_records' for t in report['gap_triage'])
     check(report)
 
 
@@ -426,7 +426,7 @@ def test_falsey_untyped_intervals_are_not_silently_defaulted(tmp_path,bad):
 def test_explicit_conflicting_award_id_cannot_qualify_as_counterpart(tmp_path):
     root,scope=make(tmp_path,change=lambda data:data['responses'][0]['json']['results'][0].update(award_id='CONT_AWD_WRONG_SELECTION'))
     value=qualify((root,),scope);check(value)
-    assert requirement(contract(value,'usaspending'),'native_identity')['status']==Q.CONFLICTING.value
+    assert requirement(contract(value,'usaspending'),'native_identity')['status']==Q.NOT_EVALUATED.value
     assert requirement(contract(value,'fpds'),'counterpart_coverage')['status']==Q.INSUFFICIENT.value
 
 
@@ -445,3 +445,27 @@ def test_malformed_signed_date_is_missing_proof_not_a_conflicting_value(tmp_path
     req=requirement(c,'as_of_alignment')
     assert req['status']==Q.INSUFFICIENT.value
     assert 'signed_action_date_missing_or_unsupported_no_effective_date_substitution' in req['reasons']
+
+
+def test_query_candidates_for_different_parent_are_not_source_contradictions(tmp_path):
+    def different(data):data['responses'][-1]['text']=data['responses'][-1]['text'].replace('<f:PIID>SYNTH-PARENT</f:PIID>','<f:PIID>OTHER-PARENT</f:PIID>')
+    root,scope=make(tmp_path,change=different,kind='C');value=qualify((root,),scope);check(value);c=contract(value)
+    assert c['qualification']['status']==Q.NOT_EVALUATED.value
+    assert c['selection_status']=='outside_requested_context_not_evaluated'
+    assert not any(t['category']=='conflicting_source_records' for t in value['gap_triage'])
+
+
+def test_amount_variants_do_not_manufacture_parent_conflicts(tmp_path):
+    root,scope=make(tmp_path,'contradictory_observations',kind='C');value=qualify((root,),scope);check(value)
+    c=contract(value,'usaspending')
+    assert requirement(c,'currency_amount')['status']==Q.CONFLICTING.value
+    assert requirement(c,'parent_identity')['status']==Q.INSUFFICIENT.value
+    assert requirement(c,'parent_identity')['reasons']==['parent_award_primary_record_not_observed']
+
+
+def test_internal_identifier_modification_contradiction_is_real_conflicting_evidence(tmp_path):
+    root,scope=make(tmp_path,change=lambda data:data['responses'][0]['json']['results'][0].update(modification_number='P99999'))
+    value=qualify((root,),scope);check(value)
+    req=requirement(contract(value,'usaspending'),'native_identity')
+    assert req['status']==Q.CONFLICTING.value
+    assert req['evidence_kind']==K.CONTRADICTORY.value

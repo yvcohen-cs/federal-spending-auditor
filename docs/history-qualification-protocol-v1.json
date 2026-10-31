@@ -16,7 +16,11 @@
     "tampered_manifests_and_derived_summaries",
     "contradictory_qualification",
     "primary_replay",
-    "legacy_C9_compatibility"
+    "legacy_C9_compatibility",
+    "out_of_requested_context_not_source_contradiction",
+    "reused_identifiers_require_semantics",
+    "amount_variants_not_parent_conflicts",
+    "internal_native_identifier_contradiction"
   ],
   "evidence_boundary": "Synthetic software validation and read-only replay of prior permitted captures; no new real API behavior established.",
   "frozen_files": {

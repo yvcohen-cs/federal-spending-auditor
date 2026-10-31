@@ -61,6 +61,7 @@ def markdown(value):
     lines=['# Contract-history evidence qualification v1','','Evidence quality only. Financial arithmetic and production screening remain unauthorized.','',
            '| Source-local contract | Status | Unresolved requirements |','| --- | --- | ---: |']
     lines.insert(4,'Unusable C3 artifacts: '+str(len(value['unavailable_artifact_issues']))+'; unrevalidated SAM captures: '+str(sum(c['state']!='revalidated_bounded_capture' for c in value['sam_capture_assessments']))+'. No positive contract claim is made from an unrevalidated capture.')
+    lines.insert(5,'')
     for c in value['contracts']:
         q=c['qualification'];count=sum(r['status']!='QUALIFIED_EVIDENCE' for r in q['requirements'])
         lines.append('| '+escape(q['source']+' '+q['contract_id'])+' | '+q['status']+' | '+str(count)+' |')
