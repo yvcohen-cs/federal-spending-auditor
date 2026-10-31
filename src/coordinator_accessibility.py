@@ -37,7 +37,7 @@ def show_task(task, position, total, output=print, source_root=None):
     emit('Unknown means proof is missing. Accepting evidence does not fill a missing proof obligation.')
 
 
-def accessible_terminal(store, session_id, resume_key, *, input_fn=input, output=print):
+def accessible_terminal(store, session_id, resume_key, *, input_fn=input, output=print, paged_evidence=False):
     from .pilot_session_store import read_session
     from .pilot_session_models import MeasurementKind
     from .evidence_io import EvidenceError
@@ -49,6 +49,11 @@ def accessible_terminal(store, session_id, resume_key, *, input_fn=input, output
     emit('Observation is a saved source field. An automated assessment is an interpretation, not additional evidence.')
     emit('Keyboard instructions: enter a numbered choice and press Enter. Enter q to save and stop, or w to withdraw.')
     emit('The same task is presented again after a pause. Invalid input can be corrected without losing saved responses.')
+    if paged_evidence:
+        from .evidence_browser import browse
+        def presenter(task,position,total,output,source_root=None):
+            return browse(task,position,total,input_fn=input_fn,output=output,source_root=source_root)
+        return terminal(store,session_id,resume_key,input_fn=input_fn,output=emit,task_presenter=presenter)
     return terminal(store, session_id, resume_key, input_fn=input_fn, output=emit)
 
 

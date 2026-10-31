@@ -194,3 +194,11 @@ legacy captures remain readable but cannot start new destructive transitions.
 Generate offline technical reports with `python -m src.technical_assessment_reporting --help`.
 No independent human certification, actual pilot, real-data deletion, financial
 eligibility change or production screening authorization is established.
+
+Phase 4C8 adds [review-ready evidence and synthetic workflow hardening](docs/review-preparation.md):
+per-object deletion intents/completions, opt-in paged evidence navigation, explicit
+unknown/conflicting copy-backup declarations, and commit/test-bound JSON/Markdown/
+static HTML review packages. Use `python -m src.review_evidence --help`.
+Merged PR #22 remains the baseline; no real enrollment, real-data deletion or
+production screening is enabled. External approval and actual AT/human performance
+remain unverified.

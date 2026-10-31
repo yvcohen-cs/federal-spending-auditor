@@ -82,7 +82,7 @@ class StopInput(Exception):
     def __init__(self,withdraw=False):self.withdraw=withdraw
 
 
-def terminal(store,sid,key,*,input_fn=input,output=print):
+def terminal(store,sid,key,*,input_fn=input,output=print,task_presenter=None):
     session,tasks,events=read_session(store,sid,key);summary,*_=replay(session,tasks,events)
     opt_in=any(e.action is A.CONSENT and e.consent.state is C.GRANTED and e.consent.timing_acknowledged for e in events)
     clock=LocalClock(session.protocol.measurement_kind,session.protocol.timing_enabled and opt_in)
@@ -119,7 +119,7 @@ def terminal(store,sid,key,*,input_fn=input,output=print):
             if summary.tasks_completed==len(tasks.entries):
                 act(store,sid,key,A.COMPLETE,clock.point());output('Session completed. No financial authority granted.');return 0
             index=summary.tasks_completed;task=tasks.entries[index].task
-            present(store,sid,key,clock.point());display_task(task,index,len(tasks.entries),output,source_root=tasks.entries[index].source_root)
+            present(store,sid,key,clock.point());(task_presenter or display_task)(task,index,len(tasks.entries),output,source_root=tasks.entries[index].source_root)
             choice('Begin the structured response when ready.',(('begin','Begin response'),))
             act(store,sid,key,A.BEGIN_RESPONSE,clock.point())
             decision=choice('Evidence-quality decision:',tuple((d,d.value) for d in D))
