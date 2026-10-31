@@ -19,7 +19,7 @@ from .evidence import Schema, _hash
 from .evidence_io import EvidenceError, EvidenceRoot, canonical, digest, strict_json, safe_xml
 from .review_packet_io import atomic_create, new_directory
 from .pilot_session_store import private_location, _private_fd
-from .technical_assessment_reporting import assessment
+from .technical_assessment_reporting import assessment, test_receipt as normalized_tests
 
 ROOT=Path(__file__).resolve().parents[1]
 PROTOCOL_SHA='7f627ef251d66f272abea7bcf5a444b4daa7af7f9a41d2a683328ef2ad08122b'
@@ -143,9 +143,31 @@ def package(raw,expected_head,inventory=None):
     technical=assessment(raw)
     if not technical['automated_tests'].get('all_recorded_tests_passed'):raise EvidenceError('review_tests_not_all_passed')
     sources=git_binding(manifest,expected_head)
+    _,outcomes=normalized_tests(raw)
+    controls=[]
+    for concern,implementation,tests,residual in (
+        ('TA-007','Context-v3 per-object intent/commit and explicit pending-intent absence recovery',
+            ('test_object_journal_recovery_is_explicit','test_missing_without_intent_is_rejected_and_original_preserved','test_committed_object_cannot_reappear'),
+            'Same-key rollback, hostile races and inode reuse remain outside local assurance.'),
+        ('TA-006/019','Scope-bound contradictory copy/backup declarations and unknown verified counts',
+            ('test_copy_inventory_unknown_never_means_zero_verified','test_copy_conflicts_and_evidence_scope_are_preserved'),
+            'No discovery, global revocation, authenticated backup confirmation or secure erasure.'),
+        ('TA-014','Read-only section/page navigation with original save/withdraw semantics',
+            ('test_browser_sections_pages_and_exact_evidence','test_paged_adapter_save_and_withdraw_only_append_events'),
+            'Actual assistive-technology compatibility and human usability remain UNKNOWN.'),
+        ('TA-015/020','Exact clean-commit source and normalized test/input binding for independent review',
+            ('test_review_package_reproduces_without_external_approval','test_package_scope_and_head_replay_are_blocked'),
+            'No independent approval, institutional authority or real-study authorization established.')):
+        refs=['tests.test_review_preparation::'+name for name in tests]
+        checks=[[state for name,state in outcomes.items() if name.split('[')[0]==ref] for ref in refs]
+        controls.append({'C7_concern':concern,'implementation':implementation,'test_references':refs,
+            'local_test_evidence':'REFERENCED_REGRESSIONS_PASSED' if all(v and set(v)=={'passed'} for v in checks) else 'NOT_ESTABLISHED_BY_RECEIPT',
+            'residual':residual})
     return {'schema_type':'IndependentReviewEvidencePackage','schema_version':1,'version':'review-evidence-v1',
         'starting_main':p['starting_main'],'review_head':expected_head,'input_sha256':scope,
-        'protocol_sha256':PROTOCOL_SHA,'source_files':sources,'technical_assessment':technical,
+        'protocol_sha256':PROTOCOL_SHA,'source_files':sources,
+        'phase4c8_controls':controls,'technical_assessment_scope':'C7_frozen_findings_and_method_recomputed_with_current_source_separate_from_C8_changes',
+        'technical_assessment':technical,
         'copy_backup_governance':copy_assessment(inventory or CopyInventory(scope_sha256=scope),scope),
         'review_requirements':[{'scope':s,'status':'NOT_ESTABLISHED','responsible_role':role,'required_evidence':e} for s,role,e in (
             ('security','independent_security_reviewer','Inspect exact commit, deletion journal, fault tests and residual same-user/inode threats.'),

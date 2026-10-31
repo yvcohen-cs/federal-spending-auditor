@@ -219,6 +219,8 @@ def test_review_package_reproduces_without_external_approval(tmp_path):
     assert all(r[key] is False for key in ('actual_enrollment_enabled','real_data_deletion_enabled','production_screening_enabled','financial_eligibility_changed','frozen_readiness_upgrade'))
     assert r['external_approval']['records']==[] and all(row['status']=='NOT_ESTABLISHED' for row in r['review_requirements'])
     assert all('/blob/'+sha+'/' in f['url'] for f in r['source_files'].values())
+    assert len(r['phase4c8_controls'])==4
+    assert all(c['local_test_evidence']=='NOT_ESTABLISHED_BY_RECEIPT' for c in r['phase4c8_controls'])
     text=canonical(r);assert '/tmp/' not in text and 'resume.key' not in text
 
 

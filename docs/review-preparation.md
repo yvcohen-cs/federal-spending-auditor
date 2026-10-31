@@ -129,6 +129,10 @@ A package requires:
   accessibility, institutional and storage review. Existing seven approval scopes
   remain external obligations; no package status authorizes a real study.
 
+A separate C8 change record maps implemented controls and exact regression references
+to the frozen C7 concerns. C7 findings remain historical and are not rewritten;
+new mitigations and residual risks are independently visible.
+
 The package contains hashes and public repository links, not raw code copies,
 local paths, capabilities, participant identifiers, raw logs or histories. It is
 review-ready evidence, not an assertion that independent review occurred. Local
