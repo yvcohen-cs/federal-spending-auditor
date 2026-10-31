@@ -202,3 +202,13 @@ static HTML review packages. Use `python -m src.review_evidence --help`.
 Merged PR #22 remains the baseline; no real enrollment, real-data deletion or
 production screening is enabled. External approval and actual AT/human performance
 remain unverified.
+
+### Offline award-source diagnostics (Phase 4C9)
+
+Revalidate preserved USAspending/FPDS C3 collections and SAM C2 captures without collection, new arithmetic, or readiness changes:
+
+```sh
+python -m src.award_validation --collection /path/to/c3-capture --scope /path/to/scope.json --output /path/to/new-report
+```
+
+Optional repeatable `--sam-capture` adds separately scoped SAM evidence. Reports identify observed identity, parent, history, pagination, and provenance gaps; they do not infer misconduct or authorize comparisons. See [the architecture, replay verification, and limitations](docs/award-source-validation.md).
