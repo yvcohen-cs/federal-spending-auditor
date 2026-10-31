@@ -237,3 +237,22 @@ def test_frozen_protocols_remain_byte_identical():
     assert len(protocol['frozen_files'])>=20
     for name, expected in protocol['frozen_files'].items():
         assert hashlib.sha256((root/name).read_bytes()).hexdigest()==expected
+
+
+def test_out_of_scope_complete_native_context_is_not_mislabeled_missing(tmp_path):
+    path,scope=capture(tmp_path,'scope_mismatch')
+    result=validate((path,),scope)
+    fpds=next(r for r in result['records'] if r['source']=='fpds')
+    assert fpds['action_key'] is not None
+    assert not fpds['eligible_for_existing_comparison']
+    assert 'identity_or_parent_scope_unresolved' in fpds['gaps']
+    assert 'native_action_context_incomplete' not in fpds['gaps']
+
+
+@pytest.mark.parametrize('version',[2,True,None,'1'])
+def test_unsupported_report_version_rejected_even_with_valid_manifest(tmp_path,version):
+    path,scope=capture(tmp_path);result=validate((path,),scope)
+    result['schema_version']=version
+    write_report(tmp_path/'out',result)
+    with pytest.raises(EvidenceError,match='unsupported_validation_report'):
+        read_report(tmp_path/'out')
