@@ -256,3 +256,18 @@ def test_unsupported_report_version_rejected_even_with_valid_manifest(tmp_path,v
     write_report(tmp_path/'out',result)
     with pytest.raises(EvidenceError,match='unsupported_validation_report'):
         read_report(tmp_path/'out')
+
+
+def test_identical_body_different_requests_do_not_cross_contaminate_context(tmp_path):
+    from dataclasses import replace
+    award,data=fixture('equal_control')
+    data['responses'][0]['json']['results'][0]['award_id']=award.generated_id
+    first=tmp_path/'first';second=tmp_path/'second'
+    collect_fixture(first,award,data)
+    collect_fixture(second,replace(award,generated_id='CONT_AWD_DIFFERENT_SELECTION'),data)
+    scope=ScopeRequest(piid=award.piid,agency=award.agency_id,parent_piid=award.parent_piid,parent_agency=award.parent_agency_id)
+    result=validate((first,second),scope)
+    usa=[r for r in result['records'] if r['source']=='usaspending']
+    assert len(usa)==2
+    assert sorted(r['diagnostic_context_status'] for r in usa)==['conflicting','not_independently_certified']
+    assert sum('source_record_context_nonmatching_award_identifier' in r['gaps'] for r in usa)==1

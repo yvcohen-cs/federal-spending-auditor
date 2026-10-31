@@ -89,7 +89,7 @@ def collection_pagination(values):
                 page = parse_page(source, values[body_name].data, req, plan['awards'][0])
                 pages.append((req['page_index'], page['has_next'], tuple(page['fingerprints'])))
                 contexts.extend({'body_path': body_name, 'body_sha256': values[body_name].byte_sha256,
-                    'row_index': i, 'context': c} for i, c in enumerate(page['contexts']))
+                    'row_index': i, 'request_json': canonical(req['parameters']), 'context': c} for i, c in enumerate(page['contexts']))
             except (ValueError, KeyError, TypeError):
                 issues.add('unsupported_page_or_continuation')
         result = pagination(pages)
@@ -144,6 +144,7 @@ def validate(collections=(), requested=None, *, sam_captures=()):
             source_contexts = [c['context'] for report in page_reports for page in report['sources']
                 if page['source'] == a.evidence.reference.source for c in page['record_contexts']
                 if c['body_sha256'] == a.evidence.artifact.sha256 and c['body_path'] == a.evidence.artifact.relative_path
+                and c['request_json'] == a.evidence.artifact.request_json
                 and c['row_index'] == int(a.evidence.reference.locator.split('/')[-1])
                 ] if a.evidence.reference.source == 'usaspending' else []
             for context in source_contexts:
