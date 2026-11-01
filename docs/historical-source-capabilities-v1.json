@@ -1,0 +1,356 @@
+{
+  "capabilities": [
+    {
+      "capability": "original_submitted_award",
+      "finding": "Current award summaries and action tables do not establish original-as-submitted versions.",
+      "references": [
+        "usa-transactions",
+        "prior-C12-source-matrix"
+      ],
+      "source": "usaspending",
+      "state": "UNVERIFIED"
+    },
+    {
+      "capability": "parent_IDV_record",
+      "finding": "C12 separately retrieved the returned native parent IDV; this is current-source evidence, not historical applicability.",
+      "references": [
+        "usa-transactions",
+        "prior-C12-source-matrix"
+      ],
+      "source": "usaspending",
+      "state": "OBSERVED"
+    },
+    {
+      "capability": "modification_actions",
+      "finding": "Four native actions reobserved in two documented descending pages; no new action discovered.",
+      "references": [
+        "usa-transactions",
+        "prior-C12-source-matrix"
+      ],
+      "source": "usaspending",
+      "state": "OBSERVED"
+    },
+    {
+      "capability": "historical_action_dates",
+      "finding": "ISO action dates are returned; ascending/descending is documented. Same-day ties do not certify revision order.",
+      "references": [
+        "usa-transactions",
+        "prior-C12-source-matrix"
+      ],
+      "source": "usaspending",
+      "state": "OBSERVED"
+    },
+    {
+      "capability": "modification_identifiers",
+      "finding": "Native id and modification_number are preserved and compared for internal consistency; no contiguous sequence assumed.",
+      "references": [
+        "usa-transactions",
+        "prior-C12-source-matrix"
+      ],
+      "source": "usaspending",
+      "state": "OBSERVED"
+    },
+    {
+      "capability": "correction_lineage",
+      "finding": "Reviewed v2 transaction contract does not certify directed correction/replacement lineage or an original revision archive.",
+      "references": [
+        "usa-transactions",
+        "prior-C12-source-matrix"
+      ],
+      "source": "usaspending",
+      "state": "UNVERIFIED"
+    },
+    {
+      "capability": "cancellation_deletion",
+      "finding": "No cancellation/deletion visibility or retention guarantee established by these captured responses.",
+      "references": [
+        "usa-transactions",
+        "prior-C12-source-matrix"
+      ],
+      "source": "usaspending",
+      "state": "UNVERIFIED"
+    },
+    {
+      "capability": "parent_applicability_over_time",
+      "finding": "Encoded native parent components assert record context, not effective intervals or historical parent changes.",
+      "references": [
+        "usa-transactions",
+        "prior-C12-source-matrix"
+      ],
+      "source": "usaspending",
+      "state": "UNVERIFIED"
+    },
+    {
+      "capability": "source_update_timestamps",
+      "finding": "The transaction table contract does not provide an authoritative record-update/as-of certificate; HTTP metadata remains separate.",
+      "references": [
+        "usa-transactions",
+        "prior-C12-source-matrix"
+      ],
+      "source": "usaspending",
+      "state": "UNVERIFIED"
+    },
+    {
+      "capability": "historical_monetary_observations",
+      "finding": "federal_action_obligation is documented transaction monetary value. Exact source lexemes retained; no sums, totals substitution or aligned monetary revisions.",
+      "references": [
+        "usa-transactions",
+        "prior-C12-source-matrix"
+      ],
+      "source": "usaspending",
+      "state": "OBSERVED"
+    },
+    {
+      "capability": "original_submitted_award",
+      "finding": "Preserved Atom award records are not proof of original submitted versions.",
+      "references": [
+        "prior-C12-source-matrix"
+      ],
+      "source": "fpds",
+      "state": "UNVERIFIED"
+    },
+    {
+      "capability": "parent_IDV_record",
+      "finding": "Preserved child referencedIDVID is not a separately fetched native FPDS parent record.",
+      "references": [
+        "prior-C12-source-matrix"
+      ],
+      "source": "fpds",
+      "state": "UNVERIFIED"
+    },
+    {
+      "capability": "modification_actions",
+      "finding": "Preserved direct awardID/awardContractID fields include modification and transaction components.",
+      "references": [
+        "prior-C12-source-matrix"
+      ],
+      "source": "fpds",
+      "state": "OBSERVED"
+    },
+    {
+      "capability": "historical_action_dates",
+      "finding": "Preserved signed/effective dates and Atom dates remain distinct source fields.",
+      "references": [
+        "prior-C12-source-matrix"
+      ],
+      "source": "fpds",
+      "state": "OBSERVED"
+    },
+    {
+      "capability": "modification_identifiers",
+      "finding": "Native modNumber/transactionNumber retained without integer ordering or gap inference.",
+      "references": [
+        "prior-C12-source-matrix"
+      ],
+      "source": "fpds",
+      "state": "OBSERVED"
+    },
+    {
+      "capability": "correction_lineage",
+      "finding": "Changed Atom content/update markers cannot establish correction direction.",
+      "references": [
+        "prior-C12-source-matrix"
+      ],
+      "source": "fpds",
+      "state": "UNVERIFIED"
+    },
+    {
+      "capability": "cancellation_deletion",
+      "finding": "No authoritative cancellation/deletion history guarantee established.",
+      "references": [
+        "prior-C12-source-matrix"
+      ],
+      "source": "fpds",
+      "state": "UNVERIFIED"
+    },
+    {
+      "capability": "parent_applicability_over_time",
+      "finding": "Direct referencedIDVID fields support individual record assertions; applicability intervals remain unknown.",
+      "references": [
+        "prior-C12-source-matrix"
+      ],
+      "source": "fpds",
+      "state": "UNVERIFIED"
+    },
+    {
+      "capability": "source_update_timestamps",
+      "finding": "Available Atom updated and transactionInformation timestamps preserved; never a freshness/revision certificate.",
+      "references": [
+        "prior-C12-source-matrix"
+      ],
+      "source": "fpds",
+      "state": "OBSERVED"
+    },
+    {
+      "capability": "historical_monetary_observations",
+      "finding": "C5 separates obligatedAmount from cumulative totalObligatedAmount; no new arithmetic or eligibility.",
+      "references": [
+        "prior-C12-source-matrix"
+      ],
+      "source": "fpds",
+      "state": "OBSERVED"
+    },
+    {
+      "capability": "original_submitted_award",
+      "finding": "No authenticated capture obtained in C13. Current guide fields do not establish an original immutable submission archive.",
+      "references": [
+        "SAM-frozen-source-matrix",
+        "prior-C12-source-matrix"
+      ],
+      "source": "samgov",
+      "state": "UNVERIFIED"
+    },
+    {
+      "capability": "parent_IDV_record",
+      "finding": "Guide distinguishes Award/IDV and native referenced IDV components. Existing collection remains Award-only; no parent IDV request authorized/configured.",
+      "references": [
+        "SAM-frozen-source-matrix",
+        "prior-C12-source-matrix"
+      ],
+      "source": "samgov",
+      "state": "DOCUMENTED"
+    },
+    {
+      "capability": "modification_actions",
+      "finding": "contractId modificationNumber/transactionNumber documented; native namespace separate from USA/FPDS.",
+      "references": [
+        "SAM-frozen-source-matrix",
+        "prior-C12-source-matrix"
+      ],
+      "source": "samgov",
+      "state": "DOCUMENTED"
+    },
+    {
+      "capability": "historical_action_dates",
+      "finding": "dateSigned and transaction metadata dates documented, retained without assigning missing zones or precedence.",
+      "references": [
+        "SAM-frozen-source-matrix",
+        "prior-C12-source-matrix"
+      ],
+      "source": "samgov",
+      "state": "DOCUMENTED"
+    },
+    {
+      "capability": "modification_identifiers",
+      "finding": "Native literal identifiers preserved; no universal numeric sequence guaranteed.",
+      "references": [
+        "SAM-frozen-source-matrix",
+        "prior-C12-source-matrix"
+      ],
+      "source": "samgov",
+      "state": "DOCUMENTED"
+    },
+    {
+      "capability": "correction_lineage",
+      "finding": "oldContractId/version/status observations do not establish directed correction lineage; published schema/status ambiguities remain.",
+      "references": [
+        "SAM-frozen-source-matrix",
+        "prior-C12-source-matrix"
+      ],
+      "source": "samgov",
+      "state": "UNVERIFIED"
+    },
+    {
+      "capability": "cancellation_deletion",
+      "finding": "Guide deletedStatus=yes covers deleted contracts within six months, subject to revealed/unrevealed scope. Older deletion completeness unestablished.",
+      "references": [
+        "SAM-frozen-source-matrix",
+        "prior-C12-source-matrix"
+      ],
+      "source": "samgov",
+      "state": "DOCUMENTED"
+    },
+    {
+      "capability": "parent_applicability_over_time",
+      "finding": "Referenced IDV fields and parent modification do not establish historical validity intervals.",
+      "references": [
+        "SAM-frozen-source-matrix",
+        "prior-C12-source-matrix"
+      ],
+      "source": "samgov",
+      "state": "UNVERIFIED"
+    },
+    {
+      "capability": "source_update_timestamps",
+      "finding": "createdDate/approvedDate/lastModifiedDate/version are documented observations, not common-revision or freshness guarantees.",
+      "references": [
+        "SAM-frozen-source-matrix",
+        "prior-C12-source-matrix"
+      ],
+      "source": "samgov",
+      "state": "DOCUMENTED"
+    },
+    {
+      "capability": "historical_monetary_observations",
+      "finding": "Dollars/action and cumulative contract fields remain distinct. Currency/basis/cross-source mappings are unvalidated; no sums.",
+      "references": [
+        "SAM-frozen-source-matrix",
+        "prior-C12-source-matrix"
+      ],
+      "source": "samgov",
+      "state": "DOCUMENTED"
+    }
+  ],
+  "method_limit": "UNVERIFIED/UNSUPPORTED apply to reviewed evidence or C13 adapter support, not proof that a capability or contract does not exist anywhere in the source system.",
+  "references": [
+    {
+      "body_sha256": "76a50f3445670d8ee5488770d6583a7f6399a093a903dabfbab77344f1eba078",
+      "bytes": 4581,
+      "id": "usa-transactions",
+      "reviewed_on": "2026-11-01",
+      "status": 200,
+      "url": "https://raw.githubusercontent.com/fedspendingtransparency/usaspending-api/master/usaspending_api/api_contracts/contracts/v2/transactions.md"
+    },
+    {
+      "body_sha256": "23bc2e1207f5873e29d2253e7c53461b9b50c44c2bc4e0f36ca263b2ad3c75b6",
+      "bytes": 17889,
+      "id": "usa-transaction-search",
+      "reviewed_on": "2026-11-01",
+      "status": 200,
+      "url": "https://raw.githubusercontent.com/fedspendingtransparency/usaspending-api/master/usaspending_api/api_contracts/contracts/v2/search/spending_by_transaction.md"
+    },
+    {
+      "body_sha256": "843353f954e8524296dfaf7369ff04996702a03dfb30ad2caa108489bc7be776",
+      "bytes": 19747,
+      "id": "usa-search-filters",
+      "reviewed_on": "2026-11-01",
+      "status": 200,
+      "url": "https://raw.githubusercontent.com/fedspendingtransparency/usaspending-api/master/usaspending_api/api_contracts/search_filters.md"
+    },
+    {
+      "body_sha256": "38585e30166e3b4194cfb5775bfe4908270b1d4efc045ab842233833b8e07dbd",
+      "id": "prior-C12-source-matrix",
+      "path": "docs/source-verification-matrix-v1.json"
+    },
+    {
+      "body_sha256": "b3bc299e07ad47c551db637faffa7ad6418b263b2c608483751c244c24983171",
+      "id": "SAM-frozen-source-matrix",
+      "path": "docs/sam-documentation-matrix-v1.json"
+    }
+  ],
+  "schema_type": "HistoricalSourceCapabilities",
+  "schema_version": 1,
+  "states": [
+    "DOCUMENTED",
+    "OBSERVED",
+    "UNVERIFIED",
+    "UNSUPPORTED"
+  ],
+  "unsupported_C13_acquisition_paths": [
+    {
+      "interface": "undocumented_transaction_detail_URL",
+      "reason": "No transaction-detail contract found in reviewed official v2 contract directory. No similar-looking data endpoint was attempted.",
+      "state": "UNSUPPORTED"
+    },
+    {
+      "interface": "search_spending_by_transaction_as_history_archive",
+      "reason": "Documented award_ids filters target PIID-style search with optional exact phrases; not the complete native award/parent tuple or immutable revision identity. Not used to expand collection.",
+      "state": "UNSUPPORTED"
+    },
+    {
+      "interface": "authenticated_SAM_without_configured_access",
+      "reason": "No configured authorized key; no API request, secret lookup or credential discovery.",
+      "state": "UNSUPPORTED"
+    }
+  ]
+}
