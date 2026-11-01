@@ -475,3 +475,27 @@ def test_cross_source_graph_requires_existing_verified_scope_not_only_components
     n=replace(node(tmp_path),existing_native_scope_verified=False)
     other=variant(n,'fpds',source='fpds',native_identifiers_json='[]',native_action_id='FPDS',parent_assertion_basis='direct_FPDS_referenced_IDV_fields',existing_native_scope_verified=True)
     assert not graph((n,other))['cross_source_observations']
+
+
+def test_window_subproof_never_attaches_to_foreign_context_resolution_plans(tmp_path):
+    from tests.test_source_verification import setup as c12_setup
+    from src.history_demo import fixture,collect_fixture
+    from src.scope_models import ScopeRequest
+    from src.acquisition_planning import prepare
+    from src.source_verification import VerificationExperiment,experiment
+    from tests.test_evidence_acquisition import job
+    _,_,_,scenario=c12_setup(tmp_path/'seed')
+    a,body=fixture('equal_control')
+    us=next(r for r in body['responses'] if r['source']=='usaspending')['json']
+    foreign=deepcopy(us['results'][0]);foreign['id']=foreign['id'].replace('SYNTH-C7-AGREEMENT','FOREIGN-PIID');us['results'].append(foreign)
+    original=tmp_path/'original';collect_fixture(original,a,body)
+    scope=ScopeRequest(piid=a.piid,agency=a.agency_id,parent_piid=a.parent_piid,parent_agency=a.parent_agency_id)
+    cases=[{'collections':[str(original)],'scope':scope.to_dict()}]
+    q=prepare(cases);spec=job(q,'usaspending')
+    c12=tmp_path/'c12';experiment(c12,VerificationExperiment(queue=q,request_id=spec.request_id,mode='synthetic_only'),synthetic=scenario)
+    probe=tmp_path/'probe';collect(probe,c12,synthetic=scenario['transactions'])
+    cases[0].update(c12_capture=str(c12),historical_probe=str(probe))
+    impacts=report(cases)['cases'][0]['original_requirement_impacts']
+    outside=[p for p in impacts if p['native_context'].get('piid')=='FOREIGN-PIID']
+    assert outside and all(p['partial_subproof'] is None and not p['new_evidence_node_ids'] for p in outside)
+    assert any(p['partial_subproof'] is not None for p in impacts)

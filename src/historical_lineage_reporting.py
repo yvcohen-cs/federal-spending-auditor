@@ -126,7 +126,7 @@ def report(cases):
             nodes.extend(_probe_nodes(case['historical_probe'],probe))
         node_work+=len(nodes)
         if node_work>1000:raise EvidenceError('combined_history_node_limit')
-        before_graph=graph(base_nodes);after_graph=graph(nodes)
+        before_graph=graph(base_nodes);after_graph=graph(nodes);base_ids={n.node_id for n in base_nodes}
         parents=[]
         for n in nodes:
             ctx=strict_json(n.native_context_json.encode());pair=[ctx['parent_piid'],ctx['parent_agency']]
@@ -158,10 +158,12 @@ def report(cases):
         for p in old['resolution_plans']:
             context=strict_json(p['native_identifiers_json'].encode())
             matching=[n.node_id for n in nodes if n.source==p['source'] and all(strict_json(n.native_context_json.encode()).get(k)==context.get(k) for k in NATIVE[:4])]
+            new_matching=sorted(set(matching)-base_ids)
+            partial_supported=(window_verified and bool(new_matching) and p['source']=='usaspending' and p['requirement']['status']!='NOT_EVALUATED' and p['requirement']['dimension']=='source_completeness')
             impacts.append({'original_plan_id':p['plan_id'],'original_contract_id':p['contract_id'],'original_requirement':p['requirement'],
-                'native_context':context,'new_evidence_node_ids':sorted(set(matching)-{n.node_id for n in base_nodes}),
+                'native_context':context,'new_evidence_node_ids':new_matching,
                 'dimension':p['requirement']['dimension'],'original_qualification_after_replay':p['requirement']['status'],
-                'original_requirement_resolved':False,'partial_subproof':'bounded_bidirectional_observed_window_agreement' if window_verified and p['source']=='usaspending' and p['requirement']['dimension']=='source_completeness' else None,
+                'original_requirement_resolved':False,'partial_subproof':'bounded_bidirectional_observed_window_agreement' if partial_supported else None,
                 'remaining_dependencies':p['requirement']['reasons'],'financial_comparison_authorized':False})
         all_plan_ids.extend(p['plan_id'] for p in old['resolution_plans'])
         for path,expected in zip(paths,initial):
