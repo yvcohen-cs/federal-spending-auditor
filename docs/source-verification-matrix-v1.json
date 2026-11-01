@@ -1,0 +1,126 @@
+{
+  "findings": [
+    {
+      "behavior": "GET accepts a preserved generated award ID. Response generated_unique_award_id and piid matched the one selected native award. No generated key is constructed or agency namespace equated.",
+      "id": "USA-native-award",
+      "references": [
+        "awards-award_id"
+      ],
+      "state": "DOCUMENTED_AND_BOUNDED_OBSERVED"
+    },
+    {
+      "behavior": "ParentDetails returns native generated_unique_award_id/piid/sub_agency_id. Separately fetched parent matched returned native key/piid and IDV category/type. Current source-local link only; no per-modification historical certification.",
+      "id": "USA-parent",
+      "references": [
+        "awards-award_id"
+      ],
+      "state": "DOCUMENTED_AND_BOUNDED_OBSERVED"
+    },
+    {
+      "behavior": "POST with native award_id/page/limit/action_date asc returned two coherent next/previous/hasNext/hasPrevious tuples and four actions. This is one observed terminal chain, not universal query recall, snapshot consistency or history completeness.",
+      "id": "USA-pages",
+      "references": [
+        "usa-transactions"
+      ],
+      "state": "DOCUMENTED_AND_BOUNDED_OBSERVED"
+    },
+    {
+      "behavior": "Action-date sort is documented, correction precedence and deletion visibility are not established. Modification labels need not form a contiguous integer sequence; same-day ordering does not align revisions.",
+      "id": "USA-history",
+      "references": [
+        "usa-transactions"
+      ],
+      "state": "UNVERIFIED_SOURCE_ASSUMPTION"
+    },
+    {
+      "behavior": "Transaction federal_action_obligation is a transaction monetary value. Award total_obligation and related-IDV obligated_amount are distinct contexts; no substitution, summation or common monetary revision is authorized.",
+      "id": "USA-money",
+      "references": [
+        "usa-transactions",
+        "awards-award_id",
+        "usa-idv"
+      ],
+      "state": "DOCUMENTED_NOT_NEW_FINANCIAL_AUTHORIZATION"
+    },
+    {
+      "behavior": "Official historical wiki returns redirect to SAM. Preserved direct Atom paths, exact native components and restricted continuation URLs are executable offline tests. Current query recall/migration/identity enforcement remains unknown; no live FPDS query performed.",
+      "id": "FPDS-contract",
+      "references": [
+        "fpds-doc"
+      ],
+      "state": "PRESERVED_PARSER_OBSERVATION_DOCUMENTATION_UNAVAILABLE"
+    },
+    {
+      "behavior": "Published API requires api_key. No configured key or outbound identity, no credential discovery or SAM API request. Existing synthetic and permitted-capture semantics remain source-local.",
+      "id": "SAM-access",
+      "references": [
+        "sam-doc"
+      ],
+      "state": "DOCUMENTED_ACCESS_PREREQUISITE_NOT_MET"
+    },
+    {
+      "behavior": "Guide limits deletedStatus=yes to deleted contracts within six months and describes revealed/unrevealed scope, with DoD date delays. This cannot prove older deletion completeness. Frozen C3 matrix records unresolved offset/schema contradictions.",
+      "id": "SAM-history",
+      "references": [
+        "sam-doc"
+      ],
+      "state": "DOCUMENTED_LIMITATION_NOT_AUTHENTICATED_OBSERVATION"
+    },
+    {
+      "behavior": "Neither retrieval timestamps, Last-Modified, source update markers nor matching amounts certify a common as-of revision, freshness, or complete source coverage.",
+      "id": "freshness",
+      "references": [
+        "usa-transactions",
+        "awards-award_id",
+        "sam-doc"
+      ],
+      "state": "UNVERIFIED_SOURCE_ASSUMPTION"
+    }
+  ],
+  "references": [
+    {
+      "body_sha256": "76a50f3445670d8ee5488770d6583a7f6399a093a903dabfbab77344f1eba078",
+      "bytes": 4581,
+      "id": "usa-transactions",
+      "retrieved_on": "2026-11-01",
+      "status": 200,
+      "url": "https://raw.githubusercontent.com/fedspendingtransparency/usaspending-api/master/usaspending_api/api_contracts/contracts/v2/transactions.md"
+    },
+    {
+      "body_sha256": "0fb70e204eb3bf1db0715f8621f1e13014353009b5f157b5368c7715131ddfca",
+      "bytes": 7718,
+      "id": "usa-idv",
+      "retrieved_on": "2026-11-01",
+      "status": 200,
+      "url": "https://raw.githubusercontent.com/fedspendingtransparency/usaspending-api/master/usaspending_api/api_contracts/contracts/v2/idvs/awards.md"
+    },
+    {
+      "body_sha256": "05ccfd684124aa0a0eac0ddbe00eaf1b4da4cf28ee1234e568e321eb24c59974",
+      "bytes": 48817,
+      "id": "awards-award_id",
+      "retrieved_on": "2026-11-01",
+      "status": 200,
+      "url": "https://raw.githubusercontent.com/fedspendingtransparency/usaspending-api/master/usaspending_api/api_contracts/contracts/v2/awards/award_id.md"
+    },
+    {
+      "body_sha256": "46cb995d2d026bef0d5a1e85ff2ec2220c3775b9d3701fded4895f5244ac7fb2",
+      "bytes": 276169,
+      "id": "sam-doc",
+      "retrieved_on": "2026-11-01",
+      "status": 200,
+      "url": "https://open.gsa.gov/api/contract-awards/"
+    },
+    {
+      "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "id": "fpds-doc",
+      "redirect_not_followed": "https://sam.gov/contracting",
+      "retrieved_on": "2026-11-01",
+      "status": 301,
+      "url": "https://www.fpds.gov/wiki/index.php/Atom_Feed_Usage"
+    }
+  ],
+  "schema_type": "SourceContractResearchMatrix",
+  "schema_version": 1,
+  "scope": "One bounded public USA experiment; official documentation research; preserved/synthetic offline replay, not universal API certification."
+}
