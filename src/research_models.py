@@ -20,10 +20,13 @@ RULES = ("evidence-schema-v1", "ingestion-v1", "collector-v2", "identity-v1",
          "field-semantics-v1", "financial-v1", "review-packet-v1")
 
 
+MAX_IMPLEMENTATION_MODULES = 128
+
+
 def implementation_digest():
     """Source compatibility fingerprint, not a signature or inferred git revision."""
     files = sorted(Path(__file__).parent.glob("*.py"))
-    if not files or len(files)>100:
+    if not files or len(files)>MAX_IMPLEMENTATION_MODULES:
         raise ValueError("unsupported source installation")
     contents,total = [],0
     for p in files:

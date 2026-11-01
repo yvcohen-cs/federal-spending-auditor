@@ -220,3 +220,11 @@ python -m src.history_qualification_reporting --collection /path/to/c3-capture -
 ```
 
 C10 reconstructs source-local observed histories and produces typed evidence requirements and source-specific resolution plans. Optional `--history-start`, `--history-end`, and `--as-of` declare requested scope without claiming coverage. Use `--verify-report` with the same primary inputs to replay findings. SAM captures remain in a separate namespace. See [qualification architecture and limitations](docs/contract-history-qualification.md). Financial and readiness gates remain unchanged.
+
+### Targeted offline evidence acquisition (Phase 4C11)
+
+```sh
+python -m src.evidence_acquisition --cases /path/to/cases.json --run-dir /path/to/new-run --report-dir /path/to/new-report
+```
+
+C11 groups primary-replayed C10 requirements into a bounded source-specific queue. Optional `--replay-map` incorporates permitted preserved captures; `--fixture-map` runs explicitly synthetic controls. `--verify-report` recomputes resolution from primary evidence. Live execution is disabled, parent-IDV mappings remain validation dependencies, and no financial/readiness gate is upgraded. See [acquisition architecture, case format, limits and provenance](docs/targeted-evidence-acquisition.md).
