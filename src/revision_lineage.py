@@ -155,7 +155,7 @@ def graph(observations):
                 edge(a,b,RelationKind.REUSED,'Competing parent/action contexts for one source identifier; correction or reused identity is unresolved, not a historical parent transition.')
                 ambiguities.append({'left':a.node_id,'right':b.node_id,'kind':'native_identifier_context_variants'})
             elif ka is not None and ka==kb or same_native:
-                kind=RelationKind.DUPLICATE if a.content_sha256==b.content_sha256 else RelationKind.VARIANT
+                kind=RelationKind.DUPLICATE if a.content_sha256==b.content_sha256 and _money_signature(a)==_money_signature(b) else RelationKind.VARIANT
                 edge(a,b,kind,'Retain both occurrences; changed content or update markers do not establish correction direction.')
                 if kind is RelationKind.VARIANT:ambiguities.append({'left':a.node_id,'right':b.node_id,'kind':'competing_source_content','monetary_fields_differ':_money_signature(a)!=_money_signature(b),'update_metadata_differ':a.update_metadata_json!=b.update_metadata_json})
         elif {a.source,b.source}=={'usaspending','fpds'} and ka is not None and ka==kb:

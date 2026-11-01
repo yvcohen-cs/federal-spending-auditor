@@ -499,3 +499,25 @@ def test_window_subproof_never_attaches_to_foreign_context_resolution_plans(tmp_
     outside=[p for p in impacts if p['native_context'].get('piid')=='FOREIGN-PIID']
     assert outside and all(p['partial_subproof'] is None and not p['new_evidence_node_ids'] for p in outside)
     assert any(p['partial_subproof'] is not None for p in impacts)
+
+
+def test_equal_parsed_fingerprints_cannot_hide_exact_numeric_tokens(tmp_path):
+    from src.financial_values import RawKind, monetary_value
+    n=node(tmp_path)
+    left='9999999999999999999.01'
+    right='9999999999999999999.02'
+    left_value=monetary_value(RawKind.JSON_NUMBER,left).to_dict()
+    right_value=monetary_value(RawKind.JSON_NUMBER,right).to_dict()
+    assert left_value['normalized']!=right_value['normalized']
+    fingerprint=digest(json.loads('{"federal_action_obligation":'+left+'}'))
+    assert fingerprint==digest(json.loads('{"federal_action_obligation":'+right+'}'))
+    def fields(value):
+        values=json.loads(n.monetary_fields_json)
+        next(m for m in values if m['original_field']=='federal_action_obligation')['value']=value
+        return canonical(values)
+    a=replace(n,content_sha256=fingerprint,monetary_fields_json=fields(left_value))
+    b=replace(a,original_occurrence_id='different-exact-token',monetary_fields_json=fields(right_value))
+    g=graph((a,b))
+    assert any(e['kind']==RelationKind.VARIANT.value for e in g['relations'])
+    assert g['competing_observations'][0]['monetary_fields_differ']
+    assert not g['correction_winners'] and not g['financial_comparison_authorized']
