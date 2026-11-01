@@ -366,3 +366,15 @@ def test_child_self_reference_is_rejected_before_parent_access(tmp_path):
     def change(s):s['details'][0]['json']['parent_award']['generated_unique_award_id']=s['details'][0]['json']['generated_unique_award_id']
     _,_,_,out,v=capture(tmp_path,change)
     assert v['issues'] and v['request_attempts']==1 and not (out/'detail-001-reservation.json').exists()
+
+
+@pytest.mark.parametrize('kind',['failed_request','malformed_page','empty_page'])
+def test_CLI_partial_or_empty_transaction_evidence_exits_one_not_success(tmp_path,kind,capsys):
+    def change(s):
+        response=s['transactions']['responses'][0]
+        if kind=='failed_request':response['status']=500
+        elif kind=='malformed_page':response['json']['page_metadata'].pop('previous')
+        else:response['json']['results']=[]
+    _,cases,_,out,_=capture(tmp_path,change);p=tmp_path/'cases.json';p.write_text(canonical(cases))
+    assert main(['--cases',str(p),'--run-dir',str(out)])==1
+    assert 'source_verification_failed' not in capsys.readouterr().out

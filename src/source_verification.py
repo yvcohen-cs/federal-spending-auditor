@@ -330,7 +330,10 @@ def main(argv=None):
             if args.report_dir:write_report(args.report_dir,cases,args.run_dir,args.acquisition_dir)
         print(canonical({'report_sha256':digest(value),'resolved_real_source_requirements':len(value['resolved_real_source_plan_ids']),
             'financial_comparison_authorized':False}))
-        return 1 if value['observation']['issues'] or any(not h['source_contract_satisfied'] for h in (value['observation']['transaction_contract'] or {}).get('histories',[])) else 0
+        observation=value['observation'];collection=observation['transaction_contract']
+        complete=(collection is not None and bool(collection['histories']) and not collection['failures']
+            and all(h['source_contract_satisfied'] for h in collection['histories']))
+        return 0 if not observation['issues'] and complete else 1
     except (ValueError,TypeError,OSError,KeyError,IndexError):
         print(canonical({'error_code':'source_verification_failed_preserve_evidence','exit_code':2}));return 2
 
