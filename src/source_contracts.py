@@ -6,6 +6,7 @@ from .award_validation import snapshot, validate as diagnose, pagination
 from .collection_sources import USA, parse_page
 from .evidence import _text
 from .evidence_io import EvidenceError, canonical, digest, strict_json
+from .scope_models import FIELDS
 
 RULE = 'authoritative-source-verification-v1'
 DETAIL = 'https://api.usaspending.gov/api/v2/awards/'
@@ -109,7 +110,9 @@ def collection_contract(path, *, requested=None):
     for record in d['records']:
         context=record['native_context']
         if (record['scope_status'] in ('verified_out_of_scope','unsupported_schema')
-            or any(context[k]['value']!=getattr(requested,k) for k in ('piid','agency') if getattr(requested,k) is not None)):
+            or any(v['state'] in ('conflicting','malformed','unsupported') for v in context.values())
+            or any(context[k]['state']!='valid' for k in ('piid','agency','modification','transaction'))
+            or any(context[k]['value']!=getattr(requested,k) for k in FIELDS if getattr(requested,k) is not None)):
             failures.append({'issue':'native_record_not_bound_to_requested_context','citation':record['citation']})
     for name,s in sorted(before.items()):
         if not name.startswith('c3_attempt_') or not name.endswith('.json'):continue

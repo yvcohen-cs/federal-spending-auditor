@@ -165,8 +165,10 @@ def test_modification_gaps_and_stale_observations_never_become_history_completen
     def change(s):
         r=s['transactions']['responses'][0]['json']['results'][0]
         r['modification_number']='P00009'
+        r['id']=r['id'].replace('_P00001_SYNTH-PARENT_','_P00009_SYNTH-PARENT_')
     _,_,_,_,v=capture(tmp_path,change)
     h=v['transaction_contract']['histories'][0]
+    assert h['source_contract_satisfied']
     assert h['history_complete']==h['freshness']=='unknown' and not h['missing_modifications_inferred']
     assert not h['correction_winner_selected'] and not h['financial_comparison_authorized']
 
@@ -378,3 +380,16 @@ def test_CLI_partial_or_empty_transaction_evidence_exits_one_not_success(tmp_pat
     _,cases,_,out,_=capture(tmp_path,change);p=tmp_path/'cases.json';p.write_text(canonical(cases))
     assert main(['--cases',str(p),'--run-dir',str(out)])==1
     assert 'source_verification_failed' not in capsys.readouterr().out
+
+
+@pytest.mark.parametrize('kind',['modification_conflict','parent_conflict','parent_agency_conflict'])
+def test_native_action_and_parent_component_conflicts_block_source_contract(tmp_path,kind):
+    def change(s):
+        row=s['transactions']['responses'][0]['json']['results'][0]
+        if kind=='modification_conflict':row['modification_number']='P00009'
+        elif kind=='parent_conflict':row['id']=row['id'].replace('SYNTH-PARENT','DIFFERENT-PARENT')
+        else:row['id']=row['id'].replace('_0002_','_9999_')
+    _,cases,_,out,v=capture(tmp_path,change)
+    assert any(f['issue']=='native_record_not_bound_to_requested_context' for f in v['transaction_contract']['failures'])
+    assert not any(h['source_contract_satisfied'] for h in v['transaction_contract']['histories'])
+    with pytest.raises(ValueError):integrate(cases,out,tmp_path/'acq')
