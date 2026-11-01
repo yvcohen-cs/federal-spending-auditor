@@ -228,3 +228,7 @@ python -m src.evidence_acquisition --cases /path/to/cases.json --run-dir /path/t
 ```
 
 C11 groups primary-replayed C10 requirements into a bounded source-specific queue. Optional `--replay-map` incorporates permitted preserved captures; `--fixture-map` runs explicitly synthetic controls. `--verify-report` recomputes resolution from primary evidence. Live execution is disabled, parent-IDV mappings remain validation dependencies, and no financial/readiness gate is upgraded. See [acquisition architecture, case format, limits and provenance](docs/targeted-evidence-acquisition.md).
+
+### Phase 4C12: authoritative source verification
+
+A new opt-in [source-validation experiment](docs/authoritative-source-verification.md) follows USAspending's returned native parent key to a separate primary IDV record and checks complete transaction pagination pointers, native identities and observed action histories. Offline replay remains the default; `python -m src.source_verification --help` documents the explicit USA-only, four-request live experiment and primary-evidence report verification. C11 acquisition, frozen protocols, financial eligibility and production readiness are unchanged. The bounded real-source evaluation established one current parent-link subproof and zero newly resolved historical requirements; current summaries do not certify historical parent/revision completeness. See the [documented/observed/unknown source matrix](docs/source-verification-matrix-v1.json).
