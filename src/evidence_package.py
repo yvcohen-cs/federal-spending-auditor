@@ -12,6 +12,7 @@ import re
 import stat
 import tempfile
 import zipfile
+import zlib
 from dataclasses import dataclass
 
 from .evidence import Schema, _hash
@@ -245,7 +246,7 @@ def _inspect(raw, expected_phase):
             if hashlib.sha256(archive.read(name)).hexdigest() != expected:
                 raise EvidenceError('package_member_digest_conflict')
         return archive, phase, profile, legacy
-    except (zipfile.BadZipFile, RuntimeError, NotImplementedError, EOFError):
+    except (zipfile.BadZipFile, RuntimeError, NotImplementedError, EOFError, zlib.error):
         raise EvidenceError('malformed_or_unsupported_evidence_zip') from None
 
 

@@ -636,3 +636,17 @@ def test_malformed_manifest_types_are_validation_errors(tmp_path, manifest):
         z.writestr('cases.json', '[]')
     with pytest.raises(ValueError):
         verify_package(archive)
+
+
+def test_corrupt_deflate_stream_is_a_validation_error_without_traceback(tmp_path, capsys):
+    raw = io.BytesIO()
+    with zipfile.ZipFile(raw, 'w', compression=zipfile.ZIP_DEFLATED) as z:
+        z.writestr('package-manifest.json', '{"schema_version":1,"files":{}}')
+    damaged = bytearray(raw.getvalue())
+    # Reserved DEFLATE block type, after the fixed local header and filename.
+    damaged[30 + len('package-manifest.json')] = 7
+    path = tmp_path / 'corrupt-stream.zip';path.write_bytes(damaged)
+    with pytest.raises(ValueError):
+        verify_package(path)
+    assert package_main(['--verify-package', str(path)]) == 2
+    assert json.loads(capsys.readouterr().out)['error_code'] == 'evidence_package_rejected'
