@@ -1,0 +1,347 @@
+{
+  "capabilities": [
+    {
+      "capability": "original_and_modified_actions",
+      "reference": "usa-transactions",
+      "scope_and_limit": "transactions contract exposes action_date, modification_number and obligation fields; original and modified observations, not immutable versions",
+      "source": "usaspending",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "parent_IDV_reference",
+      "reference": "usa-awards",
+      "scope_and_limit": "ParentDetails.generated_unique_award_id, piid and sub_agency_id support a current source-local exact lookup",
+      "source": "usaspending",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "source_update_timestamp",
+      "reference": "usa-awards",
+      "scope_and_limit": "latest_transaction_contract_data.last_modified_date is an update field; not historical publication or precedence",
+      "source": "usaspending",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "bounded_parent_pagination",
+      "reference": "usa-transactions",
+      "scope_and_limit": "C15 preserved nine records over pages 1 and 2, terminal query only; replay is not new collection",
+      "source": "usaspending",
+      "status": "DIRECTLY OBSERVED"
+    },
+    {
+      "capability": "corrected_submission_relationship",
+      "reference": "usa-transactions",
+      "scope_and_limit": "No reviewed public contract and preserved primary evidence establish this authority; retain unresolved",
+      "source": "usaspending",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "superseded_predecessor",
+      "reference": "usa-transactions",
+      "scope_and_limit": "No reviewed public contract and preserved primary evidence establish this authority; retain unresolved",
+      "source": "usaspending",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "deleted_or_withdrawn_action_archive",
+      "reference": "usa-transactions",
+      "scope_and_limit": "No reviewed public contract and preserved primary evidence establish this authority; retain unresolved",
+      "source": "usaspending",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "referenced_parent_modification_applicability",
+      "reference": "usa-transactions",
+      "scope_and_limit": "No reviewed public contract and preserved primary evidence establish this authority; retain unresolved",
+      "source": "usaspending",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "historical_publication_time",
+      "reference": "usa-transactions",
+      "scope_and_limit": "No reviewed public contract and preserved primary evidence establish this authority; retain unresolved",
+      "source": "usaspending",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "complete_historical_retrieval",
+      "reference": "usa-transactions",
+      "scope_and_limit": "No reviewed public contract and preserved primary evidence establish this authority; retain unresolved",
+      "source": "usaspending",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "historical_asof_snapshot",
+      "reference": "usa-transactions",
+      "scope_and_limit": "No reviewed public contract and preserved primary evidence establish this authority; retain unresolved",
+      "source": "usaspending",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "correction_user_workflow",
+      "reference": "fpds-correction",
+      "scope_and_limit": "Correct function permits correction of final Award/IDV actions; no predecessor API certificate follows",
+      "source": "fpds",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "legacy_document_availability",
+      "reference": "fpds-dictionary",
+      "scope_and_limit": "Preserved HTTP301 to sam.gov/contracting; redirect not followed, empty body is not dictionary content",
+      "source": "fpds",
+      "status": "DIRECTLY OBSERVED"
+    },
+    {
+      "capability": "original_and_modified_actions",
+      "reference": "preserved-FPDS-selected-collection",
+      "scope_and_limit": "Existing permitted Atom primary records contain source-native fields; observations are preserved, current query support is not revalidated",
+      "source": "fpds",
+      "status": "DIRECTLY OBSERVED"
+    },
+    {
+      "capability": "parent_IDV_reference",
+      "reference": "preserved-FPDS-selected-collection",
+      "scope_and_limit": "Existing permitted Atom primary records contain source-native fields; observations are preserved, current query support is not revalidated",
+      "source": "fpds",
+      "status": "DIRECTLY OBSERVED"
+    },
+    {
+      "capability": "referenced_parent_modification",
+      "reference": "preserved-FPDS-selected-collection",
+      "scope_and_limit": "Existing permitted Atom primary records contain source-native fields; observations are preserved, current query support is not revalidated",
+      "source": "fpds",
+      "status": "DIRECTLY OBSERVED"
+    },
+    {
+      "capability": "source_update_timestamp",
+      "reference": "preserved-FPDS-selected-collection",
+      "scope_and_limit": "Existing permitted Atom primary records contain source-native fields; observations are preserved, current query support is not revalidated",
+      "source": "fpds",
+      "status": "DIRECTLY OBSERVED"
+    },
+    {
+      "capability": "superseded_predecessor",
+      "reference": "fpds-correction",
+      "scope_and_limit": "No admitted real directed correction or effective applicability rule; current documentation access incomplete",
+      "source": "fpds",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "deleted_or_withdrawn_action_archive",
+      "reference": "fpds-correction",
+      "scope_and_limit": "No admitted real directed correction or effective applicability rule; current documentation access incomplete",
+      "source": "fpds",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "historical_publication_time",
+      "reference": "fpds-correction",
+      "scope_and_limit": "No admitted real directed correction or effective applicability rule; current documentation access incomplete",
+      "source": "fpds",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "complete_historical_retrieval",
+      "reference": "fpds-correction",
+      "scope_and_limit": "No admitted real directed correction or effective applicability rule; current documentation access incomplete",
+      "source": "fpds",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "historical_asof_snapshot",
+      "reference": "fpds-correction",
+      "scope_and_limit": "No admitted real directed correction or effective applicability rule; current documentation access incomplete",
+      "source": "fpds",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "historical_parent_applicability",
+      "reference": "fpds-correction",
+      "scope_and_limit": "No admitted real directed correction or effective applicability rule; current documentation access incomplete",
+      "source": "fpds",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "original_and_modified_actions",
+      "reference": "sam-contracts",
+      "scope_and_limit": "contractId.piid, modificationNumber and transactionNumber documented; not live validated in C16",
+      "source": "samgov",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "parent_IDV_reference",
+      "reference": "sam-contracts",
+      "scope_and_limit": "contractId.referencedIDVSubtier.code and referencedIDVPiid documented",
+      "source": "samgov",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "referenced_parent_modification",
+      "reference": "sam-contracts",
+      "scope_and_limit": "contractId.referencedIDVModificationNumber documented; label alone is not applicability",
+      "source": "samgov",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "prior_contract_identifiers",
+      "reference": "sam-contracts",
+      "scope_and_limit": "oldContractId array documented; no selected real predecessor edge verified",
+      "source": "samgov",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "deleted_contracts",
+      "reference": "sam-contracts",
+      "scope_and_limit": "deletedStatus=yes documented for last six months only, subject to revealed/unrevealed scope",
+      "source": "samgov",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "source_update_timestamp",
+      "reference": "sam-contracts",
+      "scope_and_limit": "lastModifiedDate query documented; update is not publication or precedence",
+      "source": "samgov",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "public_access_prerequisite",
+      "reference": "sam-contracts",
+      "scope_and_limit": "SAM account/API key required; no key configured or discovered, no protected request attempted",
+      "source": "samgov",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "complete_historical_retrieval",
+      "reference": "sam-contracts",
+      "scope_and_limit": "No primary selected-history validation or complete archival/effective rule established",
+      "source": "samgov",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "historical_asof_snapshot",
+      "reference": "sam-contracts",
+      "scope_and_limit": "No primary selected-history validation or complete archival/effective rule established",
+      "source": "samgov",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "historical_publication_time",
+      "reference": "sam-contracts",
+      "scope_and_limit": "No primary selected-history validation or complete archival/effective rule established",
+      "source": "samgov",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "historical_parent_applicability",
+      "reference": "sam-contracts",
+      "scope_and_limit": "No primary selected-history validation or complete archival/effective rule established",
+      "source": "samgov",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "superseded_predecessor_authority",
+      "reference": "sam-contracts",
+      "scope_and_limit": "No primary selected-history validation or complete archival/effective rule established",
+      "source": "samgov",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "unauthenticated_contract_search_in_this_phase",
+      "reference": "sam-contracts",
+      "scope_and_limit": "Required account and key not authorized/configured; no access circumvention",
+      "source": "samgov",
+      "status": "UNSUPPORTED"
+    },
+    {
+      "capability": "selected_child_exact_parent_reference",
+      "reference": "C16-child-summary",
+      "scope_and_limit": "One HTTP200 child summary explicitly returned the preserved parent opaque ID/PIID/subagency triple; identity/primary-existence only, not historical applicability",
+      "source": "usaspending",
+      "status": "DIRECTLY OBSERVED"
+    }
+  ],
+  "financial_comparison_authorized": false,
+  "historical_parent_intervals": 0,
+  "new_real_correction_edges": 0,
+  "references": {
+    "C16-child-summary": {
+      "body_complete": true,
+      "body_sha256": "dec44721871b6f07cc2ac55a19842cd394870c2748914f87def52ec82cf07221",
+      "http_status": 200,
+      "representation": "HTTP_entity_bytes_after_content_decoding",
+      "retrieved_at_utc": "2026-11-11T05:45:36.201249+00:00",
+      "source_native_child_id": "CONT_AWD_00001_8600_DU100G16D01_8600",
+      "source_native_parent_id": "CONT_IDV_DU100G16D01_8600",
+      "url": "https://api.usaspending.gov/api/v2/awards/CONT_AWD_00001_8600_DU100G16D01_8600/"
+    },
+    "fpds-correction": {
+      "body_complete": true,
+      "body_sha256": "76862d8e69cf132ec37dfea6fc7424d3d3aa8104f851e1c3bbd7cf1520456295",
+      "http_status": 200,
+      "location_not_followed": null,
+      "representation": "HTTP_entity_bytes_after_content_decoding",
+      "retrieved_at_utc": "2026-11-10T23:59:46.135482+00:00",
+      "url": "https://www.fpds.gov/help/Correct_a_Transaction.htm"
+    },
+    "fpds-dictionary": {
+      "body_complete": true,
+      "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "http_status": 301,
+      "location_not_followed": "https://sam.gov/contracting",
+      "representation": "HTTP_entity_bytes_after_content_decoding",
+      "retrieved_at_utc": "2026-11-11T03:19:10.210668+00:00",
+      "url": "https://www.fpds.gov/downloads/Version_1.5_specs/FPDS_DataDictionary_V1.5.pdf"
+    },
+    "preserved-FPDS-selected-collection": {
+      "body_complete": true,
+      "body_processing": "application_body_bytes_not_wire_capture",
+      "body_sha256": "87520df098163c87fd689543e8e44c6ef5af80601f183b37e710d9b6acc5820b",
+      "evidence_class": "PRESERVED_REPLAY",
+      "http_status": 200,
+      "new_request": false,
+      "representation": "response_bytes",
+      "request_parameters": {
+        "FEEDNAME": "PUBLIC",
+        "length": 10,
+        "q": "PIID:\"00001\" AND CONTRACTING_AGENCY_ID:\"8600\""
+      },
+      "retrieved_at_utc": "2026-10-28T04:37:33.709860+00:00",
+      "url": "https://www.fpds.gov/ezsearch/FEEDS/ATOM"
+    },
+    "sam-contracts": {
+      "body_complete": true,
+      "body_sha256": "46cb995d2d026bef0d5a1e85ff2ec2220c3775b9d3701fded4895f5244ac7fb2",
+      "http_status": 200,
+      "location_not_followed": null,
+      "representation": "HTTP_entity_bytes_after_content_decoding",
+      "retrieved_at_utc": "2026-11-10T23:59:47.535536+00:00",
+      "url": "https://open.gsa.gov/api/contract-awards/"
+    },
+    "usa-awards": {
+      "body_complete": true,
+      "body_sha256": "05ccfd684124aa0a0eac0ddbe00eaf1b4da4cf28ee1234e568e321eb24c59974",
+      "http_status": 200,
+      "location_not_followed": null,
+      "representation": "HTTP_entity_bytes_after_content_decoding",
+      "retrieved_at_utc": "2026-11-11T05:38:19.193962+00:00",
+      "url": "https://raw.githubusercontent.com/fedspendingtransparency/usaspending-api/c2b82690eb044e130afc80b546343a2af0b4af1a/usaspending_api/api_contracts/contracts/v2/awards/award_id.md"
+    },
+    "usa-transactions": {
+      "body_complete": true,
+      "body_sha256": "76a50f3445670d8ee5488770d6583a7f6399a093a903dabfbab77344f1eba078",
+      "http_status": 200,
+      "location_not_followed": null,
+      "representation": "HTTP_entity_bytes_after_content_decoding",
+      "retrieved_at_utc": "2026-11-10T23:59:43.410778+00:00",
+      "url": "https://raw.githubusercontent.com/fedspendingtransparency/usaspending-api/c2b82690eb044e130afc80b546343a2af0b4af1a/usaspending_api/api_contracts/contracts/v2/transactions.md"
+    }
+  },
+  "schema_type": "HistoricalSourceAuthorityMatrix",
+  "schema_version": 1,
+  "status_meaning": {
+    "DIRECTLY OBSERVED": "bounded preserved primary observation only",
+    "DOCUMENTED": "official contract statement, not proof of deployment or selected-record applicability",
+    "UNSUPPORTED": "not admitted under phase access or proof contract",
+    "UNVERIFIED": "required authority not established"
+  }
+}
