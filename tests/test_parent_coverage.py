@@ -305,10 +305,29 @@ def test_stale_future_or_missing_source_markers_never_certify_freshness(raw):
 
 def test_cross_source_parent_modification_match_is_not_applicability():
     p = {'node_id': 'node', 'source': 'fpds', 'native_action_id': 'literal', 'parent_action_modification_asserted': '0',
-        'states': ['HISTORICAL_ACTION_ASSERTS_PARENT'], 'child_citation': {'source': 'fpds'}}
-    value = parent_assessments({'historical_parent_assessments': [p]}, [{'row': {'modification_number': '0'}, 'citation': {'source': 'usaspending'}}])[0]
+        'native_parent_pair': ['PARENT', '0002'], 'states': ['HISTORICAL_ACTION_ASSERTS_PARENT'], 'child_citation': {'source': 'fpds'}}
+    value = parent_assessments({'historical_parent_assessments': [p]}, [{'row': {'modification_number': '0'},
+        'native_action_components': {'piid': {'value': 'PARENT'}, 'agency': {'value': '0002'}}, 'citation': {'source': 'usaspending'}}])[0]
     assert value['parent_modification_records_observed']
     assert not value['historical_parent_applicability_established'] and not value['cross_source_parent_action_identity_established']
+
+
+@pytest.mark.parametrize('mode', ['foreign_parent', 'foreign_agency', 'missing_pair', 'out_of_scope'])
+def test_parent_candidates_require_exact_full_pair_and_supported_scope(mode):
+    p = {'node_id': 'node', 'source': 'fpds', 'native_action_id': 'literal', 'parent_action_modification_asserted': '0',
+        'native_parent_pair': ['PARENT', '0002'], 'states': ['HISTORICAL_ACTION_ASSERTS_PARENT'], 'child_citation': {'source': 'fpds'}}
+    if mode == 'foreign_parent':
+        p['native_parent_pair'][0] = 'FOREIGN'
+    elif mode == 'foreign_agency':
+        p['native_parent_pair'][1] = '9999'
+    elif mode == 'missing_pair':
+        p['native_parent_pair'][0] = None
+    else:
+        p['states'] = []
+    record = {'row': {'modification_number': '0'}, 'native_action_components': {'piid': {'value': 'PARENT'}, 'agency': {'value': '0002'}}}
+    result = parent_assessments({'historical_parent_assessments': [p]}, [record])[0]
+    assert not result['parent_modification_records_observed']
+    assert not result['historical_parent_applicability_established']
 
 
 def test_deterministic_reports_do_not_authorize_financial_arithmetic(tmp_path):

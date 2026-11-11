@@ -46,10 +46,19 @@ def parent_assessments(old, all_records):
     output = []
     for p in old['historical_parent_assessments']:
         mod = p['parent_action_modification_asserted']
+        pair = p['native_parent_pair']
+        asserted = 'HISTORICAL_ACTION_ASSERTS_PARENT' in p['states']
         # Even one candidate cannot supply a missing transaction/revision key.
-        candidates = [r for r in all_records if r['row']['modification_number'] == mod] if mod is not None else []
+        candidates = []
+        if asserted and mod is not None and all(v is not None for v in pair):
+            for r in all_records:
+                components = r['native_action_components']
+                if ([components['piid']['value'], components['agency']['value']] == pair
+                    and r['row']['modification_number'] == mod):
+                    candidates.append(r)
         output.append({'node_id': p['node_id'], 'source': p['source'],
-            'native_action_id': p['native_action_id'], 'parent_identifier_observed': 'HISTORICAL_ACTION_ASSERTS_PARENT' in p['states'],
+            'native_action_id': p['native_action_id'], 'native_parent_pair': pair,
+            'parent_identifier_observed': asserted,
             'parent_record_independently_located': 'HISTORICAL_PARENT_RECORD_INDEPENDENTLY_LOCATED' in p['states'],
             'parent_modification_asserted': mod,
             'parent_modification_records_observed': candidates,
