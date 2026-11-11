@@ -1,0 +1,200 @@
+{
+  "capabilities": [
+    {
+      "behavior": "generated_award_identifier",
+      "finding": "Generated award IDs are preferred as effectively permanent; the transaction result ID is described as internal. This is not an immutable revision-ID guarantee.",
+      "reference": "usa-transactions",
+      "source": "usaspending",
+      "state": "DOCUMENTED",
+      "supporting_text": "Generated award identifiers are preferred as they are effectively permanent."
+    },
+    {
+      "behavior": "transaction_history_table",
+      "finding": "The endpoint returns a current transaction-history table with action dates and modification numbers; it does not specify directed corrections or as-of archive coverage.",
+      "reference": "usa-transactions",
+      "source": "usaspending",
+      "state": "DOCUMENTED",
+      "supporting_text": "This endpoint returns a list of transactions, their amount, type, action date, action type, modification number, and description."
+    },
+    {
+      "behavior": "deletion_processing",
+      "finding": "Published implementation supports deletion of destination rows and optional downstream deletion-ID storage. This is implementation evidence, not proof of current deployment or authorized public access to a deletion journal.",
+      "reference": "usa-deletion-implementation",
+      "source": "usaspending",
+      "state": "DOCUMENTED",
+      "supporting_text": "DELETE FROM {table} WHERE {key} IN {ids}"
+    },
+    {
+      "behavior": "public_revision_archive",
+      "finding": "No reviewed public endpoint contract establishes a complete correction/deletion/archive or replacement relationship. No internal deletion store was accessed.",
+      "reference": "usa-deletion-implementation",
+      "source": "usaspending",
+      "state": "UNVERIFIED",
+      "supporting_text": "DELETED_TRANSACTION_JOURNAL_FILES"
+    },
+    {
+      "behavior": "parent_IDV_action_records",
+      "finding": "One exact source-returned parent IDV request returned five records and hasNext=true. IDV transaction-number sentinels remain unknown; no zero substitution or full history claim.",
+      "reference": "usa-transactions",
+      "source": "usaspending",
+      "state": "DIRECTLY_OBSERVED",
+      "supporting_text": "The internal transaction id."
+    },
+    {
+      "behavior": "historical_parent_applicability",
+      "finding": "Parent record location and action-date order do not certify effective applicability or a common revision for a historical child action.",
+      "reference": "usa-transactions",
+      "source": "usaspending",
+      "state": "UNVERIFIED",
+      "supporting_text": "Action date in the format `YYYY-MM-DD`."
+    },
+    {
+      "behavior": "correct_final_transaction",
+      "finding": "Official help documents correction of a final-status Award or IDV action. It supplies no retained-version API or predecessor identifier contract.",
+      "reference": "fpds-correction-help",
+      "source": "fpds",
+      "state": "DOCUMENTED",
+      "supporting_text": "The Correct function allows you to correct an Award or Indefinite Delivery"
+    },
+    {
+      "behavior": "correction_predecessor_api",
+      "finding": "The reviewed correction UI help is not a documented Atom revision or history guarantee. No new FPDS API request was made.",
+      "reference": "fpds-correction-help",
+      "source": "fpds",
+      "state": "UNVERIFIED",
+      "supporting_text": "Vehicle contract action type that is in final status."
+    },
+    {
+      "behavior": "old_identifier_context",
+      "finding": "oldContractId is documented as Old Contract ID Information, not an explicit correction/supersession direction or complete identity crosswalk.",
+      "reference": "sam-guide",
+      "source": "samgov",
+      "state": "DOCUMENTED",
+      "supporting_text": "Old Contract ID Information:"
+    },
+    {
+      "behavior": "document_and_transaction_versions",
+      "finding": "The guide describes documentVersion and transactionData.version. Higher version values alone have no admitted correction-winner rule.",
+      "reference": "sam-guide",
+      "source": "samgov",
+      "state": "DOCUMENTED",
+      "supporting_text": "awardDetails.transactionData.version"
+    },
+    {
+      "behavior": "limited_deleted_records",
+      "finding": "deletedStatus returns only deleted contracts within the last six months under the revealed/unrevealed access rules; no complete historical deletion coverage is established.",
+      "reference": "sam-guide",
+      "source": "samgov",
+      "state": "DOCUMENTED",
+      "supporting_text": "contracts deleted within the last 6 months"
+    },
+    {
+      "behavior": "authenticated_validation",
+      "finding": "No configured authorized SAM credentials and no SAM API request. Local schemas or example responses are not validation of authenticated API behavior.",
+      "reference": "sam-guide",
+      "source": "samgov",
+      "state": "UNVERIFIED",
+      "supporting_text": "api_key"
+    },
+    {
+      "behavior": "timestamp_or_modification_precedence",
+      "finding": "This implementation rejects replacement edges inferred solely from later timestamps, higher modification numbers, equal amounts, disappearance or reappearance.",
+      "reference": "usa-transactions",
+      "source": "all",
+      "state": "UNSUPPORTED",
+      "supporting_text": "modification_number"
+    }
+  ],
+  "not_established": [
+    "deployed_internal_loader_behavior",
+    "public_complete_deletion_journal",
+    "immutable_action_revision_identifier",
+    "directed_real_source_correction_edge",
+    "historical_parent_effective_interval",
+    "source_wide_recall",
+    "common_monetary_revision",
+    "financial_authorization"
+  ],
+  "observed_parent_capture": {
+    "HTTP_requests": 1,
+    "HTTP_status": 200,
+    "body_sha256": "f59db03c62bab5422fb97c6324a46f2ca678730bb9fe46ef784c91c2d51da3bd",
+    "capture_contract_version": 1,
+    "history_complete": "unknown",
+    "inventory_sha256": "eb9486d4b6f6dc1257173353bfd3bd32c552cb4b6669968b5b42b5b82f795def",
+    "next_page": 2,
+    "reassessment_contract_version": 2,
+    "rows": 5
+  },
+  "official_USA_repository_commit": "c2b82690eb044e130afc80b546343a2af0b4af1a",
+  "references": [
+    {
+      "body_complete": true,
+      "id": "usa-transactions",
+      "last_modified_raw": null,
+      "location": null,
+      "representation": "HTTP_entity_bytes_after_content_decoding",
+      "request": {
+        "method": "GET",
+        "redirects": false,
+        "url": "https://raw.githubusercontent.com/fedspendingtransparency/usaspending-api/c2b82690eb044e130afc80b546343a2af0b4af1a/usaspending_api/api_contracts/contracts/v2/transactions.md"
+      },
+      "retrieved_at_utc": "2026-11-10T23:59:43.410778+00:00",
+      "sha256": "76a50f3445670d8ee5488770d6583a7f6399a093a903dabfbab77344f1eba078",
+      "status": 200
+    },
+    {
+      "body_complete": true,
+      "id": "usa-deletion-implementation",
+      "last_modified_raw": null,
+      "location": null,
+      "representation": "HTTP_entity_bytes_after_content_decoding",
+      "request": {
+        "method": "GET",
+        "redirects": false,
+        "url": "https://raw.githubusercontent.com/fedspendingtransparency/usaspending-api/c2b82690eb044e130afc80b546343a2af0b4af1a/usaspending_api/transactions/agnostic_transaction_deletes.py"
+      },
+      "retrieved_at_utc": "2026-11-10T23:59:44.771648+00:00",
+      "sha256": "020d2360ef97c0aae3f14d3955bf0f3223690e7056944ed89abb82a06d292899",
+      "status": 200
+    },
+    {
+      "body_complete": true,
+      "id": "fpds-correction-help",
+      "last_modified_raw": "Fri, 16 Oct 2026 20:01:50 GMT",
+      "location": null,
+      "representation": "HTTP_entity_bytes_after_content_decoding",
+      "request": {
+        "method": "GET",
+        "redirects": false,
+        "url": "https://www.fpds.gov/help/Correct_a_Transaction.htm"
+      },
+      "retrieved_at_utc": "2026-11-10T23:59:46.135482+00:00",
+      "sha256": "76862d8e69cf132ec37dfea6fc7424d3d3aa8104f851e1c3bbd7cf1520456295",
+      "status": 200
+    },
+    {
+      "body_complete": true,
+      "id": "sam-guide",
+      "last_modified_raw": "Tue, 25 Aug 2026 18:59:49 GMT",
+      "location": null,
+      "representation": "HTTP_entity_bytes_after_content_decoding",
+      "request": {
+        "method": "GET",
+        "redirects": false,
+        "url": "https://open.gsa.gov/api/contract-awards/"
+      },
+      "retrieved_at_utc": "2026-11-10T23:59:47.535536+00:00",
+      "sha256": "46cb995d2d026bef0d5a1e85ff2ec2220c3775b9d3701fded4895f5244ac7fb2",
+      "status": 200
+    }
+  ],
+  "schema_type": "CorrectionSourceCapabilities",
+  "schema_version": 1,
+  "states": [
+    "DOCUMENTED",
+    "DIRECTLY_OBSERVED",
+    "UNVERIFIED",
+    "UNSUPPORTED"
+  ]
+}
