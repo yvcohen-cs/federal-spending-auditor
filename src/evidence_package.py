@@ -14,8 +14,9 @@ import tempfile
 import zipfile
 import zlib
 from dataclasses import dataclass
+from contextlib import contextmanager
 
-from .evidence import Schema, _hash
+from .evidence import Schema, _hash, _timestamp
 from .evidence_io import EvidenceError, EvidenceRoot, canonical, digest, parts, strict_json, _directory
 from .review_packet_io import atomic_create, outside
 
@@ -45,7 +46,7 @@ class EvidencePackageManifest(Schema):
 
     def validate(self):
         files = strict_json(self.files_json.encode())
-        if (self.phase not in ('C14', 'C15') or self.profile not in ('live', 'synthetic')
+        if (self.phase not in ('C14', 'C15', 'C16') or self.profile not in ('live', 'synthetic')
             or self.recipe != 'cases.json' or self.evidence_index != INDEX
             or self.rule_version != 'evidence-package-v1' or type(files) is not dict
             or not 1 <= len(files) < MAX_FILES or canonical(files) != self.files_json
@@ -72,7 +73,7 @@ def _recipe(root, phase):
         raise EvidenceError('package_recipe_size_limit')
     value = strict_json(raw)
     baseline = None
-    if phase == 'C15':
+    if phase in ('C15', 'C16'):
         if (type(value) is not dict or set(value) != {'schema_version', 'cases', 'baseline_package'}
             or type(value['schema_version']) is not int or value['schema_version'] != 1):
             raise EvidenceError('explicit_C15_package_recipe_required')
@@ -91,7 +92,7 @@ def _recipe(root, phase):
                     raise EvidenceError('explicit_package_root_sequence_required')
                 resolved[key] = [_relative(root, p) for p in case[key]]
                 primary_roots.extend(case[key])
-        for key in ('c12_capture', 'historical_probe', 'parent_history', 'continuation', 'report'):
+        for key in ('c12_capture', 'historical_probe', 'parent_history', 'continuation', 'authority_binding', 'report'):
             if case.get(key) is not None:
                 resolved[key] = _relative(root, case[key])
                 primary_roots.append(case[key])
@@ -106,14 +107,19 @@ def _replay(root, phase):
     if phase == 'C14':
         from .correction_reporting import verify_report
         value = verify_report(Path(root) / 'report', cases)
-    else:
+    elif phase == 'C15':
         from .parent_coverage_reporting import verify_report
+        value = verify_report(Path(root) / 'report', cases, baseline_package=baseline)
+    else:
+        from .authority_reporting import verify_report
         value = verify_report(Path(root) / 'report', cases, baseline_package=baseline)
     return value, roots
 
 
 def _index(root, phase, value):
-    cases = value['cases'] if phase == 'C14' else value['baseline']['cases']
+    c15 = value['baseline'] if phase == 'C16' else value
+    c14 = c15['baseline'] if phase in ('C15', 'C16') else c15
+    cases = c14['cases']
     captures = []
     for case in cases:
         parent = case['parent_probe']
@@ -125,14 +131,16 @@ def _index(root, phase, value):
                 'original_failures': parent['failures'], 'pagination': parent['pagination'],
                 'records': parent['record_reassessment']['records'],
                 'historical_applicability': 'unknown'})
-    if phase == 'C15':
-        for case in value['cases']:
+    if phase in ('C15', 'C16'):
+        for case in c15['cases']:
             if case['continuation'] is not None:
                 captures.append({'role': 'C15_continuation', **case['continuation']})
+    if phase == 'C16':
+        captures.extend({'role': 'C16_child_parent_binding', **c['binding']} for c in value['cases'] if c['binding'] is not None)
     requests = []
     with EvidenceRoot(root, max_bytes=MAX_FILE, max_total_bytes=MAX_TOTAL, max_files=MAX_FILES) as reader:
         for name in reader.discover():
-            if re.search(r'/(?:parent|continuation|detail|page|c3_attempt)[-_][0-9]{3,6}\.json$', name):
+            if re.search(r'/(?:parent|continuation|binding|detail|page|c3_attempt)[-_][0-9]{3,6}\.json$', name):
                 meta = strict_json(reader.read(name).data)
                 requests.append({'package_metadata_path': name, **meta})
     return {'schema_type': 'EvidencePackageIndex', 'schema_version': 1, 'phase': phase,
@@ -145,11 +153,13 @@ def _index(root, phase, value):
 
 def _allowed(names, roots, phase):
     auxiliary = {'README.txt', 'cases.json', INDEX, MANIFEST}
-    if phase == 'C15':
+    if phase in ('C15', 'C16'):
         auxiliary.add('baseline-package.zip')
     # Original C14 exports included these public documentation snapshots.
     docs = ('usa-transactions', 'usa-deletion-implementation', 'fpds-correction-help', 'sam-guide')
     auxiliary.update('official-documents/' + n + ext for n in docs for ext in ('.body', '.json'))
+    if phase == 'C16':
+        auxiliary.update('official-documents/usa-award-detail' + ext for ext in ('.body', '.json'))
     auxiliary.update('protocols/' + n for n in ('correction-parent-protocol-v1.json',
         'correction-source-capabilities-v1.json', 'correction-parent-evidence.md'))
     for name in names:
@@ -161,9 +171,10 @@ def _allowed(names, roots, phase):
             fixed = {'c3_plan.json', 'c3_checkpoint.json', 'c3_summary.json', 'pilot-plan.json',
                 'experiment.json', 'experiment-commit.json', 'parent-commit.json',
                 'probe-commit.json', 'continuation-commit.json', 'sam-result.json',
+                'binding-commit.json',
                 'sam-research-commit.json', 'qualification.json', 'qualification.md',
                 'qualification.html', 'qualification-commit.json'}
-            if basename in fixed or re.fullmatch(r'(?:c3_attempt_[0-9]{6}|(?:detail|parent|page|continuation)-[0-9]{3}(?:-reservation)?|sam-attempt-[0-9]{3}(?:-reserved)?)\.(?:json|body)', basename):
+            if basename in fixed or re.fullmatch(r'(?:c3_attempt_[0-9]{6}|(?:detail|parent|page|continuation|binding)-[0-9]{3}(?:-reservation)?|sam-attempt-[0-9]{3}(?:-reserved)?)\.(?:json|body)', basename):
                 continue
         raise EvidenceError('undeclared_package_member')
 
@@ -172,6 +183,22 @@ def _verify_directory(root, phase, *, legacy=False, expected_profile=None):
     with EvidenceRoot(root, max_bytes=MAX_FILE, max_total_bytes=MAX_TOTAL, max_files=MAX_FILES) as reader:
         before = {n: reader.read(n).byte_sha256 for n in reader.discover()}
     value, roots = _replay(root, phase)
+    if phase == 'C16':
+        from .authority_binding import PARENT_DOCUMENTATION
+        body_name = 'official-documents/usa-award-detail.body'
+        meta_name = 'official-documents/usa-award-detail.json'
+        if value['profile'] == 'live' or body_name in before or meta_name in before:
+            with EvidenceRoot(root, max_bytes=MAX_FILE) as reader:
+                body, meta = reader.read(body_name), strict_json(reader.read(meta_name).data)
+            if (type(meta) is not dict or set(meta) != {'request', 'status', 'retrieved_at_utc', 'body_complete', 'sha256', 'representation', 'location'}
+                or type(meta.get('retrieved_at_utc')) is not str or meta.get('location') is not None
+                or body.byte_sha256 != PARENT_DOCUMENTATION['body_sha256']
+                or meta.get('request') != {'method': 'GET', 'url': PARENT_DOCUMENTATION['url'], 'redirects': False}
+                or meta.get('status') != 200 or meta.get('body_complete') is not True
+                or meta.get('sha256') != body.byte_sha256
+                or meta.get('representation') != 'HTTP_entity_bytes_after_content_decoding'):
+                raise EvidenceError('C16_source_contract_document_conflict')
+            _timestamp(meta['retrieved_at_utc'])
     _allowed(before, roots, phase)
     if expected_profile is not None and value['profile'] != expected_profile:
         raise EvidenceError('package_profile_conflict')
@@ -184,13 +211,14 @@ def _verify_directory(root, phase, *, legacy=False, expected_profile=None):
         if {n: reader.read(n).byte_sha256 for n in reader.discover()} != before:
             raise EvidenceError('package_primary_changed_during_replay')
     resolved = value['resolved_original_real_source_requirements'] if phase == 'C14' else value['previously_resolved_real_source_requirements'] + value['newly_resolved_real_source_requirements']
+    c14 = value if phase == 'C14' else value['baseline'] if phase == 'C15' else value['baseline']['baseline']
     return {'schema_type': 'EvidencePackageVerification', 'schema_version': 1, 'phase': phase,
         'profile': value['profile'], 'format': 'explicit_legacy_C14_v1' if legacy else 'evidence-package-v1',
         'package_files': before, 'report_sha256': digest(value), 'evidence_index_sha256': digest(index),
         'qualification_scope': 'packaged_cases_only_not_unincluded_cohort',
         'verified_case_bindings': [{'original_case_sha256': c['original_case_sha256'],
             'parent_inventory_sha256': None if c['parent_probe'] is None else c['parent_probe']['inventory_sha256']}
-            for c in (value['cases'] if phase == 'C14' else value['baseline']['cases'])],
+            for c in c14['cases']],
         'resolved_real_source_plan_ids': sorted(set(resolved)),
         'remaining_plan_ids': value['remaining_original_plan_ids'],
         'primary_replay': 'verified', 'financial_comparison_authorized': False}
@@ -250,7 +278,11 @@ def _inspect(raw, expected_phase):
         raise EvidenceError('malformed_or_unsupported_evidence_zip') from None
 
 
-def verify_package(path, *, expected_phase=None):
+@contextmanager
+def verified_directory(path, *, expected_phase=None):
+    """Yield a private, verified copy for scoped primary reads; never a trust
+    assertion about upstream authenticity. No extraction path escapes receipts.
+    """
     raw = _raw_archive(path)
     archive, phase, profile, legacy = _inspect(raw, expected_phase)
     try:
@@ -271,14 +303,19 @@ def verify_package(path, *, expected_phase=None):
                 finally:
                     os.close(fd)
             result = _verify_directory(temporary, phase, legacy=legacy, expected_profile=profile)
+            yield Path(temporary), {**result, 'archive_sha256': hashlib.sha256(raw).hexdigest()}
     finally:
         archive.close()
-    return {**result, 'archive_sha256': hashlib.sha256(raw).hexdigest()}
+
+
+def verify_package(path, *, expected_phase=None):
+    with verified_directory(path, expected_phase=expected_phase) as (_, result):
+        return result
 
 
 def build_package(directory, output, *, phase='C14'):
     """Export an explicit self-contained staging directory, never a workspace."""
-    if phase not in ('C14', 'C15'):
+    if phase not in ('C14', 'C15', 'C16'):
         raise EvidenceError('supported_package_phase_required')
     outside(output, (directory,))
     with EvidenceRoot(directory, max_bytes=MAX_FILE, max_total_bytes=MAX_TOTAL, max_files=MAX_FILES) as reader:
@@ -319,7 +356,7 @@ def main(argv=None):
     mode.add_argument('--verify-package')
     mode.add_argument('--build-from')
     parser.add_argument('--output')
-    parser.add_argument('--phase', choices=('C14', 'C15'), default='C14')
+    parser.add_argument('--phase', choices=('C14', 'C15', 'C16'), default='C14')
     args = parser.parse_args(argv)
     try:
         if args.verify_package:
