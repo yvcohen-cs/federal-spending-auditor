@@ -1,0 +1,232 @@
+{
+  "capabilities": [
+    {
+      "capability": "referenced_parent_modification",
+      "interpretation_and_limit": "contractId.referencedIDVModificationNumber is documented as Referenced IDV Modification Number, string; no selected SAM action was obtained.",
+      "reference": "sam-contracts",
+      "source": "samgov",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "old_contract_identifiers",
+      "interpretation_and_limit": "oldContractId is an array of old native contract IDs including agency, PIID, modification, transaction and referenced-IDV components; its presence alone is not a verified predecessor direction.",
+      "reference": "sam-contracts",
+      "source": "samgov",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "deleted_contract_retrieval",
+      "interpretation_and_limit": "deletedStatus=yes returns deleted-only records from the last six months, subject to revealed/unrevealed scope; no complete 2016 deletion archive is certified.",
+      "reference": "sam-contracts",
+      "source": "samgov",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "original_child_parent_actions_and_effective_dates",
+      "interpretation_and_limit": "Native contractId action fields and contractDates effective/signed dates are documented; dates alone do not identify the applicable historical parent revision.",
+      "reference": "sam-contracts",
+      "source": "samgov",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "update_timestamp_and_query",
+      "interpretation_and_limit": "lastModifiedDate filters an update field; not an original publication, immutable version or supersession guarantee.",
+      "reference": "sam-contracts",
+      "source": "samgov",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "selected_action_historical_applicability",
+      "interpretation_and_limit": "No authorized selected primary capture or source-supported retained/effective rule established in this phase.",
+      "reference": "sam-contracts",
+      "source": "samgov",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "authoritative_correction_direction",
+      "interpretation_and_limit": "No authorized selected primary capture or source-supported retained/effective rule established in this phase.",
+      "reference": "sam-contracts",
+      "source": "samgov",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "superseded_versions",
+      "interpretation_and_limit": "No authorized selected primary capture or source-supported retained/effective rule established in this phase.",
+      "reference": "sam-contracts",
+      "source": "samgov",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "original_publication_time",
+      "interpretation_and_limit": "No authorized selected primary capture or source-supported retained/effective rule established in this phase.",
+      "reference": "sam-contracts",
+      "source": "samgov",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "complete_history_retrieval",
+      "interpretation_and_limit": "No authorized selected primary capture or source-supported retained/effective rule established in this phase.",
+      "reference": "sam-contracts",
+      "source": "samgov",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "unauthenticated_selected_action_access",
+      "interpretation_and_limit": "SAM account/API key required. Existing SAM_GOV_API_KEY setting and environment credential metadata were checked; none configured. No protected request or credential discovery.",
+      "reference": "sam-contracts",
+      "source": "samgov",
+      "status": "UNSUPPORTED"
+    },
+    {
+      "capability": "original_child_parent_modification_reference",
+      "interpretation_and_limit": "Original child 00001/8600 modification 0 transaction 0 explicitly references parent DU100G16D01/8600 modification 0; raw original FPDS citation retained. Current API support not revalidated.",
+      "reference": "preserved C16 source package",
+      "source": "fpds",
+      "status": "DIRECTLY OBSERVED"
+    },
+    {
+      "capability": "correct_final_record",
+      "interpretation_and_limit": "Correct function changes a final Award/IDV record; it does not by itself certify a public retained predecessor edge for this action.",
+      "reference": "fpds-correction",
+      "source": "fpds",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "selected_parent_effective_applicability",
+      "interpretation_and_limit": "No primary selected retained-version/effective rule established; no live FPDS data call.",
+      "reference": "fpds-correction",
+      "source": "fpds",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "retained_correction_predecessor",
+      "interpretation_and_limit": "No primary selected retained-version/effective rule established; no live FPDS data call.",
+      "reference": "fpds-correction",
+      "source": "fpds",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "source_deletion_archive",
+      "interpretation_and_limit": "No primary selected retained-version/effective rule established; no live FPDS data call.",
+      "reference": "fpds-correction",
+      "source": "fpds",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "original_publication_time",
+      "interpretation_and_limit": "No primary selected retained-version/effective rule established; no live FPDS data call.",
+      "reference": "fpds-correction",
+      "source": "fpds",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "complete_historical_retrieval",
+      "interpretation_and_limit": "No primary selected retained-version/effective rule established; no live FPDS data call.",
+      "reference": "fpds-correction",
+      "source": "fpds",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "source_native_parent_primary_lookup",
+      "interpretation_and_limit": "Source-returned opaque child/parent keys and exact original PIID/identity-agency pairs are validated from preserved responses; no constructed parent key.",
+      "reference": "C17 fallback captures",
+      "source": "usaspending",
+      "status": "DIRECTLY OBSERVED"
+    },
+    {
+      "capability": "parent_modification_candidate",
+      "interpretation_and_limit": "Parent DU100G16D01/8600 action modification 0 independently observed. Matching the FPDS label is a candidate, not verified cross-source parent-action applicability.",
+      "reference": "preserved C16 source package",
+      "source": "usaspending",
+      "status": "DIRECTLY OBSERVED"
+    },
+    {
+      "capability": "bounded_transaction_pagination",
+      "interpretation_and_limit": "Page, limit, action_date and modification fields support bounded retrieval; observed terminal pages do not certify source recall, deletion history or atomic snapshots.",
+      "reference": "usa-transactions",
+      "source": "usaspending",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "selected_historical_parent_effective_rule",
+      "interpretation_and_limit": "The reviewed contract and selected raw records do not establish this authority; no date/modification/retrieval ordering substitute.",
+      "reference": "usa-transactions",
+      "source": "usaspending",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "retained_correction_relationship",
+      "interpretation_and_limit": "The reviewed contract and selected raw records do not establish this authority; no date/modification/retrieval ordering substitute.",
+      "reference": "usa-transactions",
+      "source": "usaspending",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "original_publication_time",
+      "interpretation_and_limit": "The reviewed contract and selected raw records do not establish this authority; no date/modification/retrieval ordering substitute.",
+      "reference": "usa-transactions",
+      "source": "usaspending",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "complete_historical_retrieval",
+      "interpretation_and_limit": "The reviewed contract and selected raw records do not establish this authority; no date/modification/retrieval ordering substitute.",
+      "reference": "usa-transactions",
+      "source": "usaspending",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "historical_asof_snapshot",
+      "interpretation_and_limit": "The reviewed contract and selected raw records do not establish this authority; no date/modification/retrieval ordering substitute.",
+      "reference": "usa-transactions",
+      "source": "usaspending",
+      "status": "UNVERIFIED"
+    }
+  ],
+  "financial_authorization": false,
+  "historical_applicability_intervals": 0,
+  "real_correction_edges": 0,
+  "references": {
+    "fpds-correction": {
+      "body_complete": true,
+      "body_sha256": "a0cf18db18c4490dab34d362f7797da6db016b05084bc379358d755a4891c5a9",
+      "location": null,
+      "representation": "HTTP_entity_bytes_after_content_decoding",
+      "request": {
+        "method": "GET",
+        "redirects": false,
+        "url": "https://www.fpds.gov/help/Correct_a_Transaction.htm"
+      },
+      "retrieved_at_utc": "2026-11-12T21:01:34.099134+00:00",
+      "status": 200
+    },
+    "sam-contracts": {
+      "body_complete": true,
+      "body_sha256": "033a7007b702d25f1582f06feb8c0dd5d6dce3afee056cb57b61995e0e7443c7",
+      "location": null,
+      "representation": "HTTP_entity_bytes_after_content_decoding",
+      "request": {
+        "method": "GET",
+        "redirects": false,
+        "url": "https://open.gsa.gov/api/contract-awards/"
+      },
+      "retrieved_at_utc": "2026-11-12T21:01:33.162524+00:00",
+      "status": 200
+    },
+    "usa-transactions": {
+      "body_complete": true,
+      "body_sha256": "76a50f3445670d8ee5488770d6583a7f6399a093a903dabfbab77344f1eba078",
+      "location": null,
+      "representation": "HTTP_entity_bytes_after_content_decoding",
+      "request": {
+        "method": "GET",
+        "redirects": false,
+        "url": "https://raw.githubusercontent.com/fedspendingtransparency/usaspending-api/c2b82690eb044e130afc80b546343a2af0b4af1a/usaspending_api/api_contracts/contracts/v2/transactions.md"
+      },
+      "retrieved_at_utc": "2026-11-12T21:01:33.544945+00:00",
+      "status": 200
+    }
+  },
+  "schema_type": "ParentModificationSourceAuthority",
+  "schema_version": 1
+}
