@@ -256,3 +256,7 @@ Opt-in offline native-counterpart audits and original parent-primary requirement
 ### Phase 4C18: primary-action and old-identifier authority
 
 [Architecture, actual results and reproduction](docs/primary-action-authority-evidence.md) describe the read-only SAM prior-ID audit and the bounded public USA fallback. Offline replay remains the default; use `python -m src.action_authority_reporting --help`. The [preregistration](docs/primary-action-authority-protocol-v1.json) freezes 69 prior documents, and the [source assessment](docs/primary-action-source-semantics-v1.json) separates documented fields from selected primary evidence. Old identifiers, matching parent labels, timestamps and terminal pages do not authorize historical applicability, correction direction or financial arithmetic. Production defaults remain unchanged.
+
+### Phase 4C19: historical source authority
+
+Opt-in offline historical proof-obligation assessment, compact deterministic reports, and C19 evidence packages are documented in [Phase 4C19](docs/historical-source-authority-c19.md). Run `python -m src.historical_authority_reporting --help` for offline usage. C14–C18 packages and all existing financial/readiness restrictions remain supported. The selected historical applicability remains unresolved; two separately preregistered public-source parent-primary requirements were resolved without changing qualification rules.
