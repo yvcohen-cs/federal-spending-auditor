@@ -85,6 +85,8 @@ def _recipe(root, phase):
     for case in value:
         if type(case) is not dict:
             raise EvidenceError('explicit_packaged_case_required')
+        if phase != 'C19' and any(k in case for k in ('c19_parent_capture', 'c19_parent_history')):
+            raise EvidenceError('C19_capture_fields_require_explicit_C19_phase')
         resolved = dict(case)
         for key in ('collections', 'sam_captures'):
             if key in case:

@@ -12,7 +12,7 @@ from src.evidence_io import canonical,digest
 from src.correction_reporting import report as c14_report
 from src.parent_authority_acquisition import collect
 from src.historical_authority_reporting import report,write_report,verify_report,projections,fallback,main
-from src.evidence_package import build_package,verify_package
+from src.evidence_package import build_package,verify_package,_recipe
 from tests.test_historical_source_authority import original_case,historical_case,documents
 from tests.test_parent_coverage import rewrite_zip
 from tests.test_evidence_acquisition import inventory
@@ -189,3 +189,13 @@ def test_malformed_cli_inputs_reject_before_source_access(tmp_path,raw,capsys):
 def test_frozen_protocols_and_inventories_remain_unchanged():
     p=json.loads(Path('docs/historical-source-authority-protocol-v1.json').read_text());assert len(p['frozen_files'])==72
     for n,h in p['frozen_files'].items():assert hashlib.sha256(Path(n).read_bytes()).hexdigest()==h
+
+
+@pytest.mark.parametrize('phase',['C14','C15','C16','C17','C18'])
+def test_C19_capture_roots_cannot_be_smuggled_into_legacy_phase(tmp_path,phase):
+    cases=[{'collections':[],'c19_parent_capture':'unreplayed-capture'}]
+    recipe={'schema_version':1,'cases':cases,'baseline_package':'prior.zip'}
+    if phase in ('C17','C18'):recipe['selected_action']={}
+    if phase=='C18':recipe['sam_action_captures']=[]
+    (tmp_path/'cases.json').write_text(canonical(cases if phase=='C14' else recipe))
+    with pytest.raises(ValueError,match='explicit_C19_phase'):_recipe(tmp_path,phase)
