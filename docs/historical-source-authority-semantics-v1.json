@@ -1,0 +1,143 @@
+{
+  "FPDS_document_change": {
+    "current_entity_sha256": "51bc5a391f226224028422365d8b161397d3f1d6e391541d5d3b1f8f6d9ad73f",
+    "observed_difference": "Embedded delivery script differs; raw entities remain separate. No scripts executed. Visible text is an inspection projection, not byte identity or a revision certificate.",
+    "prior_entity_sha256": "a0cf18db18c4490dab34d362f7797da6db016b05084bc379358d755a4891c5a9",
+    "visible_prose_matches_preserved_document": true,
+    "visible_text_sha256": "44fdad4a51c2d09ed3d11c49fc970abcc67ce16292a3bba9cfa6f82fac9b575b"
+  },
+  "SAM_access": {
+    "configured": false,
+    "credential_discovery": false,
+    "known_setting": "SAM_GOV_API_KEY",
+    "prerequisite": "Existing legitimate SAM key/account and entitlement scoped to official destination, supplied through supported environment configuration; explicit bounded native-action selection.",
+    "protected_requests": 0
+  },
+  "correction_edges": 0,
+  "financial_authorized": false,
+  "historical_relationships": 0,
+  "missing_proof_obligations": [
+    "authoritative_source_rule_for_historical_applicability",
+    "FPDS_to_USA_parent_action_namespace_mapping",
+    "selected_child_and_parent_revision_binding",
+    "historical_publication_and_deletion_coverage",
+    "independent_application_of_admitted_rule"
+  ],
+  "new_child_records": 13,
+  "new_parent_actions": 7,
+  "new_public_data_requests": 8,
+  "new_public_document_requests": 3,
+  "new_real_requirements": [
+    "evidence-resolution:v1:0b94bb645635e1c8414acb90d661d51178cd3ffbb0c0304abc07a55fc2949b3f",
+    "evidence-resolution:v1:1f8e8f63303ebad6981e77c7e60133733e67c6504efce8229ad8a84d5a5249f5"
+  ],
+  "remaining_original_requirements": 1564,
+  "schema_type": "HistoricalSourceSemanticsAssessment",
+  "schema_version": 1,
+  "selected_action": {
+    "agency": "8600",
+    "modification": "0",
+    "parent_agency": "8600",
+    "parent_piid": "DU100G16D01",
+    "piid": "00001",
+    "transaction": "0"
+  },
+  "selected_primary_observation_levels": [
+    "parent_identity_observed",
+    "referenced_parent_modification_observed",
+    "parent_modification_independently_retrieved"
+  ],
+  "semantics": [
+    {
+      "claim": "contractId.referencedIDVModificationNumber is a string reference; oldContractId is an array of identifier components, not a selected predecessor certificate.",
+      "source": "samgov",
+      "status": "DOCUMENTED_NOT_SELECTED_PRIMARY_VERIFIED"
+    },
+    {
+      "claim": "lastModifiedDate and publicDeltaDate query dates do not establish original publication or effective parent applicability; deletedStatus retrieval is limited to six months and visibility.",
+      "source": "samgov",
+      "status": "DOCUMENTED"
+    },
+    {
+      "claim": "Correct permits editing a final Award or IDV action; the help page supplies no retained predecessor or applicability rule for this action.",
+      "source": "fpds",
+      "status": "DOCUMENTED_NOT_SELECTED_PREDECESSOR_VERIFIED"
+    },
+    {
+      "claim": "Action-date sorting, modification labels, and terminal pointer tuples establish observed query behavior, not complete histories, deletion coverage, revision authority or common as-of.",
+      "source": "usaspending",
+      "status": "DOCUMENTED_AND_FINITE_QUERY_OBSERVED"
+    }
+  ],
+  "source_documentation": [
+    {
+      "body_file": "sam-guide.body",
+      "historical_rule_admitted": false,
+      "interpretation": "REFERENCE_OR_WORKFLOW_NOT_APPLICABILITY_RULE",
+      "metadata_file": "sam-guide.json",
+      "retrieval": {
+        "body_complete": true,
+        "body_sha256": "033a7007b702d25f1582f06feb8c0dd5d6dce3afee056cb57b61995e0e7443c7",
+        "location": null,
+        "representation": "HTTP_entity_bytes_after_content_decoding",
+        "request": {
+          "method": "GET",
+          "redirects": false,
+          "url": "https://open.gsa.gov/api/contract-awards/"
+        },
+        "retrieved_at_utc": "2026-11-13T19:22:15.382638+00:00",
+        "status": 200
+      },
+      "reviewed_document_version": true,
+      "selected_primary_behavior_verified": false,
+      "source": "samgov",
+      "visible_text_sha256": "0f05903a8c010166aa0d684659d2768142882e24d0f43fc125824cef567fd9e6"
+    },
+    {
+      "body_file": "fpds-correction-help.body",
+      "historical_rule_admitted": false,
+      "interpretation": "REFERENCE_OR_WORKFLOW_NOT_APPLICABILITY_RULE",
+      "metadata_file": "fpds-correction-help.json",
+      "retrieval": {
+        "body_complete": true,
+        "body_sha256": "51bc5a391f226224028422365d8b161397d3f1d6e391541d5d3b1f8f6d9ad73f",
+        "location": null,
+        "representation": "HTTP_entity_bytes_after_content_decoding",
+        "request": {
+          "method": "GET",
+          "redirects": false,
+          "url": "https://www.fpds.gov/help/Correct_a_Transaction.htm"
+        },
+        "retrieved_at_utc": "2026-11-13T19:22:16.953636+00:00",
+        "status": 200
+      },
+      "reviewed_document_version": true,
+      "selected_primary_behavior_verified": false,
+      "source": "fpds",
+      "visible_text_sha256": "44fdad4a51c2d09ed3d11c49fc970abcc67ce16292a3bba9cfa6f82fac9b575b"
+    },
+    {
+      "body_file": "usa-transactions.body",
+      "historical_rule_admitted": false,
+      "interpretation": "REFERENCE_OR_WORKFLOW_NOT_APPLICABILITY_RULE",
+      "metadata_file": "usa-transactions.json",
+      "retrieval": {
+        "body_complete": true,
+        "body_sha256": "76a50f3445670d8ee5488770d6583a7f6399a093a903dabfbab77344f1eba078",
+        "location": null,
+        "representation": "HTTP_entity_bytes_after_content_decoding",
+        "request": {
+          "method": "GET",
+          "redirects": false,
+          "url": "https://raw.githubusercontent.com/fedspendingtransparency/usaspending-api/c2b82690eb044e130afc80b546343a2af0b4af1a/usaspending_api/api_contracts/contracts/v2/transactions.md"
+        },
+        "retrieved_at_utc": "2026-11-13T19:22:18.384266+00:00",
+        "status": 200
+      },
+      "reviewed_document_version": true,
+      "selected_primary_behavior_verified": false,
+      "source": "usaspending",
+      "visible_text_sha256": "68c2c243774b0fded6b5323d61fbdef4f475939abfbebea8b5809597082b1fb1"
+    }
+  ]
+}

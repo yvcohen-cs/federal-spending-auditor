@@ -46,7 +46,7 @@ class EvidencePackageManifest(Schema):
 
     def validate(self):
         files = strict_json(self.files_json.encode())
-        if (self.phase not in ('C14', 'C15', 'C16', 'C17', 'C18') or self.profile not in ('live', 'synthetic')
+        if (self.phase not in ('C14', 'C15', 'C16', 'C17', 'C18', 'C19') or self.profile not in ('live', 'synthetic')
             or self.recipe != 'cases.json' or self.evidence_index != INDEX
             or self.rule_version != 'evidence-package-v1' or type(files) is not dict
             or not 1 <= len(files) < MAX_FILES or canonical(files) != self.files_json
@@ -73,13 +73,13 @@ def _recipe(root, phase):
         raise EvidenceError('package_recipe_size_limit')
     value = strict_json(raw)
     baseline = None
-    if phase in ('C15', 'C16', 'C17', 'C18'):
+    if phase in ('C15', 'C16', 'C17', 'C18', 'C19'):
         if (type(value) is not dict or set(value) != ({'schema_version', 'cases', 'baseline_package', 'selected_action', 'sam_action_captures'} if phase == 'C18' else {'schema_version', 'cases', 'baseline_package', 'selected_action'} if phase == 'C17' else {'schema_version', 'cases', 'baseline_package'})
             or type(value['schema_version']) is not int or value['schema_version'] != 1):
             raise EvidenceError('explicit_C15_package_recipe_required')
         baseline = _relative(root, value['baseline_package'])
         value = value['cases']
-    if type(value) is not list or not 1 <= len(value) <= (4 if phase == 'C18' else 3 if phase == 'C17' else 2):
+    if type(value) is not list or not 1 <= len(value) <= (6 if phase == 'C19' else 4 if phase == 'C18' else 3 if phase == 'C17' else 2):
         raise EvidenceError('one_or_two_packaged_case_recipes_required')
     cases, primary_roots = [], []
     for case in value:
@@ -92,7 +92,7 @@ def _recipe(root, phase):
                     raise EvidenceError('explicit_package_root_sequence_required')
                 resolved[key] = [_relative(root, p) for p in case[key]]
                 primary_roots.extend(case[key])
-        for key in ('c12_capture', 'historical_probe', 'parent_history', 'continuation', 'authority_binding', 'new_parent_capture', 'new_parent_history', 'action_parent_capture', 'action_parent_history', 'report'):
+        for key in ('c12_capture', 'historical_probe', 'parent_history', 'continuation', 'authority_binding', 'new_parent_capture', 'new_parent_history', 'action_parent_capture', 'action_parent_history', 'c19_parent_capture', 'c19_parent_history', 'report'):
             if case.get(key) is not None:
                 resolved[key] = _relative(root, case[key])
                 primary_roots.append(case[key])
@@ -110,6 +110,10 @@ def _recipe(root, phase):
 
 def _replay(root, phase):
     cases, baseline, roots = _recipe(root, phase)
+    if phase == 'C19':
+        from .historical_authority_reporting import verify_report
+        return verify_report(Path(root) / 'report', cases, baseline_package=baseline,
+                             source_documents=Path(root) / 'official-documents'), roots
     if phase == 'C14':
         from .correction_reporting import verify_report
         value = verify_report(Path(root) / 'report', cases)
@@ -134,6 +138,14 @@ def _replay(root, phase):
 
 
 def _index(root, phase, value):
+    if phase == 'C19':
+        return {'schema_type': 'HistoricalAuthorityPackageIndex', 'schema_version': 1,
+                'report_sha256': digest(value), 'original_case_bindings': value['original_case_bindings'],
+                'source_documentation': value['source_documentation'],
+                'source_captures': value['cases'],
+                'historical_proof_obligations': value['historical_authority_assessment'],
+                'baseline_package_sha256': value['baseline_package_verification']['archive_sha256'],
+                'financial_comparison_authorized': False}
     c17 = value['baseline'] if phase == 'C18' else value
     c16 = c17['baseline'] if phase in ('C17', 'C18') else c17
     c15 = c16['baseline'] if phase in ('C16', 'C17', 'C18') else c16
@@ -150,11 +162,11 @@ def _index(root, phase, value):
                 'original_failures': parent['failures'], 'pagination': parent['pagination'],
                 'records': parent['record_reassessment']['records'],
                 'historical_applicability': 'unknown'})
-    if phase in ('C15', 'C16', 'C17', 'C18'):
+    if phase in ('C15', 'C16', 'C17', 'C18', 'C19'):
         for case in c15['cases']:
             if case['continuation'] is not None:
                 captures.append({'role': 'C15_continuation', **case['continuation']})
-    if phase in ('C16', 'C17', 'C18'):
+    if phase in ('C16', 'C17', 'C18', 'C19'):
         captures.extend({'role': 'C16_child_parent_binding', **c['binding']} for c in c16['cases'] if c['binding'] is not None)
     if phase in ('C17', 'C18'):
         captures.extend({'role': 'C17_parent', **c['new_parent_probe']} for c in c17['cases'] if c['new_parent_probe'] is not None)
@@ -178,12 +190,12 @@ def _index(root, phase, value):
 
 def _allowed(names, roots, phase):
     auxiliary = {'README.txt', 'cases.json', INDEX, MANIFEST}
-    if phase in ('C15', 'C16', 'C17', 'C18'):
+    if phase in ('C15', 'C16', 'C17', 'C18', 'C19'):
         auxiliary.add('baseline-package.zip')
     # Original C14 exports included these public documentation snapshots.
     docs = ('usa-transactions', 'usa-deletion-implementation', 'fpds-correction-help', 'sam-guide')
     auxiliary.update('official-documents/' + n + ext for n in docs for ext in ('.body', '.json'))
-    if phase in ('C16', 'C17', 'C18'):
+    if phase in ('C16', 'C17', 'C18', 'C19'):
         auxiliary.update('official-documents/usa-award-detail' + ext for ext in ('.body', '.json'))
     auxiliary.update('protocols/' + n for n in ('correction-parent-protocol-v1.json',
         'correction-source-capabilities-v1.json', 'correction-parent-evidence.md'))
@@ -208,7 +220,7 @@ def _verify_directory(root, phase, *, legacy=False, expected_profile=None):
     with EvidenceRoot(root, max_bytes=MAX_FILE, max_total_bytes=MAX_TOTAL, max_files=MAX_FILES) as reader:
         before = {n: reader.read(n).byte_sha256 for n in reader.discover()}
     value, roots = _replay(root, phase)
-    if phase in ('C16', 'C17', 'C18'):
+    if phase in ('C16', 'C17', 'C18', 'C19'):
         from .authority_binding import PARENT_DOCUMENTATION
         body_name = 'official-documents/usa-award-detail.body'
         meta_name = 'official-documents/usa-award-detail.json'
@@ -236,14 +248,18 @@ def _verify_directory(root, phase, *, legacy=False, expected_profile=None):
         if {n: reader.read(n).byte_sha256 for n in reader.discover()} != before:
             raise EvidenceError('package_primary_changed_during_replay')
     resolved = value['resolved_original_real_source_requirements'] if phase == 'C14' else value['previously_resolved_real_source_requirements'] + value['newly_resolved_real_source_requirements']
-    c14 = value if phase == 'C14' else value['baseline'] if phase == 'C15' else value['baseline']['baseline'] if phase == 'C16' else value['baseline']['baseline']['baseline'] if phase == 'C17' else value['baseline']['baseline']['baseline']['baseline']
+    if phase == 'C19':
+        bindings = value['original_case_bindings']
+    else:
+        c14 = value if phase == 'C14' else value['baseline'] if phase == 'C15' else value['baseline']['baseline'] if phase == 'C16' else value['baseline']['baseline']['baseline'] if phase == 'C17' else value['baseline']['baseline']['baseline']['baseline']
+        bindings = [{'original_case_sha256': c['original_case_sha256'],
+                     'parent_inventory_sha256': None if c['parent_probe'] is None else c['parent_probe']['inventory_sha256']}
+                    for c in c14['cases']]
     return {'schema_type': 'EvidencePackageVerification', 'schema_version': 1, 'phase': phase,
         'profile': value['profile'], 'format': 'explicit_legacy_C14_v1' if legacy else 'evidence-package-v1',
         'package_files': before, 'report_sha256': digest(value), 'evidence_index_sha256': digest(index),
         'qualification_scope': 'packaged_cases_only_not_unincluded_cohort',
-        'verified_case_bindings': [{'original_case_sha256': c['original_case_sha256'],
-            'parent_inventory_sha256': None if c['parent_probe'] is None else c['parent_probe']['inventory_sha256']}
-            for c in c14['cases']],
+        'verified_case_bindings': bindings,
         'resolved_real_source_plan_ids': sorted(set(resolved)),
         'remaining_plan_ids': value['remaining_original_plan_ids'],
         'primary_replay': 'verified', 'financial_comparison_authorized': False}
@@ -340,7 +356,7 @@ def verify_package(path, *, expected_phase=None):
 
 def build_package(directory, output, *, phase='C14'):
     """Export an explicit self-contained staging directory, never a workspace."""
-    if phase not in ('C14', 'C15', 'C16', 'C17', 'C18'):
+    if phase not in ('C14', 'C15', 'C16', 'C17', 'C18', 'C19'):
         raise EvidenceError('supported_package_phase_required')
     outside(output, (directory,))
     with EvidenceRoot(directory, max_bytes=MAX_FILE, max_total_bytes=MAX_TOTAL, max_files=MAX_FILES) as reader:
@@ -381,7 +397,7 @@ def main(argv=None):
     mode.add_argument('--verify-package')
     mode.add_argument('--build-from')
     parser.add_argument('--output')
-    parser.add_argument('--phase', choices=('C14', 'C15', 'C16', 'C17', 'C18'), default='C14')
+    parser.add_argument('--phase', choices=('C14', 'C15', 'C16', 'C17', 'C18', 'C19'), default='C14')
     args = parser.parse_args(argv)
     try:
         if args.verify_package:
