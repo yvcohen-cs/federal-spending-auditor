@@ -1,0 +1,129 @@
+{
+  "SAM_official_reference": {
+    "body_complete": true,
+    "body_sha256": "033a7007b702d25f1582f06feb8c0dd5d6dce3afee056cb57b61995e0e7443c7",
+    "location": null,
+    "representation": "HTTP_entity_bytes_after_content_decoding",
+    "request": {
+      "method": "GET",
+      "redirects": false,
+      "url": "https://open.gsa.gov/api/contract-awards/"
+    },
+    "retrieved_at_utc": "2026-11-13T00:57:18.966716+00:00",
+    "status": 200
+  },
+  "SAM_primary_records_obtained": 0,
+  "capabilities": [
+    {
+      "capability": "referencedIDVModificationNumber",
+      "meaning_and_limit": "Native string field identifies a referenced IDV modification label; no selected SAM primary action was obtained.",
+      "source": "samgov",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "oldContractId",
+      "meaning_and_limit": "Array of old identifier components; does not independently certify an alias, immutable predecessor, correction direction or retained historical version for the selected action.",
+      "source": "samgov",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "native_action_and_parent_identifiers",
+      "meaning_and_limit": "contractId PIID/subtier/parent/modification/transaction are source-local components; funding agency and names are not identity aliases.",
+      "source": "samgov",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "dates_and_versions",
+      "meaning_and_limit": "Signed/performance-start and created/approved/modified/document/schema fields retain their own meaning; none is automatically original publication or a reporting-revision certificate.",
+      "source": "samgov",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "deletedStatus",
+      "meaning_and_limit": "Deleted-only retrieval is limited to the last six months and visibility entitlement; not complete historical deletion coverage.",
+      "source": "samgov",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "selected_historical_applicability",
+      "meaning_and_limit": "No selected primary response or authoritative applicability/predecessor rule established; documentation alone is insufficient.",
+      "source": "samgov",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "directed_correction_relationship",
+      "meaning_and_limit": "No selected primary response or authoritative applicability/predecessor rule established; documentation alone is insufficient.",
+      "source": "samgov",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "verified_identifier_transition",
+      "meaning_and_limit": "No selected primary response or authoritative applicability/predecessor rule established; documentation alone is insufficient.",
+      "source": "samgov",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "retained_version_archive",
+      "meaning_and_limit": "No selected primary response or authoritative applicability/predecessor rule established; documentation alone is insufficient.",
+      "source": "samgov",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "complete_historical_retrieval",
+      "meaning_and_limit": "No selected primary response or authoritative applicability/predecessor rule established; documentation alone is insufficient.",
+      "source": "samgov",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "uncredentialed_selected_API_access",
+      "meaning_and_limit": "Existing SAM_GOV_API_KEY setting and safe environment metadata show no configured authorization. No protected request or credential discovery.",
+      "source": "samgov",
+      "status": "UNSUPPORTED"
+    },
+    {
+      "capability": "selected_child_parent_modification_reference",
+      "meaning_and_limit": "Original 00001/8600 modification 0 transaction 0 references DU100G16D01/8600 parent modification 0; preserved raw C17 primary evidence, not new API collection.",
+      "source": "fpds",
+      "status": "DIRECTLY OBSERVED"
+    },
+    {
+      "capability": "correct_final_record_workflow",
+      "meaning_and_limit": "Previously preserved official Correct a Transaction help describes an operation, not an independently verified retained predecessor for this action.",
+      "source": "fpds",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "selected_effective_parent_and_revision",
+      "meaning_and_limit": "No primary effective-rule or revision certificate established; no live FPDS data request.",
+      "source": "fpds",
+      "status": "UNVERIFIED"
+    },
+    {
+      "capability": "source_native_parent_primary",
+      "meaning_and_limit": "Four bounded C18 requests preserve exact child/parent native keys, eight child records and four independently observed parent records for 00005/6901.",
+      "source": "usaspending",
+      "status": "DIRECTLY OBSERVED"
+    },
+    {
+      "capability": "bounded_transaction_pagination",
+      "meaning_and_limit": "Pinned official transaction contract and raw response pointer tuples support finite observed pages, not source recall, deletion history or atomic snapshots.",
+      "source": "usaspending",
+      "status": "DOCUMENTED"
+    },
+    {
+      "capability": "historical_applicability_and_correction_authority",
+      "meaning_and_limit": "Current summaries and modification/action-date observations do not supply authoritative historical intervals or correction direction.",
+      "source": "usaspending",
+      "status": "UNVERIFIED"
+    }
+  ],
+  "financial_authorization": false,
+  "historical_applicability_intervals": 0,
+  "preserved_references": [
+    "docs/parent-modification-source-authority-v1.json",
+    "docs/historical-source-authority-v1.json"
+  ],
+  "schema_type": "PrimaryActionSourceSemantics",
+  "schema_version": 1,
+  "verified_real_correction_edges": 0
+}
