@@ -260,3 +260,7 @@ Opt-in offline native-counterpart audits and original parent-primary requirement
 ### Phase 4C19: historical source authority
 
 Opt-in offline historical proof-obligation assessment, compact deterministic reports, and C19 evidence packages are documented in [Phase 4C19](docs/historical-source-authority-c19.md). Run `python -m src.historical_authority_reporting --help` for offline usage. C14–C18 packages and all existing financial/readiness restrictions remain supported. The selected historical applicability remains unresolved; two separately preregistered public-source parent-primary requirements were resolved without changing qualification rules.
+
+### Phase 4C20: source-bound evidence and dependency triage
+
+The opt-in [C20 offline assessment](docs/source-bound-evidence-c20.md) partitions the original 1,564 unresolved proof obligations, preserves unknown and outside-context statuses, and produces a small prospective acquisition shortlist without claiming current source access. Run `python -m src.source_bound_reporting --help` for deterministic reports and independent primary replay; `src.evidence_package --phase C20` adds explicit bounded packages while preserving C14–C19 compatibility. Two bounded public-source parent-primary requirements were resolved; 1,562 remain. Historical applicability, correction authority, financial eligibility and production readiness remain unchanged. See the [preregistration](docs/source-bound-evidence-protocol-v1.json) and [source-semantics assessment](docs/source-bound-evidence-semantics-v1.json).
