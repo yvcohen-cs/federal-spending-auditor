@@ -132,13 +132,18 @@ python -m src.evidence_package --verify-package /path/c20.zip
 Cases use the prior C19 case format, plus optional `c20_parent_capture` and
 `c20_parent_history` roots. The package recipe is exactly
 `{"schema_version":1,"cases":[...],"baseline_package":"baseline-package.zip"}`
-with package-relative paths. Stage only the selected eight cases, their explicit
-primary roots, unchanged C19 ZIP, four documentation body/metadata pairs from
+with package-relative paths. Stage only explicitly selected cases, their primary roots, unchanged C19 ZIP,
+four documentation body/metadata pairs from
 `DOCUMENTS`, pinned original `usa-award-detail` body/metadata, and `report/`.
 Never export a workspace. Recompute the staged report using staged absolute
-roots before export. A full 24-case assessment covers all 1,564 baseline
-obligations; the portable eight-case package explicitly covers included cases
-only and must not be described as packaging the full cohort.
+roots before export. Eight cases are a schema ceiling, not a guarantee that
+every such set fits the existing 256-entry filesystem budget, which counts
+directories as well as files. The combined real eight-case export exceeds that
+budget and is safely rejected. Export two seven-case packages instead: the six
+C19 baseline cases plus one separately registered new target per package.
+Preserve the combined eight-case report separately. A full 24-case assessment
+covers all 1,564 baseline obligations; each portable package explicitly covers
+its included cases only and must not be described as packaging the full cohort.
 
 Fresh report directories contain JSON, Markdown, escaped static HTML, a plan
 and a commitment. Compare both report digests and every output byte hash across
