@@ -14,7 +14,7 @@ from .identity_matching import decode_usa_id
 from .pilot_store import PilotStore
 from .review_packet_io import outside
 from .revision_lineage import RULE,NATIVE,FACETS,HistoryFacet,CoverageState,LineageObservation,graph,facets
-from .source_verification import inspect_experiment,VerificationExperiment
+from .source_verification import inspect_experiment,decode_experiment
 from .historical_probe import read as read_probe,collect as collect_probe
 
 
@@ -114,7 +114,7 @@ def report(cases):
         requested_interval=requested_interval.to_dict()
         nodes=_sam_details(_from_qualification(old,role='original_C10_primary'),case);base_nodes=list(nodes);current=None;probe=None
         if case.get('c12_capture'):
-            current=inspect_experiment(case['c12_capture']);spec=VerificationExperiment.from_dict(current['experiment']).spec
+            current=inspect_experiment(case['c12_capture']);spec=decode_experiment(current['experiment']).spec
             if digest(old) not in {t.case_id for t in spec.requirements} or old['profile']!=('synthetic' if current['knowledge_basis']=='SYNTHETIC_ONLY' else 'live'):raise EvidenceError('C12_original_case_or_profile_binding_conflict')
             # Add original C12 transaction observations to BOTH C13 baseline and
             # updated graph. These are prior observations, not new C13 evidence.
@@ -131,7 +131,7 @@ def report(cases):
         for n in nodes:
             ctx=strict_json(n.native_context_json.encode());pair=[ctx['parent_piid'],ctx['parent_agency']]
             supported_current=(current is not None and current['current_source_parent_link']=='verified_source_local_summary_link' and n.source=='usaspending'
-                and not n.outside_requested_context and n.identity_supported and ctx['piid']==current['child']['piid'] and ctx['agency']==strict_json(VerificationExperiment.from_dict(current['experiment']).spec.native_context_json.encode())['agency'] and pair==[current['child']['parent'].get('piid'),current['child']['parent'].get('sub_agency_id')])
+                and not n.outside_requested_context and n.identity_supported and ctx['piid']==current['child']['piid'] and ctx['agency']==strict_json(decode_experiment(current['experiment']).spec.native_context_json.encode())['agency'] and pair==[current['child']['parent'].get('piid'),current['child']['parent'].get('sub_agency_id')])
             parents.append({'node_id':n.node_id,'native_parent_pair':pair,'assertion_basis':n.parent_assertion_basis,'action_date':n.action_date,
                 'record_asserted_parent':all(v is not None for v in pair),'current_source_parent_primary_supported':supported_current,
                 'current_primary_citations':current['citations'] if supported_current else [],'historical_applicability_interval':'unknown',
