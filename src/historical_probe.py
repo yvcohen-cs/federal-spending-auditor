@@ -8,7 +8,7 @@ from .collection_sources import HTTPTransport, FixtureTransport, request_for
 from .evidence_io import EvidenceError, canonical, digest, strict_json
 from .award_validation import snapshot, pagination
 from .source_contracts import usa_transaction_contract
-from .source_verification import inspect_experiment, VerificationExperiment, _metadata
+from .source_verification import inspect_experiment, decode_experiment, _metadata
 from .identity_matching import decode_usa_id, agency_component
 from .pilot_store import PilotStore
 from .review_packet_io import outside
@@ -21,7 +21,7 @@ def manifest(path):return {n:s.byte_sha256 for n,s in snapshot(path).items()}
 def anchor(path):
     v=inspect_experiment(path);tx=v['transaction_contract']
     if v['issues'] or not tx or tx['failures'] or not tx['histories'] or not all(h['source_contract_satisfied'] for h in tx['histories']):raise EvidenceError('validated_C12_anchor_required')
-    spec=VerificationExperiment.from_dict(v['experiment']).spec
+    spec=decode_experiment(v['experiment']).spec
     selected=SelectedAward.from_dict(strict_json(spec.selection_json.encode()))
     if selected.parent_piid is None or selected.parent_agency_id is None:raise EvidenceError('complete_source_native_parent_context_required_for_reverse_probe')
     return v,selected

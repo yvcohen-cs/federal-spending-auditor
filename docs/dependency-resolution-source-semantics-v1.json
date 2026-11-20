@@ -1,0 +1,107 @@
+{
+  "SAM_configured": false,
+  "authoritative_correction_edges": 0,
+  "child_transaction_observations": 70,
+  "corroboration_from_duplicate_observations": false,
+  "credential_discovery": false,
+  "data_request_cap": 16,
+  "deleted_record_coverage": "UNKNOWN",
+  "financial_comparison_authorized": false,
+  "financial_eligibility_changed": false,
+  "historical_intervals_established": 0,
+  "historical_priority": {
+    "agency": "8600",
+    "modification": "0",
+    "parent_agency": "8600",
+    "parent_piid": "DU100G16D01",
+    "piid": "00001",
+    "transaction": "0"
+  },
+  "historical_proof_levels": [
+    "OBSERVED",
+    "OBSERVED",
+    "OBSERVED",
+    "UNSUPPORTED",
+    "INSUFFICIENT"
+  ],
+  "historical_version_applicability": "UNKNOWN",
+  "new_data_requests": 15,
+  "new_original_requirements_resolved": 2,
+  "official_document_attempts": [
+    {
+      "body_complete": true,
+      "body_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "content_type": null,
+      "location": "https://sam.gov/contracting",
+      "name": "fpds-v14-dictionary",
+      "representation": "HTTP_entity_bytes_after_content_decoding",
+      "request": {
+        "method": "GET",
+        "redirects": false,
+        "url": "https://www.fpds.gov/downloads/FPDSNG_DataDictionary_V14_OT.pdf"
+      },
+      "retrieved_at_utc": "2026-11-20T19:01:41.903239+00:00",
+      "schema_version": 1,
+      "status": 301
+    },
+    {
+      "body_complete": true,
+      "body_sha256": "2f85832e31ca57711e6107af6b142363351ae516adb71c69afc643fac26be7f6",
+      "content_type": "text/plain",
+      "location": null,
+      "name": "dod-2016-guidance",
+      "representation": "HTTP_entity_bytes_after_content_decoding",
+      "request": {
+        "method": "GET",
+        "redirects": false,
+        "url": "https://www.acq.osd.mil/dpap/dars/pgi/pgi_htm/r20161021/PGI204_6.htm"
+      },
+      "retrieved_at_utc": "2026-11-20T19:01:48.383774+00:00",
+      "schema_version": 1,
+      "status": 503
+    },
+    {
+      "body_complete": true,
+      "body_sha256": "033a7007b702d25f1582f06feb8c0dd5d6dce3afee056cb57b61995e0e7443c7",
+      "content_type": "text/html; charset=utf-8",
+      "location": null,
+      "name": "sam-guide",
+      "representation": "HTTP_entity_bytes_after_content_decoding",
+      "request": {
+        "method": "GET",
+        "redirects": false,
+        "url": "https://open.gsa.gov/api/contract-awards/"
+      },
+      "retrieved_at_utc": "2026-11-20T19:01:49.916308+00:00",
+      "schema_version": 1,
+      "status": 200
+    },
+    {
+      "body_complete": true,
+      "body_sha256": "76a50f3445670d8ee5488770d6583a7f6399a093a903dabfbab77344f1eba078",
+      "content_type": "text/plain; charset=utf-8",
+      "location": null,
+      "name": "usa-transactions",
+      "representation": "HTTP_entity_bytes_after_content_decoding",
+      "request": {
+        "method": "GET",
+        "redirects": false,
+        "url": "https://raw.githubusercontent.com/fedspendingtransparency/usaspending-api/c2b82690eb044e130afc80b546343a2af0b4af1a/usaspending_api/api_contracts/contracts/v2/transactions.md"
+      },
+      "retrieved_at_utc": "2026-11-20T19:01:51.316211+00:00",
+      "schema_version": 1,
+      "status": 200
+    }
+  ],
+  "oldContractId_direction": "UNVERIFIED",
+  "parent_action_observations": 15,
+  "prior_real_resolved": 8,
+  "production_readiness_changed": false,
+  "protected_requests": 0,
+  "remaining_original_requirements": 1560,
+  "replay_creates_new_observations": false,
+  "schema_type": "DependencyResolutionSourceSemantics",
+  "schema_version": 1,
+  "search_snippets_are_not_primary_evidence": true,
+  "starting_main": "d662050c560fa485d59a1f64e70f8e523e8522bb"
+}

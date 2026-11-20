@@ -3,6 +3,7 @@ import argparse
 from dataclasses import dataclass
 from html import escape
 from pathlib import Path
+from typing import ClassVar
 
 from .acquisition_planning import AcquisitionQueue, AcquisitionLimits, prepare, case_report
 from .award_validation import snapshot
@@ -20,6 +21,7 @@ from .source_contracts import (RULE, detail_request, award_detail,
 
 @dataclass(frozen=True,kw_only=True)
 class VerificationExperiment(Schema):
+    MAX_PAGES: ClassVar[int] = 2
     queue:AcquisitionQueue
     request_id:str
     mode:str='offline_only'
@@ -30,8 +32,8 @@ class VerificationExperiment(Schema):
         s=self.spec
         if s.source!='usaspending' or s.target_kind!='award_history' or s.selection_json is None or s.request_json is None:
             raise ValueError('USA_native_history_spec_required')
-        if s.limits.retries!=0 or s.limits.max_pages>2 or s.limits.page_size>10:
-            raise ValueError('experiment_two_pages_ten_rows_zero_retries_required')
+        if s.limits.retries!=0 or s.limits.max_pages>self.MAX_PAGES or s.limits.page_size>10:
+            raise ValueError('experiment_two_pages_ten_rows_zero_retries_required' if self.MAX_PAGES==2 else 'dependency_four_pages_ten_rows_zero_retries_required')
         if (s.evidence_profile=='synthetic')!=(self.mode=='synthetic_only'):
             raise ValueError('synthetic_live_provenance_confusion')
 
@@ -40,6 +42,22 @@ class VerificationExperiment(Schema):
         matches=[s for s in self.queue.requests if s.request_id==self.request_id]
         if len(matches)!=1:raise ValueError('exact_original_queue_request_required')
         return matches[0]
+
+
+@dataclass(frozen=True,kw_only=True)
+class DependencyVerificationExperiment(VerificationExperiment):
+    """Explicit C21 contract, not an expansion of legacy C12's two-page rule.
+
+    Four ten-row child pages plus two detail requests. The existing parent probe
+    has its own two-request/ten-row bound. No historical coverage is certified.
+    """
+    MAX_PAGES: ClassVar[int] = 4
+
+
+def decode_experiment(value):
+    kind = value.get('schema_type') if type(value) is dict else None
+    cls = DependencyVerificationExperiment if kind == 'DependencyVerificationExperiment' else VerificationExperiment
+    return cls.from_dict(value)
 
 
 def files(values):return {n:s.byte_sha256 for n,s in values.items()}
@@ -62,7 +80,7 @@ def _metadata(value,raw):
 
 
 def experiment(path,plan,*,live=False,synthetic=None):
-    """At most four public USA requests, no redirects, retries, keys or fallback.
+    """Legacy C12: four USA requests; explicit C21: six. No redirects or retries.
 
     Synthetic inputs are transcripts, not arbitrary transport callbacks. The
     installed public transport is only constructed after explicit mode checks.
@@ -139,7 +157,7 @@ def inspect_experiment(path):
     if canonical(commit)!=canonical({'schema_version':1,'files':{n:h for n,h in names.items() if n!='experiment-commit.json'}}):
         raise EvidenceError('source_experiment_integrity_conflict')
     capture_plan=strict_json(before['pilot-plan.json'].data)
-    plan=VerificationExperiment.from_dict(capture_plan['experiment']);s=plan.spec
+    plan=decode_experiment(capture_plan['experiment']);s=plan.spec
     # Reconstruct every plan control instead of trusting locally edited flags.
     expected={'schema_type':'SourceVerificationCapturePlan','schema_version':1,'rule_version':RULE,
         'experiment':plan.to_dict(),'public_source_allowlist':['usaspending'],'maximum_HTTP_requests':2+s.limits.max_pages,
@@ -209,7 +227,7 @@ def inspect_experiment(path):
 
 def integrate(cases,experiment_path,acquisition_path):
     """C11 remains offline: newly captured C3 bytes enter as a preserved replay."""
-    observation=inspect_experiment(experiment_path);plan=VerificationExperiment.from_dict(observation['experiment'])
+    observation=inspect_experiment(experiment_path);plan=decode_experiment(observation['experiment'])
     if canonical(prepare(cases,limits=plan.queue.limits).to_dict())!=canonical(plan.queue.to_dict()):raise EvidenceError('original_case_queue_binding_required')
     if observation['issues'] or not observation['transaction_contract'] or not all(h['source_contract_satisfied'] for h in observation['transaction_contract']['histories']) or not observation['transaction_contract']['histories']:
         raise EvidenceError('incomplete_source_contract_cannot_integrate')
@@ -218,7 +236,7 @@ def integrate(cases,experiment_path,acquisition_path):
 
 
 def assessment(cases,experiment_path,acquisition_path=None):
-    obs=inspect_experiment(experiment_path);p=VerificationExperiment.from_dict(obs['experiment'])
+    obs=inspect_experiment(experiment_path);p=decode_experiment(obs['experiment'])
     if canonical(prepare(cases,limits=p.queue.limits).to_dict())!=canonical(p.queue.to_dict()):raise EvidenceError('original_case_queue_binding_required')
     baseline=[case_report(c) for c in cases]
     replay=None if acquisition_path is None else resolution_replay(cases,acquisition_path)
