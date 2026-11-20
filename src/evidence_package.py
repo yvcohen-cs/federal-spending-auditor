@@ -132,7 +132,7 @@ def _recipe(root, phase):
 def _replay(root, phase):
     cases, baseline, roots = _recipe(root, phase)
     if phase == 'C21':
-        from .dependency_reporting import verify_report
+        from .dependency_resolution import verify_report
         return verify_report(Path(root)/'report',cases,baseline_packages=baseline,source_documents=Path(root)/'official-documents'),roots
     if phase == 'C20':
         from .source_bound_reporting import verify_report

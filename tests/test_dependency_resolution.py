@@ -97,3 +97,8 @@ def test_interrupted_journal_does_not_replay_or_overwrite_source(sample):
  (p/'child').mkdir();(p/'child/pilot-plan.json').write_text('{}')
  with pytest.raises(ValueError):replay(c)
  assert (p/'child/pilot-plan.json').read_text()=='{}'
+
+def test_installed_source_stays_within_existing_fingerprint_budget():
+ from src.research_models import implementation_digest,MAX_IMPLEMENTATION_MODULES
+ assert len(list(Path('src').glob('*.py')))<=MAX_IMPLEMENTATION_MODULES==128
+ assert implementation_digest()==implementation_digest()

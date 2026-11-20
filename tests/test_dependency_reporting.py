@@ -7,8 +7,8 @@ import pytest
 from src.evidence_io import canonical,digest
 from src.correction_reporting import report as old_report
 from src.dependency_resolution import collect
-from src.dependency_reporting import report,write_report,verify_report,projections
-from src.dependency_source_semantics import documentation,DOCUMENTS
+from src.dependency_resolution import report,write_report,verify_report,projections
+from src.dependency_resolution import documentation,DOCUMENTS
 from src.evidence_package import build_package,verify_package,_recipe
 from tests.test_historical_source_authority import original_case
 from tests.test_historical_authority_reporting import transcript
@@ -49,7 +49,7 @@ def context(tmp_path,monkeypatch):
   assert expected_phase=='C20';marker=Path(path).read_bytes()
   if marker not in roots:raise ValueError('changed synthetic C20 boundary')
   yield roots[marker],deepcopy(receipts[marker])
- monkeypatch.setattr('src.dependency_reporting.verified_directory',verified)
+ monkeypatch.setattr('src.dependency_resolution.verified_directory',verified)
  cases=[]
  for i in (1,2):
   c,a,d=original_case(tmp_path/('original-'+str(i)),suffix='C21-'+str(i));c.update(c21_parent_capture=str(tmp_path/('child-'+str(i))),c21_parent_history=str(tmp_path/('parent-'+str(i))))

@@ -69,6 +69,12 @@ intervals, authoritative real correction edges or financial authorizations.
 
 ## Implementation and integrity boundaries
 
+The C21 collector, document validator and reporter share one module. An initial
+three-module layout exceeded the existing 128-module implementation-fingerprint
+bound and broke legacy probe planning. Consolidation restores that behavior
+without raising the bound or excluding code from its digest. The installation
+now uses all 128 slots; future changes must account for this explicit limit.
+
 `dependency_resolution` creates exact original-target plans, invokes existing
 bounded collectors only with explicit `live=True`, gates parent access on the
 validated child chain, and replays source/plan inventories before invoking
@@ -80,13 +86,13 @@ Parent pagination remains separate from history, source-wide completeness,
 freshness and revision alignment. Monetary preflight must report integer zero
 calculations/comparisons and false authorization.
 
-`dependency_source_semantics` validates exact official URLs, metadata types,
+`dependency_resolution.documentation` validates exact official URLs, metadata types,
 entity hashes and representations. Only explicitly reviewed known document
 bytes admit a quoted clause. Redirects, incomplete captures, unavailable text
 and unreviewed document versions establish no historical/correction authority.
 Saved entities after content decoding are not byte-exact wire HTTP messages.
 
-`dependency_reporting` consumes primary evidence and verified C20 imports.
+`dependency_resolution.report` consumes primary evidence and verified C20 imports.
 All original source roles are checked against verified package file inventories;
 shared cases must agree across packages and any separately supplied copy.
 Imported cases are recomputed from primary records and checked against original
@@ -128,8 +134,8 @@ The package explicitly distinguishes supplied case bindings from verified
 imported case bindings. Future package consumers must preserve that distinction.
 
 ```sh
-python -m src.dependency_reporting --cases /path/cases.json --baseline-package /path/c20-target11.zip --baseline-package /path/c20-target23.zip --source-documents /path/docs --output /path/new-report
-python -m src.dependency_reporting --cases /path/cases.json --baseline-package /path/c20-target11.zip --baseline-package /path/c20-target23.zip --source-documents /path/docs --verify-report /path/new-report
+python -m src.dependency_resolution --cases /path/cases.json --baseline-package /path/c20-target11.zip --baseline-package /path/c20-target23.zip --source-documents /path/docs --output /path/new-report
+python -m src.dependency_resolution --cases /path/cases.json --baseline-package /path/c20-target11.zip --baseline-package /path/c20-target23.zip --source-documents /path/docs --verify-report /path/new-report
 python -m src.evidence_package --build-from /path/explicit-stage --phase C21 --output /path/c21.zip
 python -m src.evidence_package --verify-package /path/c21.zip
 ```
