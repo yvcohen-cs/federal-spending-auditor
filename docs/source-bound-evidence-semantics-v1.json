@@ -1,0 +1,156 @@
+{
+  "SAM_access": {
+    "blocker": "No legitimate configured API key/account entitlement in this execution context; not an assertion about service-wide availability.",
+    "configured": false,
+    "credential_discovery": false,
+    "known_configuration": "SAM_GOV_API_KEY",
+    "protected_requests": 0
+  },
+  "authoritative_correction_edges": 0,
+  "baseline_dependency_counts": {
+    "financial_semantics": 0,
+    "historical_parent_applicability": 110,
+    "history_completeness": 132,
+    "other_unsupported_dependencies": 924,
+    "parent_primary_existence": 9,
+    "revision_correction_authority": 264,
+    "source_native_crosswalk": 125
+  },
+  "baseline_original_statuses": {
+    "INSUFFICIENT_EVIDENCE": 772,
+    "NOT_EVALUATED": 792
+  },
+  "documentation": [
+    {
+      "body_complete": true,
+      "body_sha256": "b0953aee540665d60686547763dccfc2bfa53247cb709de6ae13494199060e3f",
+      "content_type": "text/html",
+      "location": null,
+      "name": "fpds-glossary",
+      "representation": "HTTP_entity_bytes_after_content_decoding",
+      "request": {
+        "method": "GET",
+        "redirects": false,
+        "url": "https://www.fpds.gov/help/Glossary.htm"
+      },
+      "retrieved_at_utc": "2026-11-20T06:47:40.955623+00:00",
+      "schema_version": 1,
+      "status": 200
+    },
+    {
+      "body_complete": true,
+      "body_sha256": "0ee80f11f56d11cafb935c2a42d81c5f1e9ef356b45408bfc7b993a3edd05506",
+      "content_type": "text/html",
+      "location": null,
+      "name": "fpds-order-help",
+      "representation": "HTTP_entity_bytes_after_content_decoding",
+      "request": {
+        "method": "GET",
+        "redirects": false,
+        "url": "https://www.fpds.gov/help/Create_a_DO_TO_IDV.htm"
+      },
+      "retrieved_at_utc": "2026-11-20T06:47:42.348739+00:00",
+      "schema_version": 1,
+      "status": 200
+    },
+    {
+      "body_complete": true,
+      "body_sha256": "033a7007b702d25f1582f06feb8c0dd5d6dce3afee056cb57b61995e0e7443c7",
+      "content_type": "text/html; charset=utf-8",
+      "location": null,
+      "name": "sam-guide",
+      "representation": "HTTP_entity_bytes_after_content_decoding",
+      "request": {
+        "method": "GET",
+        "redirects": false,
+        "url": "https://open.gsa.gov/api/contract-awards/"
+      },
+      "retrieved_at_utc": "2026-11-20T06:47:43.910421+00:00",
+      "schema_version": 1,
+      "status": 200
+    },
+    {
+      "body_complete": true,
+      "body_sha256": "76a50f3445670d8ee5488770d6583a7f6399a093a903dabfbab77344f1eba078",
+      "content_type": "text/plain; charset=utf-8",
+      "location": null,
+      "name": "usa-transactions",
+      "representation": "HTTP_entity_bytes_after_content_decoding",
+      "request": {
+        "method": "GET",
+        "redirects": false,
+        "url": "https://raw.githubusercontent.com/fedspendingtransparency/usaspending-api/c2b82690eb044e130afc80b546343a2af0b4af1a/usaspending_api/api_contracts/contracts/v2/transactions.md"
+      },
+      "retrieved_at_utc": "2026-11-20T06:47:45.309891+00:00",
+      "schema_version": 1,
+      "status": 200
+    }
+  ],
+  "documented_claim": {
+    "clause": "Report the Modification number of the IDV against which the order is placed.",
+    "encoding": "windows-1252 declared by HTML; original entity bytes retained",
+    "historical_applicability": "unknown",
+    "publisher_version": null,
+    "scope": "Native reference instruction only",
+    "source": "fpds",
+    "url": "https://www.fpds.gov/help/Glossary.htm"
+  },
+  "evidence_classes": [
+    "REAL_PRIMARY_CAPTURE",
+    "REAL_PUBLIC_DOCUMENT_CAPTURE",
+    "OFFLINE_REPLAY",
+    "SYNTHETIC_FIXTURE",
+    "UNAVAILABLE_EXTERNAL_EVIDENCE"
+  ],
+  "financial_comparison_authorized": false,
+  "financial_eligibility_changed": false,
+  "financial_group_zero_is_not_authorization": true,
+  "historical_intervals_established": 0,
+  "merge_policy": "LEAVE_OPEN_DO_NOT_MERGE",
+  "new_live_collection_in_offline_tool": false,
+  "new_real_resolutions": 2,
+  "observed_collection": {
+    "EPA_parent_actions": 10,
+    "EPA_parent_pagination": "NONTERMINAL_AT_BUDGET_CAP",
+    "Peace_Corps_parent_actions": 8,
+    "Peace_Corps_parent_pagination": "TERMINAL_OBSERVED_NOT_HISTORY_COMPLETE",
+    "child_transactions": 18,
+    "data_requests": 10,
+    "documentation_GETs": 4,
+    "pacing_seconds": 1,
+    "parent_actions": 18,
+    "redirects": false,
+    "response_byte_cap": 1048576,
+    "retries": 0,
+    "timeout_seconds": 10
+  },
+  "original_requirements": 1570,
+  "prior_real_resolutions": 6,
+  "production_readiness_changed": false,
+  "proof_levels": {
+    "authoritative_historical_rule": "UNSUPPORTED",
+    "historical_applicability_independently_verified": "INSUFFICIENT_EVIDENCE",
+    "parent_identity_observed": "OBSERVED",
+    "parent_modification_independently_retrieved": "OBSERVED",
+    "parent_modification_referenced": "OBSERVED"
+  },
+  "remaining_original_requirements": 1562,
+  "schema_type": "SourceBoundEvidenceSemantics",
+  "schema_version": 1,
+  "selected_action": {
+    "agency": "8600",
+    "modification": "0",
+    "parent_agency": "8600",
+    "parent_piid": "DU100G16D01",
+    "piid": "00001",
+    "transaction": "0"
+  },
+  "semantics_limitations": {
+    "USA_terminal_pagination": "Finite observed chain only; no history, source-wide recall or common as-of certificate",
+    "cross_source_parent_mapping": "Explicit source-native action namespace and revision mapping missing",
+    "deleted_records": "SAM documentation describes bounded deleted-record visibility; full historical deletion coverage unverified",
+    "modification_and_update_dates": "Not historical applicability, publication coverage or precedence certificates",
+    "oldContractId": "Array of old identifiers; no selected primary predecessor direction validated"
+  },
+  "starting_main": "4062f5a46a158301a1f0143d0e8acb8ee3568e48"
+}
